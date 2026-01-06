@@ -4,7 +4,262 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
-// import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../contexts/AuthContext";
+
+// Search data
+const SEARCH_TABS = [
+  "tabAll",
+  "tabFiles",
+  "tabChats",
+  "tabEmails",
+  "tabProjects",
+  "tabTasks",
+];
+
+const SEARCH_QUICK_ACCESS_ITEMS = [
+  {
+    name: "Kanban",
+    href: "/apps-kanban",
+    icon: "M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2",
+    bg: "bg-success",
+  },
+  {
+    name: "Analytics",
+    href: "/dashboards-crm-analytics",
+    icon: "M13 7h8m0 0v8m0-8l-8 8-4-4-6 6",
+    bg: "bg-secondary",
+  },
+  {
+    name: "Chat",
+    href: "/apps-chat",
+    icon: "M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z",
+    bg: "bg-info",
+  },
+  {
+    name: "Files",
+    href: "/apps-filemanager",
+    icon: "M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z",
+    bg: "bg-error",
+  },
+  {
+    name: "Crypto",
+    href: "/dashboards-crypto-1",
+    icon: "M15 9a2 2 0 10-4 0v5a2 2 0 01-2 2h6m-6-4h4m8 0a9 9 0 11-18 0 9 9 0 0118 0z",
+    bg: "bg-secondary",
+  },
+  {
+    name: "Banking",
+    href: "/dashboards-banking-1",
+    icon: "M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3",
+    bg: "bg-primary dark:bg-accent",
+  },
+  {
+    name: "Todo",
+    href: "/apps-todo",
+    icon: "M12.5293 18L20.9999 8.40002 M3 13.2L7.23529 18L17.8235 6",
+    bg: "bg-info",
+  },
+  {
+    name: "Orders",
+    href: "/dashboards-orders",
+    icon: "M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z",
+    bg: "bg-warning",
+  },
+];
+
+const SEARCH_RECENT_ITEMS = [
+  {
+    name: "Chat App",
+    href: "/apps-chat",
+    icon: "M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z",
+  },
+  {
+    name: "File Manager App",
+    href: "/apps-filemanager",
+    icon: "M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z",
+  },
+  {
+    name: "Email App",
+    href: "/apps-mail",
+    icon: "M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z",
+  },
+  {
+    name: "Kanban Board",
+    href: "/apps-kanban",
+    icon: "M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2",
+  },
+  {
+    name: "Todo App",
+    href: "/apps-todo",
+    icon: "M12.5293 18L20.9999 8.40002 M3 13.2L7.23529 18L17.8235 6",
+  },
+  {
+    name: "Crypto Dashboard",
+    href: "/dashboards-crypto-2",
+    icon: "M15 9a2 2 0 10-4 0v5a2 2 0 01-2 2h6m-6-4h4m8 0a9 9 0 11-18 0 9 9 0 0118 0z",
+  },
+  {
+    name: "Banking Dashboard",
+    href: "/dashboards-banking-2",
+    icon: "M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3",
+  },
+  {
+    name: "Analytics Dashboard",
+    href: "/dashboards-crm-analytics",
+    icon: "M13 7h8m0 0v8m0-8l-8 8-4-4-6 6",
+  },
+  {
+    name: "Influencer Dashboard",
+    href: "/dashboards-influencer",
+    icon: "M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z",
+  },
+];
+
+// Notification data
+const NOTIFICATION_TABS = ["All", "Alerts", "Events", "Logs"];
+
+const NOTIFICATION_ITEMS_ALL = [
+  {
+    title: "User Photo Changed",
+    description: "John Doe changed his avatar photo",
+    icon: "user-edit",
+    bg: "bg-secondary/10 dark:bg-secondary-light/15",
+    iconColor: "text-secondary dark:text-secondary-light",
+  },
+  {
+    title: "Mon, June 14, 2021",
+    description: "08:00 - 09:00 | Frontend Conf",
+    icon: "calendar",
+    bg: "bg-info/10 dark:bg-info/15",
+    iconColor: "text-info",
+    isEvent: true,
+  },
+  {
+    title: "Images Added",
+    description: "Mores Clarke added new image gallery",
+    icon: "image",
+    bg: "bg-primary/10 dark:bg-accent-light/15",
+    iconColor: "text-primary dark:text-accent-light",
+  },
+  {
+    title: "Design Completed",
+    description: "Robert Nolan completed the design of the CRM application",
+    icon: "leaf",
+    bg: "bg-success/10 dark:bg-success/15",
+    iconColor: "text-success",
+  },
+  {
+    title: "Wed, June 21, 2021",
+    description: "16:00 - 20:00 | UI/UX Conf",
+    icon: "calendar",
+    bg: "bg-info/10 dark:bg-info/15",
+    iconColor: "text-info",
+    isEvent: true,
+  },
+  {
+    title: "ER Diagram",
+    description: "Team completed the ER diagram app",
+    icon: "project-diagram",
+    bg: "bg-warning/10 dark:bg-warning/15",
+    iconColor: "text-warning",
+  },
+  {
+    title: "THU, May 11, 2021",
+    description: "10:00 - 11:30 | Interview, Konnor Guzman",
+    icon: "microphone",
+    bg: "bg-warning/10 dark:bg-warning/15",
+    iconColor: "text-warning",
+    isEvent: true,
+  },
+  {
+    title: "Weekly Report",
+    description: "The weekly report was uploaded",
+    icon: "history",
+    bg: "bg-error/10 dark:bg-error/15",
+    iconColor: "text-error",
+  },
+];
+
+const NOTIFICATION_ITEMS_ALERTS = [
+  {
+    title: "User Photo Changed",
+    description: "John Doe changed his avatar photo",
+    icon: "user-edit",
+    bg: "bg-secondary/10 dark:bg-secondary-light/15",
+    iconColor: "text-secondary dark:text-secondary-light",
+  },
+  {
+    title: "Images Added",
+    description: "Mores Clarke added new image gallery",
+    icon: "image",
+    bg: "bg-primary/10 dark:bg-accent-light/15",
+    iconColor: "text-primary dark:text-accent-light",
+  },
+  {
+    title: "Design Completed",
+    description: "Robert Nolan completed the design of the CRM application",
+    icon: "leaf",
+    bg: "bg-success/10 dark:bg-success/15",
+    iconColor: "text-success",
+  },
+  {
+    title: "ER Diagram",
+    description: "Team completed the ER diagram app",
+    icon: "project-diagram",
+    bg: "bg-warning/10 dark:bg-warning/15",
+    iconColor: "text-warning",
+  },
+  {
+    title: "Weekly Report",
+    description: "The weekly report was uploaded",
+    icon: "history",
+    bg: "bg-error/10 dark:bg-error/15",
+    iconColor: "text-error",
+  },
+];
+
+const NOTIFICATION_ITEMS_EVENTS = [
+  {
+    title: "Mon, June 14, 2021",
+    description: "08:00 - 09:00 | Frontend Conf",
+    icon: "calendar",
+    bg: "bg-info/10 dark:bg-info/15",
+    iconColor: "text-info",
+    isEvent: true,
+  },
+  {
+    title: "Wed, June 21, 2021",
+    description: "16:00 - 20:00 | UI/UX Conf",
+    icon: "calendar",
+    bg: "bg-info/10 dark:bg-info/15",
+    iconColor: "text-info",
+    isEvent: true,
+  },
+  {
+    title: "THU, May 11, 2021",
+    description: "10:00 - 11:30 | Interview, Konnor Guzman",
+    icon: "microphone",
+    bg: "bg-warning/10 dark:bg-warning/15",
+    iconColor: "text-warning",
+    isEvent: true,
+  },
+  {
+    title: "Mon, Jul 16, 2021",
+    description: "06:00 - 16:00 | Laravel Conf",
+    icon: "calendar",
+    bg: "bg-info/10 dark:bg-info/15",
+    iconColor: "text-info",
+    isEvent: true,
+  },
+  {
+    title: "Wed, Jun 16, 2021",
+    description: "15:30 - 11:30 | Interview, Jonh Doe",
+    icon: "microphone",
+    bg: "bg-warning/10 dark:bg-warning/15",
+    iconColor: "text-warning",
+    isEvent: true,
+  },
+];
 
 export default function DashboardLayout({
   children,
@@ -19,6 +274,7 @@ export default function DashboardLayout({
   const [notificationPopperOpen, setNotificationPopperOpen] = useState(false);
   const [profilePopperOpen, setProfilePopperOpen] = useState(false);
   const [notificationTab, setNotificationTab] = useState("tabAll");
+  const [searchTab, setSearchTab] = useState("tabAll");
   const [rightSidebarExpanded, setRightSidebarExpanded] = useState(false);
   const [searchInputWidth, setSearchInputWidth] = useState("w-60");
   const pathname = usePathname();
@@ -26,7 +282,16 @@ export default function DashboardLayout({
   const notificationPopperRef = useRef<HTMLDivElement>(null);
   const profilePopperRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
-  // const { logout } = useAuth();
+
+  // Safely get logout function from auth context
+  let logout: (() => void) | undefined;
+  try {
+    const auth = useAuth();
+    logout = auth?.logout;
+  } catch (e) {
+    // Auth context not available
+    logout = undefined;
+  }
 
   useEffect(() => {
     // Check for dark mode preference
@@ -102,6 +367,56 @@ export default function DashboardLayout({
   };
 
   const isActive = (path: string) => pathname === path;
+
+  // Helper function to render notification icon
+  const renderNotificationIcon = (icon: string, iconColor: string) => {
+    if (icon === "user-edit") {
+      return <i className={`fa fa-user-edit ${iconColor}`}></i>;
+    } else if (icon === "calendar") {
+      return (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className={`size-5 ${iconColor}`}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth="1.5"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+          />
+        </svg>
+      );
+    } else if (icon === "image") {
+      return <i className={`fa-solid fa-image ${iconColor}`}></i>;
+    } else if (icon === "leaf") {
+      return <i className={`fa fa-leaf ${iconColor}`}></i>;
+    } else if (icon === "project-diagram") {
+      return <i className={`fa fa-project-diagram ${iconColor}`}></i>;
+    } else if (icon === "microphone") {
+      return (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className={`size-5 ${iconColor}`}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth="1.5"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
+          />
+        </svg>
+      );
+    } else if (icon === "history") {
+      return <i className={`fa fa-history ${iconColor}`}></i>;
+    }
+    return null;
+  };
 
   return (
     <div
@@ -479,7 +794,7 @@ export default function DashboardLayout({
                             </div>
                           </div>
                         </Link>
-                        {/* <div className="mt-3 px-4">
+                        <div className="mt-3 px-4">
                           <button
                             onClick={logout}
                             className="btn h-9 w-full space-x-2 bg-primary text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
@@ -500,7 +815,7 @@ export default function DashboardLayout({
                             </svg>
                             <span>Logout</span>
                           </button>
-                        </div> */}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -579,50 +894,34 @@ export default function DashboardLayout({
                     <div className="popper-root show">
                       <div className="popper-box flex max-h-[calc(100vh-6rem)] w-80 flex-col rounded-lg border border-slate-150 bg-white shadow-soft dark:border-navy-800 dark:bg-navy-700 dark:shadow-soft-dark">
                         <div className="is-scrollbar-hidden flex shrink-0 overflow-x-auto rounded-t-lg bg-slate-100 px-2 text-slate-600 dark:bg-navy-800 dark:text-navy-200">
-                          {[
-                            "All",
-                            "Files",
-                            "Chats",
-                            "Emails",
-                            "Projects",
-                            "Tasks",
-                          ].map((tab) => (
-                            <button
-                              key={tab}
-                              className="btn shrink-0 rounded-none border-b-2 px-3.5 py-2.5 border-transparent hover:text-slate-800 focus:text-slate-800 dark:hover:text-navy-100 dark:focus:text-navy-100"
-                            >
-                              {tab}
-                            </button>
-                          ))}
+                          {SEARCH_TABS.map((tab) => {
+                            const tabLabel = tab.replace("tab", "");
+                            return (
+                              <button
+                                key={tab}
+                                onClick={() => setSearchTab(tab)}
+                                className={`btn shrink-0 rounded-none border-b-2 px-3.5 py-2.5 ${
+                                  searchTab === tab
+                                    ? "border-primary dark:border-accent text-primary dark:text-accent-light"
+                                    : "border-transparent hover:text-slate-800 focus:text-slate-800 dark:hover:text-navy-100 dark:focus:text-navy-100"
+                                }`}
+                              >
+                                {tabLabel}
+                              </button>
+                            );
+                          })}
                         </div>
                         <div className="is-scrollbar-hidden overflow-y-auto overscroll-contain pb-2">
                           <div className="is-scrollbar-hidden mt-3 flex space-x-4 overflow-x-auto px-3">
-                            {/* Quick access items */}
-                            {[
-                              {
-                                name: "Kanban",
-                                icon: "M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2",
-                                color: "bg-success",
-                              },
-                              {
-                                name: "Analytics",
-                                icon: "M13 7h8m0 0v8m0-8l-8 8-4-4-6 6",
-                                color: "bg-secondary",
-                              },
-                              {
-                                name: "Chat",
-                                icon: "M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z",
-                                color: "bg-info",
-                              },
-                            ].map((item) => (
-                              <a
+                            {SEARCH_QUICK_ACCESS_ITEMS.map((item) => (
+                              <Link
                                 key={item.name}
-                                href="#"
+                                href={item.href}
                                 className="w-14 text-center"
                               >
                                 <div className="avatar size-12">
                                   <div
-                                    className={`is-initial rounded-full ${item.color} text-white`}
+                                    className={`is-initial rounded-full ${item.bg} text-white`}
                                   >
                                     <svg
                                       xmlns="http://www.w3.org/2000/svg"
@@ -643,7 +942,45 @@ export default function DashboardLayout({
                                 <p className="mt-1.5 overflow-hidden text-ellipsis whitespace-nowrap text-xs text-slate-700 dark:text-navy-100">
                                   {item.name}
                                 </p>
-                              </a>
+                              </Link>
+                            ))}
+                          </div>
+
+                          <div className="mt-3 flex items-center justify-between bg-slate-100 py-1.5 px-3 dark:bg-navy-800">
+                            <p className="text-xs uppercase text-slate-400 dark:text-navy-300">
+                              Recent
+                            </p>
+                            <Link
+                              href="#"
+                              className="text-tiny-plus font-medium uppercase text-primary outline-hidden transition-colors duration-300 hover:text-primary/70 focus:text-primary/70 dark:text-accent-light dark:hover:text-accent-light/70 dark:focus:text-accent-light/70"
+                            >
+                              View All
+                            </Link>
+                          </div>
+
+                          <div className="mt-1 font-inter font-medium">
+                            {SEARCH_RECENT_ITEMS.map((item) => (
+                              <Link
+                                key={item.name}
+                                href={item.href}
+                                className="group flex items-center space-x-2 px-2.5 py-2 tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
+                              >
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  className="size-4.5 text-slate-400 transition-colors group-hover:text-slate-500 group-focus:text-slate-500 dark:text-navy-300 dark:group-hover:text-navy-200 dark:group-focus:text-navy-200"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                  strokeWidth="1.5"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d={item.icon}
+                                  />
+                                </svg>
+                                <span>{item.name}</span>
+                              </Link>
                             ))}
                           </div>
                         </div>
@@ -786,29 +1123,130 @@ export default function DashboardLayout({
                           </div>
                         </div>
                         <div className="tab-content flex flex-col overflow-hidden">
-                          <div className="is-scrollbar-hidden space-y-4 overflow-y-auto px-4 py-4">
-                            {/* Sample notification items */}
-                            <div className="flex items-center space-x-3">
-                              <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-secondary/10 dark:bg-secondary-light/15">
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  className="size-5 text-secondary dark:text-secondary-light"
-                                  fill="currentColor"
-                                  viewBox="0 0 24 24"
+                          {notificationTab === "tabAll" && (
+                            <div className="is-scrollbar-hidden space-y-4 overflow-y-auto px-4 py-4">
+                              {NOTIFICATION_ITEMS_ALL.map((item, index) => (
+                                <div
+                                  key={index}
+                                  className="flex items-center space-x-3"
                                 >
-                                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
-                                </svg>
-                              </div>
-                              <div>
-                                <p className="font-medium text-slate-600 dark:text-navy-100">
-                                  User Photo Changed
-                                </p>
-                                <div className="mt-1 text-xs text-slate-400 line-clamp-1 dark:text-navy-300">
-                                  John Doe changed his avatar photo
+                                  <div
+                                    className={`flex size-10 shrink-0 items-center justify-center rounded-lg ${item.bg}`}
+                                  >
+                                    {renderNotificationIcon(
+                                      item.icon,
+                                      item.iconColor
+                                    )}
+                                  </div>
+                                  <div>
+                                    <p className="font-medium text-slate-600 dark:text-navy-100">
+                                      {item.title}
+                                    </p>
+                                    <div
+                                      className={`mt-1 text-xs ${
+                                        item.isEvent ? "flex" : "line-clamp-1"
+                                      } text-slate-400 dark:text-navy-300`}
+                                    >
+                                      {item.isEvent ? (
+                                        <>
+                                          <span className="shrink-0">
+                                            {item.description.split(" | ")[0]}
+                                          </span>
+                                          <div className="mx-2 my-1 w-px bg-slate-200 dark:bg-navy-500"></div>
+                                          <span className="line-clamp-1">
+                                            {item.description.split(" | ")[1]}
+                                          </span>
+                                        </>
+                                      ) : (
+                                        item.description
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          {notificationTab === "tabAlerts" && (
+                            <div className="is-scrollbar-hidden space-y-4 overflow-y-auto px-4 py-4">
+                              {NOTIFICATION_ITEMS_ALERTS.map((item, index) => (
+                                <div
+                                  key={index}
+                                  className="flex items-center space-x-3"
+                                >
+                                  <div
+                                    className={`flex size-10 shrink-0 items-center justify-center rounded-lg ${item.bg}`}
+                                  >
+                                    {renderNotificationIcon(
+                                      item.icon,
+                                      item.iconColor
+                                    )}
+                                  </div>
+                                  <div>
+                                    <p className="font-medium text-slate-600 dark:text-navy-100">
+                                      {item.title}
+                                    </p>
+                                    <div className="mt-1 text-xs text-slate-400 line-clamp-1 dark:text-navy-300">
+                                      {item.description}
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          {notificationTab === "tabEvents" && (
+                            <div className="is-scrollbar-hidden space-y-4 overflow-y-auto px-4 py-4">
+                              {NOTIFICATION_ITEMS_EVENTS.map((item, index) => (
+                                <div
+                                  key={index}
+                                  className="flex items-center space-x-3"
+                                >
+                                  <div
+                                    className={`flex size-10 shrink-0 items-center justify-center rounded-lg ${item.bg}`}
+                                  >
+                                    {renderNotificationIcon(
+                                      item.icon,
+                                      item.iconColor
+                                    )}
+                                  </div>
+                                  <div>
+                                    <p className="font-medium text-slate-600 dark:text-navy-100">
+                                      {item.title}
+                                    </p>
+                                    <div className="mt-1 flex text-xs text-slate-400 dark:text-navy-300">
+                                      <span className="shrink-0">
+                                        {item.description.split(" | ")[0]}
+                                      </span>
+                                      <div className="mx-2 my-1 w-px bg-slate-200 dark:bg-navy-500"></div>
+                                      <span className="line-clamp-1">
+                                        {item.description.split(" | ")[1]}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          {notificationTab === "tabLogs" && (
+                            <div className="is-scrollbar-hidden overflow-y-auto px-4">
+                              <div className="mt-8 pb-8 text-center">
+                                <Image
+                                  className="mx-auto w-36"
+                                  src="/images/illustrations/empty-girl-box.svg"
+                                  alt="image"
+                                  width={144}
+                                  height={144}
+                                />
+                                <div className="mt-5">
+                                  <p className="text-base font-semibold text-slate-700 dark:text-navy-100">
+                                    No any logs
+                                  </p>
+                                  <p className="text-slate-400 dark:text-navy-300">
+                                    There are no unread logs yet
+                                  </p>
                                 </div>
                               </div>
                             </div>
-                          </div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -842,7 +1280,7 @@ export default function DashboardLayout({
 
         {/* Mobile Searchbar */}
         {searchbarActive && (
-          <div className="fixed inset-0 z-100 flex flex-col bg-white dark:bg-navy-700 sm:hidden">
+          <div className="fixed inset-0 z-[100] flex flex-col bg-white dark:bg-navy-700 sm:hidden">
             <div className="flex items-center space-x-2 bg-slate-100 px-3 pt-2 dark:bg-navy-800">
               <button
                 className="btn -ml-1.5 size-7 shrink-0 rounded-full p-0 text-slate-600 hover:bg-slate-300/20 active:bg-slate-300/25 dark:text-navy-100 dark:hover:bg-navy-300/20 dark:active:bg-navy-300/25"
@@ -869,6 +1307,99 @@ export default function DashboardLayout({
                 placeholder="Search here..."
                 autoFocus
               />
+            </div>
+
+            <div className="is-scrollbar-hidden flex shrink-0 overflow-x-auto bg-slate-100 px-2 text-slate-600 dark:bg-navy-800 dark:text-navy-200">
+              {SEARCH_TABS.map((tab) => {
+                const tabLabel = tab.replace("tab", "");
+                return (
+                  <button
+                    key={tab}
+                    onClick={() => setSearchTab(tab)}
+                    className={`btn shrink-0 rounded-none border-b-2 px-3.5 py-2.5 ${
+                      searchTab === tab
+                        ? "border-primary dark:border-accent text-primary dark:text-accent-light"
+                        : "border-transparent hover:text-slate-800 focus:text-slate-800 dark:hover:text-navy-100 dark:focus:text-navy-100"
+                    }`}
+                  >
+                    {tabLabel}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="is-scrollbar-hidden overflow-y-auto overscroll-contain pb-2">
+              <div className="is-scrollbar-hidden mt-3 flex space-x-4 overflow-x-auto px-3">
+                {SEARCH_QUICK_ACCESS_ITEMS.map((item) => (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    className="w-14 text-center"
+                  >
+                    <div className="avatar size-12">
+                      <div
+                        className={`is-initial rounded-full ${item.bg} text-white`}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="size-5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d={item.icon}
+                          />
+                        </svg>
+                      </div>
+                    </div>
+                    <p className="mt-1.5 overflow-hidden text-ellipsis whitespace-nowrap text-xs text-slate-700 dark:text-navy-100">
+                      {item.name}
+                    </p>
+                  </Link>
+                ))}
+              </div>
+
+              <div className="mt-3 flex items-center justify-between bg-slate-100 py-1.5 px-3 dark:bg-navy-800">
+                <p className="text-xs uppercase text-slate-400 dark:text-navy-300">
+                  Recent
+                </p>
+                <Link
+                  href="#"
+                  className="text-tiny-plus font-medium uppercase text-primary outline-hidden transition-colors duration-300 hover:text-primary/70 focus:text-primary/70 dark:text-accent-light dark:hover:text-accent-light/70 dark:focus:text-accent-light/70"
+                >
+                  View All
+                </Link>
+              </div>
+
+              <div className="mt-1 font-inter font-medium">
+                {SEARCH_RECENT_ITEMS.map((item) => (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    className="group flex items-center space-x-2 px-2.5 py-2 tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="size-4.5 text-slate-400 transition-colors group-hover:text-slate-500 group-focus:text-slate-500 dark:text-navy-300 dark:group-hover:text-navy-200 dark:group-focus:text-navy-200"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d={item.icon}
+                      />
+                    </svg>
+                    <span>{item.name}</span>
+                  </Link>
+                ))}
+              </div>
             </div>
           </div>
         )}
