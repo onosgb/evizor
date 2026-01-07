@@ -124,8 +124,8 @@ export default function Header({
       <nav className="header bg-white dark:bg-navy-750 before:bg-white dark:before:bg-navy-750 print:hidden">
         <div className="header-container relative flex w-full px-4 sm:px-5 lg:px-6 print:hidden">
           <div className="flex w-full items-center justify-between">
-            {/* Left: Sidebar Toggle Button */}
-            <div className="size-7">
+            {/* Left: Sidebar Toggle Button - Mobile Only */}
+            <div className="size-7 lg:hidden">
               <button
                 className={`menu-toggle cursor-pointer ml-0.5 flex size-7 flex-col justify-center space-y-1.5 text-primary outline-hidden focus:outline-hidden dark:text-accent-light/80 ${
                   sidebarExpanded ? "active" : ""
@@ -137,6 +137,9 @@ export default function Header({
                 <span></span>
               </button>
             </div>
+
+            {/* Desktop placeholder to maintain spacing */}
+            <div className="hidden lg:block size-7"></div>
 
             {/* Right: Header buttons */}
             <div className="-mr-1.5 flex items-center space-x-2">
@@ -677,4 +680,3 @@ export default function Header({
     </>
   );
 }
-

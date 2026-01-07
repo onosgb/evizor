@@ -3,19 +3,21 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 
 interface SidebarProps {
   sidebarExpanded: boolean;
   profilePopperOpen: boolean;
   setProfilePopperOpen: (open: boolean) => void;
+  setSidebarExpanded: (expanded: boolean) => void;
 }
 
 export default function Sidebar({
   sidebarExpanded,
   profilePopperOpen,
   setProfilePopperOpen,
+  setSidebarExpanded,
 }: SidebarProps) {
   const pathname = usePathname();
   const profilePopperRef = useRef<HTMLDivElement>(null);
@@ -30,17 +32,46 @@ export default function Sidebar({
     logout = undefined;
   }
 
+  // Prevent body scroll on mobile when sidebar is open
+  useEffect(() => {
+    if (sidebarExpanded) {
+      // Use inline style for mobile scroll prevention (Tailwind classes won't work via classList)
+      document.body.style.overflow = "hidden";
+      // Allow scroll on desktop
+      if (window.innerWidth >= 1024) {
+        document.body.style.overflow = "auto";
+      }
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [sidebarExpanded]);
+
   const isActive = (path: string) => pathname === path;
+
+  // Close sidebar on mobile when a link is clicked
+  const handleLinkClick = () => {
+    if (typeof window !== "undefined" && window.innerWidth < 1024) {
+      setSidebarExpanded(false);
+    }
+  };
 
   return (
     <div
-      className={`sidebar print:hidden ${sidebarExpanded ? "" : "collapsed"}`}
+      className={` 
+        fixed left-0 top-0 h-screen z-50
+        transform transition-transform duration-300 ease-in-out
+        ${sidebarExpanded ? "translate-x-0" : "-translate-x-full"}
+        lg:relative lg:translate-x-0 lg:z-auto
+      `}
     >
-      <div className="main-sidebar">
+      <div className="h-full w-20">
         <div className="flex h-full w-full flex-col items-center border-r border-slate-150 bg-blue1 dark:border-navy-700 dark:bg-navy-800">
           {/* Application Logo */}
           <div className="flex pt-4">
-            <Link href="/">
+            <Link href="/" onClick={handleLinkClick}>
               <Image
                 className="size-11 transition-transform duration-500 ease-in-out"
                 src="/images/evizor_logo_w.svg"
@@ -56,6 +87,7 @@ export default function Sidebar({
             {/* Dashboard */}
             <Link
               href="/"
+              onClick={handleLinkClick}
               className={`flex size-11 items-center justify-center rounded-lg text-white outline-hidden transition-colors duration-200 hover:bg-white/20 focus:bg-white/20 active:bg-white/25 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25 ${
                 isActive("/")
                   ? "bg-primary/10 dark:bg-navy-600 dark:text-accent-light"
@@ -91,6 +123,7 @@ export default function Sidebar({
             {/* Live Queue */}
             <Link
               href="/live-queue"
+              onClick={handleLinkClick}
               className={`flex size-11 items-center justify-center rounded-lg text-white outline-hidden transition-colors duration-200 hover:bg-white/20 focus:bg-white/20 active:bg-white/25 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25 ${
                 isActive("/live-queue")
                   ? "bg-primary/10 dark:bg-navy-600 dark:text-accent-light"
@@ -122,6 +155,7 @@ export default function Sidebar({
             {/* Assigned Cases */}
             <Link
               href="/assigned-cases"
+              onClick={handleLinkClick}
               className={`flex size-11 items-center justify-center rounded-lg text-white outline-hidden transition-colors duration-200 hover:bg-white/20 focus:bg-white/20 active:bg-white/25 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25 ${
                 isActive("/assigned-cases")
                   ? "bg-primary/10 dark:bg-navy-600 dark:text-accent-light"
@@ -153,6 +187,7 @@ export default function Sidebar({
             {/* History */}
             <Link
               href="/patient-history"
+              onClick={handleLinkClick}
               className={`flex size-11 items-center justify-center text-white rounded-lg outline-hidden transition-colors duration-200 hover:bg-white/20 focus:bg-white/20 active:bg-white/25 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25 ${
                 isActive("/patient-history")
                   ? "bg-primary/10 dark:bg-navy-600 dark:text-accent-light"
@@ -189,6 +224,7 @@ export default function Sidebar({
             {/* Settings */}
             <Link
               href="/settings"
+              onClick={handleLinkClick}
               className="flex size-11 items-center justify-center text-white rounded-lg outline-hidden transition-colors duration-200 hover:bg-white/20 focus:bg-white/20 active:bg-white/25 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25"
               title="Settings"
             >

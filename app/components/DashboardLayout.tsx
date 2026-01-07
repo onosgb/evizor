@@ -9,7 +9,13 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [sidebarExpanded, setSidebarExpanded] = useState(true);
+  // Initialize sidebar state based on screen size
+  const [sidebarExpanded, setSidebarExpanded] = useState(() => {
+    if (typeof window !== "undefined") {
+      return window.innerWidth >= 1024; // Desktop: expanded, Mobile: collapsed
+    }
+    return false; // SSR default: collapsed
+  });
   const [darkMode, setDarkMode] = useState(false);
   const [monochromeMode, setMonochromeMode] = useState(false);
   const [profilePopperOpen, setProfilePopperOpen] = useState(false);
@@ -28,6 +34,24 @@ export default function DashboardLayout({
     if (isMono) {
       document.documentElement.classList.add("monochrome");
     }
+
+    // Handle window resize to adjust sidebar state
+    const handleResize = () => {
+      if (window.innerWidth < 1024) {
+        // Mobile: ensure sidebar is closed
+        setSidebarExpanded(false);
+      } else {
+        // Desktop: ensure sidebar is open
+        setSidebarExpanded(true);
+      }
+    };
+
+    // Set initial state on mount
+    handleResize();
+
+    // Listen for resize events
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   const toggleDarkMode = () => {
@@ -62,7 +86,17 @@ export default function DashboardLayout({
         sidebarExpanded={sidebarExpanded}
         profilePopperOpen={profilePopperOpen}
         setProfilePopperOpen={setProfilePopperOpen}
+        setSidebarExpanded={setSidebarExpanded}
       />
+
+      {/* Mobile overlay - closes sidebar when clicked */}
+      {sidebarExpanded && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 transition-opacity duration-300 lg:hidden"
+          onClick={() => setSidebarExpanded(false)}
+          aria-hidden="true"
+        />
+      )}
 
       {/* Main Content Area */}
       <div className="flex flex-1 flex-col overflow-hidden">
