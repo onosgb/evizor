@@ -6,8 +6,10 @@ import Header from "./Header";
 
 export default function DashboardLayout({
   children,
+  theme = "doctor",
 }: {
   children: React.ReactNode;
+  theme?: "admin" | "doctor";
 }) {
   // Initialize sidebar state based on screen size
   const [sidebarExpanded, setSidebarExpanded] = useState(() => {
@@ -87,6 +89,7 @@ export default function DashboardLayout({
         profilePopperOpen={profilePopperOpen}
         setProfilePopperOpen={setProfilePopperOpen}
         setSidebarExpanded={setSidebarExpanded}
+        theme={theme}
       />
 
       {/* Mobile overlay - closes sidebar when clicked */}

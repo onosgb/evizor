@@ -11,6 +11,7 @@ interface SidebarProps {
   profilePopperOpen: boolean;
   setProfilePopperOpen: (open: boolean) => void;
   setSidebarExpanded: (expanded: boolean) => void;
+  theme?: "admin" | "doctor";
 }
 
 export default function Sidebar({
@@ -18,6 +19,7 @@ export default function Sidebar({
   profilePopperOpen,
   setProfilePopperOpen,
   setSidebarExpanded,
+  theme = "doctor",
 }: SidebarProps) {
   const pathname = usePathname();
   const profilePopperRef = useRef<HTMLDivElement>(null);
@@ -68,7 +70,9 @@ export default function Sidebar({
       `}
     >
       <div className="h-full w-20">
-        <div className="flex h-full w-full flex-col items-center border-r border-slate-150 bg-blue1 dark:border-navy-700 dark:bg-navy-800">
+        <div className={`flex h-full w-full flex-col items-center border-r border-slate-150 ${
+          theme === "admin" ? "bg-green1" : "bg-blue1"
+        } dark:border-navy-700 dark:bg-navy-800`}>
           {/* Application Logo */}
           <div className="flex pt-4">
             <Link href="/" onClick={handleLinkClick}>
@@ -181,6 +185,68 @@ export default function Sidebar({
                   fill="currentColor"
                   d="M3 10h14.8c1.12 0 1.68 0 2.108.218a2 2 0 0 1 .874.874C21 11.52 21 12.08 21 13.2v4.6c0 1.12 0 1.68-.218 2.108a2 2 0 0 1-.874.874C19.48 21 18.92 21 17.8 21H6.2c-1.12 0-1.68 0-2.108-.218a2 2 0 0 1-.874-.874C3 19.48 3 18.92 3 17.8zm0 0c0-.932 0-1.398.152-1.765a2 2 0 0 1 1.083-1.083C4.602 7 5.068 7 6 7h2.343c.818 0 1.226 0 1.594.152c.368.152.657.442 1.235 1.02L13 10z"
                 />
+              </svg>
+            </Link>
+
+            {/* Staff Management */}
+            <Link
+              href="/staff-management"
+              onClick={handleLinkClick}
+              className={`flex size-11 items-center justify-center rounded-lg text-white outline-hidden transition-colors duration-200 hover:bg-white/20 focus:bg-white/20 active:bg-white/25 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25 ${
+                isActive("/staff-management")
+                  ? "bg-primary/10 dark:bg-navy-600 dark:text-accent-light"
+                  : ""
+              }`}
+              title="Staff Management"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                className="size-8"
+              >
+                <path
+                  fill="currentColor"
+                  d="M12 13c2.396 0 4.575.694 6.178 1.671.8.49 1.484 1.065 1.978 1.69.486.616.844 1.352.844 2.139 0 .845-.411 1.511-1.003 1.986-.56.45-1.299.748-2.084.956-1.578.417-3.684.558-5.913.558s-4.335-.14-5.913-.558c-.785-.208-1.524-.506-2.084-.956C3.41 20.01 3 19.345 3 18.5c0-.787.358-1.523.844-2.139.494-.625 1.177-1.2 1.978-1.69C7.425 13.694 9.605 13 12 13Z"
+                  className="duoicon-primary-layer"
+                />
+                <path
+                  fill="currentColor"
+                  d="M12 2c3.849 0 6.255 4.167 4.33 7.5A5 5 0 0 1 12 12c-3.849 0-6.255-4.167-4.33-7.5A5 5 0 0 1 12 2Z"
+                  className="duoicon-secondary-layer"
+                  opacity=".3"
+                />
+              </svg>
+            </Link>
+
+            {/* Queue Monitor */}
+            <Link
+              href="/queue-monitor"
+              onClick={handleLinkClick}
+              className={`flex size-11 items-center justify-center rounded-lg text-white outline-hidden transition-colors duration-200 hover:bg-white/20 focus:bg-white/20 active:bg-white/25 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25 ${
+                isActive("/queue-monitor")
+                  ? "bg-primary/10 dark:bg-navy-600 dark:text-accent-light"
+                  : ""
+              }`}
+              title="Queue Monitor"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="size-8"
+                viewBox="0 0 24 24"
+              >
+                <g fill="none" stroke="currentColor" strokeWidth="1.2">
+                  <circle
+                    cx="12"
+                    cy="13"
+                    r="7"
+                    fill="currentColor"
+                    fillOpacity=".25"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    d="M5 5L3 7m16-2l2 2M9 11l2.81 1.873a.25.25 0 0 0 .333-.052L14 10.5"
+                  />
+                </g>
               </svg>
             </Link>
 
