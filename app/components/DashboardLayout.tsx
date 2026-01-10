@@ -11,13 +11,8 @@ export default function DashboardLayout({
   children: React.ReactNode;
   theme?: "admin" | "doctor";
 }) {
-  // Initialize sidebar state based on screen size
-  const [sidebarExpanded, setSidebarExpanded] = useState(() => {
-    if (typeof window !== "undefined") {
-      return window.innerWidth >= 1024; // Desktop: expanded, Mobile: collapsed
-    }
-    return false; // SSR default: collapsed
-  });
+  // Initialize sidebar state - always start with false to avoid hydration mismatch
+  const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [monochromeMode, setMonochromeMode] = useState(false);
   const [profilePopperOpen, setProfilePopperOpen] = useState(false);
@@ -37,14 +32,14 @@ export default function DashboardLayout({
       document.documentElement.classList.add("monochrome");
     }
 
-    // Handle window resize to adjust sidebar state
+    // Set initial sidebar state based on screen size (only on client)
     const handleResize = () => {
-      if (window.innerWidth < 1024) {
-        // Mobile: ensure sidebar is closed
-        setSidebarExpanded(false);
-      } else {
-        // Desktop: ensure sidebar is open
+      if (window.innerWidth >= 1024) {
+        // Desktop: sidebar should be expanded
         setSidebarExpanded(true);
+      } else {
+        // Mobile: sidebar should be closed
+        setSidebarExpanded(false);
       }
     };
 

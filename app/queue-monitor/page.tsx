@@ -413,17 +413,13 @@ export default function QueueMonitorPage() {
                 (page) => (
                   <li
                     key={page}
-                    className={`${
-                      page === currentPage
-                        ? "bg-primary text-white dark:bg-accent"
-                        : "bg-slate-150 dark:bg-navy-500"
-                    }`}
+                    className="bg-slate-150 dark:bg-navy-500"
                   >
                     <button
                       onClick={() => setCurrentPage(page)}
-                      className={`flex size-8 items-center justify-center rounded-lg transition-colors ${
+                      className={`flex h-8 min-w-[2rem] items-center justify-center rounded-lg px-3 leading-tight transition-colors ${
                         page === currentPage
-                          ? "text-white"
+                          ? "bg-success text-white hover:bg-success-focus focus:bg-success-focus active:bg-success-focus/90 dark:bg-success dark:hover:bg-success-focus dark:focus:bg-success-focus dark:active:bg-success/90"
                           : "text-slate-500 hover:bg-slate-300 focus:bg-slate-300 active:bg-slate-300/80 dark:text-navy-200 dark:hover:bg-navy-450 dark:focus:bg-navy-450 dark:active:bg-navy-450/90"
                       }`}
                     >
@@ -457,6 +453,11 @@ export default function QueueMonitorPage() {
                 </button>
               </li>
             </ol>
+
+            <div className="text-xs-plus">
+              {startIndex + 1} - {Math.min(endIndex, filteredData.length)} of{" "}
+              {filteredData.length} entries
+            </div>
           </div>
         </div>
       </div>
