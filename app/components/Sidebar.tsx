@@ -86,7 +86,7 @@ export default function Sidebar({
           <Tooltip.Content
             side="right"
             sideOffset={8}
-            className="z-[9999] rounded-md bg-slate-50 dark:bg-navy-700 px-3 py-1.5 text-sm font-medium text-slate-700 shadow-lg dark:text-navy-100 border border-slate-200 dark:border-navy-600 data-[state=delayed-open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=delayed-open]:fade-in-0 data-[state=delayed-open]:zoom-in-95 data-[state=closed]:zoom-out-95"
+            className="z-9999 rounded-md bg-slate-50 dark:bg-navy-700 px-3 py-1.5 text-sm font-medium text-slate-700 shadow-lg dark:text-navy-100 border border-slate-200 dark:border-navy-600 data-[state=delayed-open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=delayed-open]:fade-in-0 data-[state=delayed-open]:zoom-in-95 data-[state=closed]:zoom-out-95"
           >
             {text}
             <Tooltip.Arrow className="fill-slate-50 dark:fill-navy-700" />

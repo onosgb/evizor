@@ -36,7 +36,7 @@ export default function LandingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 dark:from-navy-900 dark:via-navy-800 dark:to-navy-900">
+    <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-green-50 dark:from-navy-900 dark:via-navy-800 dark:to-navy-900">
       {/* Header */}
       <header className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <nav className="flex items-center justify-between">
@@ -190,7 +190,7 @@ export default function LandingPage() {
 
         {/* CTA Section */}
         <div className="mt-20 lg:mt-32 text-center">
-          <div className="bg-gradient-to-r from-primary to-accent dark:from-blue-600 dark:to-green-600 rounded-2xl p-8 lg:p-12 text-white">
+          <div className="bg-linear-to-r from-primary to-accent dark:from-blue-600 dark:to-green-600 rounded-2xl p-8 lg:p-12 text-white">
             <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>
             <p className="text-lg mb-8 opacity-90">
               Join thousands of patients and doctors using eVizor today.
