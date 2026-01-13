@@ -1,39 +1,55 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, useEffect, ReactNode } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import { useAuthStore } from "../stores/authStore";
+import { authApi } from "../lib/api";
 
 interface AuthContextType {
   isAuthenticated: boolean;
-  login: () => void;
-  logout: () => void;
+  logout: () => Promise<void>;
   isLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const isLoading = useAuthStore((state) => state.isLoading);
+  const logoutStore = useAuthStore((state) => state.logout);
+  const setLoading = useAuthStore((state) => state.setLoading);
 
   useEffect(() => {
     // Check if user is authenticated on mount
-    const authStatus = localStorage.getItem("isAuthenticated");
-    setIsAuthenticated(authStatus === "true");
-    setIsLoading(false);
-  }, []);
+    const checkAuth = () => {
+      const state = useAuthStore.getState();
+      const accessToken = state.accessToken;
+      const isAuth = !!accessToken;
+      
+      // Update isAuthenticated if token exists but state doesn't match
+      if (accessToken && !state.isAuthenticated) {
+        useAuthStore.setState({ isAuthenticated: true });
+      } else if (!accessToken && state.isAuthenticated) {
+        useAuthStore.setState({ isAuthenticated: false });
+      }
+      
+      setLoading(false);
+    };
+
+    checkAuth();
+  }, [setLoading]);
 
   useEffect(() => {
     // Protect routes - redirect based on authentication status
     if (!isLoading) {
-      const publicRoutes = ["/login"];
+      const publicRoutes = ["/login", "/", "/landing"];
       const isPublicRoute = publicRoutes.includes(pathname || "");
 
-      // If authenticated and on login, redirect to dashboard
-      if (isAuthenticated && pathname === "/login") {
-        router.push("/");
+      // If authenticated and on login or landing, redirect to dashboard
+      if (isAuthenticated && (pathname === "/login" || pathname === "/" || pathname === "/landing")) {
+        router.push("/dashboard");
         return;
       }
 
@@ -45,21 +61,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [isAuthenticated, isLoading, pathname, router]);
 
-  const login = () => {
-    localStorage.setItem("isAuthenticated", "true");
-    setIsAuthenticated(true);
-  };
-
-  const logout = () => {
-    localStorage.removeItem("isAuthenticated");
-    localStorage.removeItem("userEmail");
-    localStorage.removeItem("rememberMe");
-    setIsAuthenticated(false);
-    router.push("/");
+  const logout = async () => {
+    try {
+      await authApi.logout();
+    } catch (error) {
+      // Even if logout fails, clear local state
+      console.error("Logout error:", error);
+      logoutStore();
+    }
+    router.push("/login");
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout, isLoading }}>
+    <AuthContext.Provider value={{ isAuthenticated, logout, isLoading }}>
       {children}
     </AuthContext.Provider>
   );

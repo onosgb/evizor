@@ -4,32 +4,52 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-// import { useAuth } from "../contexts/AuthContext";
+import { authApi } from "../lib/api";
+import { ApiError } from "../models";
+import { useAuthStore } from "../stores/authStore";
 
 export default function LoginPage() {
   const router = useRouter();
-  // const { login } = useAuth();
+  const login = useAuthStore((state) => state.login);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     setIsLoading(true);
 
-    // Simulate login API call
-    setTimeout(() => {
-      // Store auth state
-      localStorage.setItem("isAuthenticated", "true");
-      localStorage.setItem("userEmail", email);
-      if (rememberMe) {
-        localStorage.setItem("rememberMe", "true");
+    try {
+      // Call login API
+      const response = await authApi.login(email, password);
+
+      if (response.status && response.data) {
+        // Store auth state using Zustand store
+        login(
+          response.data.accessToken,
+          response.data.refreshToken,
+          response.data.user,
+          rememberMe
+        );
+
+        // Redirect to dashboard
+        router.push("/");
+      } else {
+        setError(response.message || "Login failed. Please try again.");
       }
-      // login();
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setError(err.message || "Login failed. Please check your credentials.");
+      } else {
+        setError("An unexpected error occurred. Please try again.");
+      }
+      console.error("Login error:", err);
+    } finally {
       setIsLoading(false);
-      router.push("/");
-    }, 500);
+    }
   };
 
   return (
@@ -106,6 +126,12 @@ export default function LoginPage() {
                 Remember me
               </label>
             </div>
+
+            {error && (
+              <div className="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 px-4 py-3 mb-4">
+                <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
+              </div>
+            )}
 
             <button
               type="submit"
