@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, ReactNode } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuthStore } from "../stores/authStore";
-import { authApi } from "../lib/api";
+import { authService } from "../lib/services";
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -27,14 +27,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const state = useAuthStore.getState();
       const accessToken = state.accessToken;
       const isAuth = !!accessToken;
-      
+
       // Update isAuthenticated if token exists but state doesn't match
       if (accessToken && !state.isAuthenticated) {
         useAuthStore.setState({ isAuthenticated: true });
       } else if (!accessToken && state.isAuthenticated) {
         useAuthStore.setState({ isAuthenticated: false });
       }
-      
+
       setLoading(false);
     };
 
@@ -48,7 +48,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const isPublicRoute = publicRoutes.includes(pathname || "");
 
       // If authenticated and on login or landing, redirect to dashboard
-      if (isAuthenticated && (pathname === "/login" || pathname === "/" || pathname === "/landing")) {
+      if (
+        isAuthenticated &&
+        (pathname === "/login" || pathname === "/" || pathname === "/landing")
+      ) {
         router.push("/dashboard");
         return;
       }
@@ -63,7 +66,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
-      await authApi.logout();
+      await authService.logout();
     } catch (error) {
       // Even if logout fails, clear local state
       console.error("Logout error:", error);
@@ -86,4 +89,3 @@ export function useAuth() {
   }
   return context;
 }
-

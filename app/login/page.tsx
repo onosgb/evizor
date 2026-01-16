@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { authApi } from "../lib/api";
+import { authService } from "../lib/services";
 import { ApiError } from "../models";
 import { useAuthStore } from "../stores/authStore";
 
@@ -24,7 +24,7 @@ export default function LoginPage() {
 
     try {
       // Call login API
-      const response = await authApi.login(email, password);
+      const response = await authService.login(email, password);
 
       if (response.status && response.data) {
         // Store auth state using Zustand store
@@ -129,7 +129,9 @@ export default function LoginPage() {
 
             {error && (
               <div className="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 px-4 py-3 mb-4">
-                <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
+                <p className="text-sm text-red-800 dark:text-red-200">
+                  {error}
+                </p>
               </div>
             )}
 
