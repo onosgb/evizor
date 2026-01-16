@@ -89,9 +89,7 @@ export default function StaffManagementPage() {
   const toggleStaffStatus = async (id: string, currentStatus: string) => {
     try {
       const newStatus = isActiveStatus(currentStatus) ? "INACTIVE" : "ACTIVE";
-      const response = await staffService.updateStaff(id, {
-        status: newStatus,
-      });
+      const response = await staffService.toggleStaffStatus(id, newStatus);
       if (response.status && response.data) {
         setStaff(
           staff.map((member) => (member.id === id ? response.data : member))

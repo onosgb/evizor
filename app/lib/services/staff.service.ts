@@ -21,7 +21,9 @@ class StaffService {
    * Get all staff members
    */
   async getAllStaff(): Promise<ApiResponse<Staff[]>> {
-    const response = await apiClient.get<ApiResponse<Staff[]>>("/staff/all-staff");
+    const response = await apiClient.get<ApiResponse<Staff[]>>(
+      "/staff/all-staff"
+    );
     return response.data;
   }
 
@@ -52,6 +54,23 @@ class StaffService {
    */
   async deleteStaff(id: string): Promise<ApiResponse<void>> {
     const response = await apiClient.delete<ApiResponse<void>>(`/staff/${id}`);
+    return response.data;
+  }
+
+  /**
+   * Toggle staff status
+   */
+  async toggleStaffStatus(
+    userId: string,
+    status: string
+  ): Promise<ApiResponse<Staff>> {
+    const response = await apiClient.put<ApiResponse<Staff>>(
+      "/staff/toggle-staff-status",
+      {
+        userId,
+        status,
+      }
+    );
     return response.data;
   }
 }
