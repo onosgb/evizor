@@ -653,7 +653,11 @@ export default function Sidebar({
                         <div className="mt-3 px-4">
                           <button
                             onClick={handleLogout}
-                            className="btn h-9 w-full space-x-2 bg-primary text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
+                            className={`btn h-9 w-full space-x-2 text-white ${
+                              theme === "admin"
+                                ? "bg-green-600 hover:bg-green-700 focus:bg-green-700 active:bg-green-800 dark:bg-green-500 dark:hover:bg-green-600 dark:focus:bg-green-600 dark:active:bg-green-700"
+                                : "bg-primary hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
+                            }`}
                           >
                             <svg
                               xmlns="http://www.w3.org/2000/svg"

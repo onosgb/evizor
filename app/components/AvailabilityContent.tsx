@@ -15,6 +15,7 @@ interface Schedule {
 
 export default function AvailabilityContent() {
   const user = useAuthStore((state) => state.user);
+  const theme = user?.role === "ADMIN" ? "admin" : "doctor";
   const [showModal, setShowModal] = useState(false);
   const [schedules, setSchedules] = useState<Schedule[]>([
     {
@@ -92,6 +93,20 @@ export default function AvailabilityContent() {
     );
   };
 
+  // Theme-based switch styling
+  const getSwitchClasses = () => {
+    return theme === "admin"
+      ? "form-switch h-5 w-10 rounded-full bg-slate-300 before:rounded-full before:bg-slate-50 checked:bg-green-600 checked:before:bg-white dark:bg-navy-900 dark:before:bg-navy-300 dark:checked:bg-green-500 dark:checked:before:bg-white"
+      : "form-switch h-5 w-10 rounded-full bg-slate-300 before:rounded-full before:bg-slate-50 checked:bg-primary checked:before:bg-white dark:bg-navy-900 dark:before:bg-navy-300 dark:checked:bg-accent dark:checked:before:bg-white";
+  };
+
+  // Theme-based outline switch styling
+  const getOutlineSwitchClasses = () => {
+    return theme === "admin"
+      ? "form-switch is-outline h-5 w-10 rounded-full border border-slate-400/70 bg-transparent before:rounded-full before:bg-slate-300 checked:border-green-600 checked:before:bg-green-600 dark:border-navy-400 dark:before:bg-navy-300 dark:checked:border-green-500 dark:checked:before:bg-green-500"
+      : "form-switch is-outline h-5 w-10 rounded-full border border-slate-400/70 bg-transparent before:rounded-full before:bg-slate-300 checked:border-primary checked:before:bg-primary dark:border-navy-400 dark:before:bg-navy-300 dark:checked:border-accent dark:checked:before:bg-accent";
+  };
+
   // Handle ESC key to close modal
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -123,7 +138,11 @@ export default function AvailabilityContent() {
               <div className="flex justify-center space-x-2">
                 <button
                   onClick={() => setShowModal(true)}
-                  className="btn min-w-28 rounded-full bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
+                  className={`btn min-w-28 rounded-full font-medium text-white ${
+                    theme === "admin"
+                      ? "bg-success hover:bg-success-focus focus:bg-success-focus active:bg-success-focus/90 dark:bg-success dark:hover:bg-success-focus dark:focus:bg-success-focus dark:active:bg-success/90"
+                      : "bg-primary hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
+                  }`}
                 >
                   Add New Schedule
                 </button>
@@ -165,7 +184,7 @@ export default function AvailabilityContent() {
                             <input
                               checked={schedule.status}
                               onChange={() => handleStatusToggle(schedule.id)}
-                              className="form-switch h-5 w-10 rounded-full bg-slate-300 before:rounded-full before:bg-slate-50 checked:bg-primary checked:before:bg-white dark:bg-navy-900 dark:before:bg-navy-300 dark:checked:bg-accent dark:checked:before:bg-white"
+                              className={getSwitchClasses()}
                               type="checkbox"
                             />
                           </label>
@@ -276,7 +295,7 @@ export default function AvailabilityContent() {
                       name="updateAvailability"
                       checked={formData.updateAvailability}
                       onChange={handleInputChange}
-                      className="form-switch is-outline h-5 w-10 rounded-full border border-slate-400/70 bg-transparent before:rounded-full before:bg-slate-300 checked:border-primary checked:before:bg-primary dark:border-navy-400 dark:before:bg-navy-300 dark:checked:border-accent dark:checked:before:bg-accent"
+                      className={getOutlineSwitchClasses()}
                       type="checkbox"
                     />
                     <span>Update Availability</span>
@@ -290,7 +309,11 @@ export default function AvailabilityContent() {
                     </button>
                     <button
                       onClick={handleAddSchedule}
-                      className="btn min-w-28 rounded-full bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
+                      className={`btn min-w-28 rounded-full font-medium text-white ${
+                    theme === "admin"
+                      ? "bg-success hover:bg-success-focus focus:bg-success-focus active:bg-success-focus/90 dark:bg-success dark:hover:bg-success-focus dark:focus:bg-success-focus dark:active:bg-success/90"
+                      : "bg-primary hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
+                  }`}
                     >
                       Apply
                     </button>

@@ -12,6 +12,7 @@ interface ActiveSession {
 
 export default function SecurityContent() {
   const user = useAuthStore((state) => state.user);
+  const theme = user?.role === "ADMIN" ? "admin" : "doctor";
 
   const [formData, setFormData] = useState({
     newPassword: "",
@@ -62,6 +63,13 @@ export default function SecurityContent() {
     console.log("Canceling changes");
   };
 
+  // Theme-based switch styling
+  const getSwitchClasses = () => {
+    return theme === "admin"
+      ? "form-switch h-5 w-10 rounded-full bg-slate-300 before:rounded-full before:bg-slate-50 checked:bg-green-600 checked:before:bg-white dark:bg-navy-900 dark:before:bg-navy-300 dark:checked:bg-green-500 dark:checked:before:bg-white"
+      : "form-switch h-5 w-10 rounded-full bg-slate-300 before:rounded-full before:bg-slate-50 checked:bg-primary checked:before:bg-white dark:bg-navy-900 dark:before:bg-navy-300 dark:checked:bg-accent dark:checked:before:bg-white";
+  };
+
   return (
     <>
       <div className="flex items-center space-x-4 py-5 lg:py-6">
@@ -88,7 +96,11 @@ export default function SecurityContent() {
                 </button>
                 <button
                   onClick={handleSave}
-                  className="btn min-w-28 rounded-full bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
+                  className={`btn min-w-28 rounded-full font-medium text-white ${
+                    theme === "admin"
+                      ? "bg-success hover:bg-success-focus focus:bg-success-focus active:bg-success-focus/90 dark:bg-success dark:hover:bg-success-focus dark:focus:bg-success-focus dark:active:bg-success/90"
+                      : "bg-primary hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
+                  }`}
                 >
                   Save
                 </button>
@@ -164,7 +176,7 @@ export default function SecurityContent() {
                       name="twoFactorAuth"
                       checked={formData.twoFactorAuth}
                       onChange={handleInputChange}
-                      className="form-switch h-5 w-10 rounded-full bg-slate-300 before:rounded-full before:bg-slate-50 checked:bg-primary checked:before:bg-white dark:bg-navy-900 dark:before:bg-navy-300 dark:checked:bg-accent dark:checked:before:bg-white"
+                      className={getSwitchClasses()}
                       type="checkbox"
                     />
                   </label>

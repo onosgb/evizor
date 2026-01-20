@@ -13,6 +13,7 @@ interface Document {
 
 export default function QualificationsContent() {
   const user = useAuthStore((state) => state.user);
+  const theme = user?.role === "ADMIN" ? "admin" : "doctor";
   const [showModal, setShowModal] = useState(false);
   const [documents] = useState<Document[]>([
     { id: 1, name: "Cy Ganderton", timestamp: "Quality Control Specialist" },
@@ -61,6 +62,13 @@ export default function QualificationsContent() {
     console.log("Deleting document:", id);
   };
 
+  // Theme-based outline switch styling
+  const getOutlineSwitchClasses = () => {
+    return theme === "admin"
+      ? "form-switch is-outline h-5 w-10 rounded-full border border-slate-400/70 bg-transparent before:rounded-full before:bg-slate-300 checked:border-green-600 checked:before:bg-green-600 dark:border-navy-400 dark:before:bg-navy-300 dark:checked:border-green-500 dark:checked:before:bg-green-500"
+      : "form-switch is-outline h-5 w-10 rounded-full border border-slate-400/70 bg-transparent before:rounded-full before:bg-slate-300 checked:border-primary checked:before:bg-primary dark:border-navy-400 dark:before:bg-navy-300 dark:checked:border-accent dark:checked:before:bg-accent";
+  };
+
   return (
     <>
       <div className="grid grid-cols-12 gap-4 sm:gap-5 lg:gap-6">
@@ -77,7 +85,11 @@ export default function QualificationsContent() {
               <div className="flex justify-center space-x-2">
                 <button
                   onClick={() => setShowModal(true)}
-                  className="btn min-w-28 rounded-full bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
+                  className={`btn min-w-28 rounded-full font-medium text-white ${
+                    theme === "admin"
+                      ? "bg-success hover:bg-success-focus focus:bg-success-focus active:bg-success-focus/90 dark:bg-success dark:hover:bg-success-focus dark:focus:bg-success-focus dark:active:bg-success/90"
+                      : "bg-primary hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
+                  }`}
                 >
                   Upload New Document
                 </button>
@@ -258,7 +270,7 @@ export default function QualificationsContent() {
                       type="checkbox"
                       checked={uploadFormData.publicPin}
                       onChange={handleUploadFormChange}
-                      className="form-switch is-outline h-5 w-10 rounded-full border border-slate-400/70 bg-transparent before:rounded-full before:bg-slate-300 checked:border-primary checked:before:bg-primary dark:border-navy-400 dark:before:bg-navy-300 dark:checked:border-accent dark:checked:before:bg-accent"
+                      className={getOutlineSwitchClasses()}
                     />
                     <span>Public pin</span>
                   </label>
@@ -271,7 +283,11 @@ export default function QualificationsContent() {
                     </button>
                     <button
                       onClick={handleUpload}
-                      className="btn min-w-28 rounded-full bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
+                      className={`btn min-w-28 rounded-full font-medium text-white ${
+                    theme === "admin"
+                      ? "bg-success hover:bg-success-focus focus:bg-success-focus active:bg-success-focus/90 dark:bg-success dark:hover:bg-success-focus dark:focus:bg-success-focus dark:active:bg-success/90"
+                      : "bg-primary hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
+                  }`}
                     >
                       Apply
                     </button>

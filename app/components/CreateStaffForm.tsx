@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { CreateStaffRequest } from "../models";
 
@@ -15,6 +14,7 @@ interface CreateStaffFormProps {
   onSubmit: (data: CreateStaffRequest) => Promise<void>;
   error?: string | null;
   isSubmitting?: boolean;
+  theme?: "admin" | "doctor";
 }
 
 export default function CreateStaffForm({
@@ -23,7 +23,14 @@ export default function CreateStaffForm({
   onSubmit,
   error,
   isSubmitting = false,
+  theme = "doctor",
 }: CreateStaffFormProps) {
+  // Theme-based outline switch styling
+  const getOutlineSwitchClasses = () => {
+    return theme === "admin"
+      ? "form-switch is-outline h-5 w-10 rounded-full border border-slate-400/70 bg-transparent before:rounded-full before:bg-slate-300 checked:border-green-600 checked:before:bg-green-600 dark:border-navy-400 dark:before:bg-navy-300 dark:checked:border-green-500 dark:checked:before:bg-green-500"
+      : "form-switch is-outline h-5 w-10 rounded-full border border-slate-400/70 bg-transparent before:rounded-full before:bg-slate-300 checked:border-primary checked:before:bg-primary dark:border-navy-400 dark:before:bg-navy-300 dark:checked:border-accent dark:checked:before:bg-accent";
+  };
   const [formData, setFormData] = useState<CreateStaffRequest>({
     specialty: "",
     licenseNo: "",
@@ -224,7 +231,7 @@ export default function CreateStaffForm({
             </label>
             <label className="inline-flex items-center space-x-2">
               <input
-                className="form-switch is-outline h-5 w-10 rounded-full border border-slate-400/70 bg-transparent before:rounded-full before:bg-slate-300 checked:border-navy checked:before:bg-success dark:border-navy-400 dark:before:bg-navy-300 dark:checked:border-success dark:checked:before:bg-success"
+                className={getOutlineSwitchClasses()}
                 type="checkbox"
                 checked={isActiveStatus(formData.status)}
                 onChange={(e) =>
@@ -247,7 +254,11 @@ export default function CreateStaffForm({
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="btn min-w-28 rounded-full bg-success font-medium text-white hover:bg-success-focus focus:bg-success-focus active:bg-success-focus/90 dark:bg-success dark:hover:bg-success-focus dark:focus:bg-success-focus dark:active:bg-success/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                className={`btn min-w-28 rounded-full font-medium text-white disabled:opacity-50 disabled:cursor-not-allowed ${
+                  theme === "admin"
+                    ? "bg-success hover:bg-success-focus focus:bg-success-focus active:bg-success-focus/90 dark:bg-success dark:hover:bg-success-focus dark:focus:bg-success-focus dark:active:bg-success/90"
+                    : "bg-primary hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
+                }`}
               >
                 {isSubmitting ? "Creating..." : "Create"}
               </button>

@@ -6,6 +6,7 @@ import ProfileSidebar from "./ProfileSidebar";
 
 export default function ProfessionalInformationContent() {
   const user = useAuthStore((state) => state.user);
+  const theme = user?.role === "ADMIN" ? "admin" : "doctor";
 
   const [formData, setFormData] = useState({
     specialty: "",
@@ -60,7 +61,11 @@ export default function ProfessionalInformationContent() {
                 </button>
                 <button
                   onClick={handleSave}
-                  className="btn min-w-28 rounded-full bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
+                  className={`btn min-w-28 rounded-full font-medium text-white ${
+                    theme === "admin"
+                      ? "bg-success hover:bg-success-focus focus:bg-success-focus active:bg-success-focus/90 dark:bg-success dark:hover:bg-success-focus dark:focus:bg-success-focus dark:active:bg-success/90"
+                      : "bg-primary hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
+                  }`}
                 >
                   Save
                 </button>

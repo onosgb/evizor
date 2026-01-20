@@ -207,6 +207,7 @@ export default function StaffManagementPage() {
         onSubmit={handleCreateStaff}
         error={formError}
         isSubmitting={isSubmitting}
+        theme="admin"
       />
 
       {/* Search Card */}

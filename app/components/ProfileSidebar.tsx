@@ -3,11 +3,37 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAuthStore } from "../stores/authStore";
 
-export default function ProfileSidebar() {
+interface ProfileSidebarProps {
+  theme?: "admin" | "doctor";
+}
+
+export default function ProfileSidebar({ theme }: ProfileSidebarProps) {
   const pathname = usePathname();
+  const user = useAuthStore((state) => state.user);
+  
+  // Determine theme from user role if not provided
+  const currentTheme = theme || (user?.role === "ADMIN" ? "admin" : "doctor");
 
   const isActive = (path: string) => pathname === path;
+  
+  // Theme-based active route styling
+  const getActiveClasses = (isActiveRoute: boolean) => {
+    if (isActiveRoute) {
+      return currentTheme === "admin"
+        ? "bg-green-600 text-white dark:bg-green-500"
+        : "bg-primary text-white dark:bg-accent";
+    }
+    return "hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100";
+  };
+  
+  const getIconClasses = (isActiveRoute: boolean) => {
+    if (isActiveRoute) {
+      return "text-white";
+    }
+    return "text-slate-400 group-hover:text-slate-500 group-focus:text-slate-500 dark:text-navy-300 dark:group-hover:text-navy-200 dark:group-focus:text-navy-200";
+  };
 
   return (
     <div className="col-span-12 lg:col-span-4">
@@ -32,11 +58,7 @@ export default function ProfileSidebar() {
         <ul className="mt-6 space-y-1.5 font-inter font-medium">
           <li>
             <Link
-              className={`flex items-center space-x-2 rounded-lg px-4 py-2.5 tracking-wide outline-hidden transition-all ${
-                isActive("/profile")
-                  ? "bg-primary text-white dark:bg-accent"
-                  : "hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
-              }`}
+              className={`flex items-center space-x-2 rounded-lg px-4 py-2.5 tracking-wide outline-hidden transition-all ${getActiveClasses(isActive("/profile"))}`}
               href="/profile"
             >
               <svg
@@ -58,20 +80,12 @@ export default function ProfileSidebar() {
           </li>
           <li>
             <Link
-              className={`flex items-center space-x-2 rounded-lg px-4 py-2.5 tracking-wide outline-hidden transition-all ${
-                isActive("/profile/professional")
-                  ? "bg-primary text-white dark:bg-accent"
-                  : "hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
-              }`}
+              className={`flex items-center space-x-2 rounded-lg px-4 py-2.5 tracking-wide outline-hidden transition-all ${getActiveClasses(isActive("/profile/professional"))}`}
               href="/profile/professional"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className={`size-5 transition-colors ${
-                  isActive("/profile/professional")
-                    ? "text-white"
-                    : "text-slate-400 group-hover:text-slate-500 group-focus:text-slate-500 dark:text-navy-300 dark:group-hover:text-navy-200 dark:group-focus:text-navy-200"
-                }`}
+                className={`size-5 transition-colors ${getIconClasses(isActive("/profile/professional"))}`}
                 viewBox="0 0 24 24"
               >
                 <g
@@ -90,20 +104,12 @@ export default function ProfileSidebar() {
           </li>
           <li>
             <Link
-              className={`flex items-center space-x-2 rounded-lg px-4 py-2.5 tracking-wide outline-hidden transition-all ${
-                isActive("/profile/qualifications")
-                  ? "bg-primary text-white dark:bg-accent"
-                  : "hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
-              }`}
+              className={`flex items-center space-x-2 rounded-lg px-4 py-2.5 tracking-wide outline-hidden transition-all ${getActiveClasses(isActive("/profile/qualifications"))}`}
               href="/profile/qualifications"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className={`size-5 transition-colors ${
-                  isActive("/profile/qualifications")
-                    ? "text-white"
-                    : "text-slate-400 group-hover:text-slate-500 group-focus:text-slate-500 dark:text-navy-300 dark:group-hover:text-navy-200 dark:group-focus:text-navy-200"
-                }`}
+                className={`size-5 transition-colors ${getIconClasses(isActive("/profile/qualifications"))}`}
                 viewBox="0 0 2048 2048"
               >
                 <path
@@ -116,20 +122,12 @@ export default function ProfileSidebar() {
           </li>
           <li>
             <Link
-              className={`flex items-center space-x-2 rounded-lg px-4 py-2.5 tracking-wide outline-hidden transition-all ${
-                isActive("/profile/availability")
-                  ? "bg-primary text-white dark:bg-accent"
-                  : "hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
-              }`}
+              className={`flex items-center space-x-2 rounded-lg px-4 py-2.5 tracking-wide outline-hidden transition-all ${getActiveClasses(isActive("/profile/availability"))}`}
               href="/profile/availability"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className={`size-5 transition-colors ${
-                  isActive("/profile/availability")
-                    ? "text-white"
-                    : "text-slate-400 group-hover:text-slate-500 group-focus:text-slate-500 dark:text-navy-300 dark:group-hover:text-navy-200 dark:group-focus:text-navy-200"
-                }`}
+                className={`size-5 transition-colors ${getIconClasses(isActive("/profile/availability"))}`}
                 viewBox="0 0 32 32"
               >
                 <path
@@ -147,20 +145,12 @@ export default function ProfileSidebar() {
           </li>
           <li>
             <Link
-              className={`flex items-center space-x-2 rounded-lg px-4 py-2.5 tracking-wide outline-hidden transition-all ${
-                isActive("/profile/consultation")
-                  ? "bg-primary text-white dark:bg-accent"
-                  : "hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
-              }`}
+              className={`flex items-center space-x-2 rounded-lg px-4 py-2.5 tracking-wide outline-hidden transition-all ${getActiveClasses(isActive("/profile/consultation"))}`}
               href="/profile/consultation"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className={`size-5 transition-colors ${
-                  isActive("/profile/consultation")
-                    ? "text-white"
-                    : "text-slate-400 group-hover:text-slate-500 group-focus:text-slate-500 dark:text-navy-300 dark:group-hover:text-navy-200 dark:group-focus:text-navy-200"
-                }`}
+                className={`size-5 transition-colors ${getIconClasses(isActive("/profile/consultation"))}`}
                 viewBox="0 0 24 24"
               >
                 <g
@@ -181,20 +171,12 @@ export default function ProfileSidebar() {
           </li>
           <li>
             <Link
-              className={`flex items-center space-x-2 rounded-lg px-4 py-2.5 tracking-wide outline-hidden transition-all ${
-                isActive("/profile/performance")
-                  ? "bg-primary text-white dark:bg-accent"
-                  : "hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
-              }`}
+              className={`flex items-center space-x-2 rounded-lg px-4 py-2.5 tracking-wide outline-hidden transition-all ${getActiveClasses(isActive("/profile/performance"))}`}
               href="/profile/performance"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className={`size-5 transition-colors ${
-                  isActive("/profile/performance")
-                    ? "text-white"
-                    : "text-slate-400 group-hover:text-slate-500 group-focus:text-slate-500 dark:text-navy-300 dark:group-hover:text-navy-200 dark:group-focus:text-navy-200"
-                }`}
+                className={`size-5 transition-colors ${getIconClasses(isActive("/profile/performance"))}`}
                 viewBox="0 0 14 14"
               >
                 <path
@@ -210,20 +192,12 @@ export default function ProfileSidebar() {
           </li>
           <li>
             <Link
-              className={`flex items-center space-x-2 rounded-lg px-4 py-2.5 tracking-wide outline-hidden transition-all ${
-                isActive("/profile/security")
-                  ? "bg-primary text-white dark:bg-accent"
-                  : "hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
-              }`}
+              className={`flex items-center space-x-2 rounded-lg px-4 py-2.5 tracking-wide outline-hidden transition-all ${getActiveClasses(isActive("/profile/security"))}`}
               href="/profile/security"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className={`size-5 transition-colors ${
-                  isActive("/profile/security")
-                    ? "text-white"
-                    : "text-slate-400 group-hover:text-slate-500 group-focus:text-slate-500 dark:text-navy-300 dark:group-hover:text-navy-200 dark:group-focus:text-navy-200"
-                }`}
+                className={`size-5 transition-colors ${getIconClasses(isActive("/profile/security"))}`}
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -240,20 +214,12 @@ export default function ProfileSidebar() {
           </li>
           <li>
             <Link
-              className={`flex items-center space-x-2 rounded-lg px-4 py-2.5 tracking-wide outline-hidden transition-all ${
-                isActive("/profile/activity")
-                  ? "bg-primary text-white dark:bg-accent"
-                  : "hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
-              }`}
+              className={`flex items-center space-x-2 rounded-lg px-4 py-2.5 tracking-wide outline-hidden transition-all ${getActiveClasses(isActive("/profile/activity"))}`}
               href="/profile/activity"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className={`size-5 transition-colors ${
-                  isActive("/profile/activity")
-                    ? "text-white"
-                    : "text-slate-400 group-hover:text-slate-500 group-focus:text-slate-500 dark:text-navy-300 dark:group-hover:text-navy-200 dark:group-focus:text-navy-200"
-                }`}
+                className={`size-5 transition-colors ${getIconClasses(isActive("/profile/activity"))}`}
                 viewBox="0 0 32 32"
               >
                 <path

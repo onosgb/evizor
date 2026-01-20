@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import ProfileSidebar from "./ProfileSidebar";
+import { useAuthStore } from "../stores/authStore";
 
 interface ConsultationPreferences {
   acceptOnDemandVisits: boolean;
@@ -12,6 +13,15 @@ interface ConsultationPreferences {
 }
 
 export default function ConsultationContent() {
+  const user = useAuthStore((state) => state.user);
+  const theme = user?.role === "ADMIN" ? "admin" : "doctor";
+  
+  // Theme-based switch styling
+  const getSwitchClasses = () => {
+    return theme === "admin"
+      ? "form-switch h-5 w-10 rounded-full bg-slate-300 before:rounded-full before:bg-slate-50 checked:bg-green-600 checked:before:bg-white dark:bg-navy-900 dark:before:bg-navy-300 dark:checked:bg-green-500 dark:checked:before:bg-white"
+      : "form-switch h-5 w-10 rounded-full bg-slate-300 before:rounded-full before:bg-slate-50 checked:bg-primary checked:before:bg-white dark:bg-navy-900 dark:before:bg-navy-300 dark:checked:bg-accent dark:checked:before:bg-white";
+  };
   const [preferences, setPreferences] = useState<ConsultationPreferences>({
     acceptOnDemandVisits: true,
     acceptScheduledVisits: true,
@@ -63,7 +73,7 @@ export default function ConsultationContent() {
                           <input
                             checked={preferences.acceptOnDemandVisits}
                             onChange={() => handleToggle("acceptOnDemandVisits")}
-                            className="form-switch h-5 w-10 rounded-full bg-slate-300 before:rounded-full before:bg-slate-50 checked:bg-primary checked:before:bg-white dark:bg-navy-900 dark:before:bg-navy-300 dark:checked:bg-accent dark:checked:before:bg-white"
+                            className={getSwitchClasses()}
                             type="checkbox"
                           />
                         </label>
@@ -78,7 +88,7 @@ export default function ConsultationContent() {
                           <input
                             checked={preferences.acceptScheduledVisits}
                             onChange={() => handleToggle("acceptScheduledVisits")}
-                            className="form-switch h-5 w-10 rounded-full bg-slate-300 before:rounded-full before:bg-slate-50 checked:bg-primary checked:before:bg-white dark:bg-navy-900 dark:before:bg-navy-300 dark:checked:bg-accent dark:checked:before:bg-white"
+                            className={getSwitchClasses()}
                             type="checkbox"
                           />
                         </label>
@@ -93,7 +103,7 @@ export default function ConsultationContent() {
                           <input
                             checked={preferences.followUpOnly}
                             onChange={() => handleToggle("followUpOnly")}
-                            className="form-switch h-5 w-10 rounded-full bg-slate-300 before:rounded-full before:bg-slate-50 checked:bg-primary checked:before:bg-white dark:bg-navy-900 dark:before:bg-navy-300 dark:checked:bg-accent dark:checked:before:bg-white"
+                            className={getSwitchClasses()}
                             type="checkbox"
                           />
                         </label>
@@ -108,7 +118,7 @@ export default function ConsultationContent() {
                           <input
                             checked={preferences.preferredTypeGeneral}
                             onChange={() => handleToggle("preferredTypeGeneral")}
-                            className="form-switch h-5 w-10 rounded-full bg-slate-300 before:rounded-full before:bg-slate-50 checked:bg-primary checked:before:bg-white dark:bg-navy-900 dark:before:bg-navy-300 dark:checked:bg-accent dark:checked:before:bg-white"
+                            className={getSwitchClasses()}
                             type="checkbox"
                           />
                         </label>
@@ -123,7 +133,7 @@ export default function ConsultationContent() {
                           <input
                             checked={preferences.preferredTypeSpecialist}
                             onChange={() => handleToggle("preferredTypeSpecialist")}
-                            className="form-switch h-5 w-10 rounded-full bg-slate-300 before:rounded-full before:bg-slate-50 checked:bg-primary checked:before:bg-white dark:bg-navy-900 dark:before:bg-navy-300 dark:checked:bg-accent dark:checked:before:bg-white"
+                            className={getSwitchClasses()}
                             type="checkbox"
                           />
                         </label>

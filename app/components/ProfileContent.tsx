@@ -6,6 +6,7 @@ import ProfileSidebar from "./ProfileSidebar";
 import Image from "next/image";
 export default function ProfileContent() {
   const user = useAuthStore((state) => state.user);
+  const theme = user?.role === "ADMIN" ? "admin" : "doctor";
   
   const [formData, setFormData] = useState({
     displayName: "Dr. Jane Smith",
@@ -43,7 +44,7 @@ export default function ProfileContent() {
         </h2>
       </div>
       <div className="grid grid-cols-12 gap-4 sm:gap-5 lg:gap-6">
-        <ProfileSidebar />
+        <ProfileSidebar theme={theme} />
         {/* Main Content */}
       <div className="col-span-12 lg:col-span-8">
         <div className="card">
@@ -60,7 +61,11 @@ export default function ProfileContent() {
               </button>
               <button
                 onClick={handleSave}
-                className="btn min-w-28 rounded-full bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
+                className={`btn min-w-28 rounded-full font-medium text-white ${
+                  theme === "admin"
+                    ? "bg-success hover:bg-success-focus focus:bg-success-focus active:bg-success-focus/90 dark:bg-success dark:hover:bg-success-focus dark:focus:bg-success-focus dark:active:bg-success/90"
+                    : "bg-primary hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
+                }`}
               >
                 Save
               </button>
