@@ -91,7 +91,7 @@ export default function CreateStaffForm({
         className="relative w-full max-w-lg max-h-[85vh] origin-top rounded-lg bg-white transition-all duration-300 dark:bg-navy-700 flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex justify-between rounded-t-lg bg-slate-200 px-4 py-3 dark:bg-navy-800 sm:px-5 flex-shrink-0">
+        <div className="flex justify-between rounded-t-lg bg-slate-200 px-4 py-3 dark:bg-navy-800 sm:px-5 shrink-0">
           <h3 className="text-base font-medium text-slate-700 dark:text-navy-100">
             Add New Staff
           </h3>
