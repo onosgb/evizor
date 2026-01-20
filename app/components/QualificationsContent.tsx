@@ -172,7 +172,7 @@ export default function QualificationsContent() {
         typeof window !== "undefined" &&
         createPortal(
           <div
-            className="fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden px-4 py-6 sm:px-5"
+            className="fixed inset-0 z-100 flex flex-col items-center justify-center overflow-hidden px-4 py-6 sm:px-5"
             role="dialog"
             onClick={(e) => {
               if (e.target === e.currentTarget) {

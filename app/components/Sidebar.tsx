@@ -7,6 +7,7 @@ import { useRef, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useAuthStore } from "../stores/authStore";
 import * as Tooltip from "@radix-ui/react-tooltip";
+import { createPortal } from "react-dom";
 
 interface SidebarProps {
   sidebarExpanded: boolean;
@@ -24,6 +25,7 @@ export default function Sidebar({
   theme = "doctor",
 }: SidebarProps) {
   const pathname = usePathname();
+  const profileButtonRef = useRef<HTMLButtonElement>(null);
   const profilePopperRef = useRef<HTMLDivElement>(null);
   const user = useAuthStore((state) => state.user);
   const isAdmin = user?.role === "ADMIN";
@@ -61,6 +63,86 @@ export default function Sidebar({
       document.body.style.overflow = "";
     };
   }, [sidebarExpanded]);
+
+  // Position popper and handle click outside
+  useEffect(() => {
+    if (!profilePopperOpen || !profileButtonRef.current || !profilePopperRef.current) {
+      return;
+    }
+
+    const updatePosition = () => {
+      if (!profileButtonRef.current || !profilePopperRef.current) return;
+
+      const buttonRect = profileButtonRef.current.getBoundingClientRect();
+      const popper = profilePopperRef.current;
+      const verticalOffset = -5;
+      const horizontalOffset = 255; // Increased even more to prevent clipping
+      
+      // Get popper height - ensure it's rendered first
+      const popperHeight = popper.offsetHeight || 450;
+      
+      // Position above the button, aligning bottom of popper with top of button (top-end placement)
+      // This means: popper bottom = button top - offset
+      // So: popper top = button top - popper height - offset
+      const topPosition = buttonRect.top - popperHeight - verticalOffset;
+      
+      // Get the sidebar container to calculate its actual width
+      // The sidebar has w-20 class which is 80px (5rem)
+      const sidebarContainer = profileButtonRef.current.closest('[class*="w-20"], [class*="sidebar"]') as HTMLElement;
+      const sidebarRect = sidebarContainer?.getBoundingClientRect();
+      const sidebarRight = sidebarRect?.right || buttonRect.right;
+      
+      // Calculate position from the right edge of the sidebar with proper offset
+      // Ensure it's well clear of the sidebar edge
+      const leftPosition = sidebarRight + horizontalOffset;
+      
+      popper.style.position = "fixed";
+      popper.style.top = `${topPosition}px`;
+      popper.style.left = `${leftPosition}px`;
+      popper.style.zIndex = "9999";
+      popper.style.maxWidth = "none"; // Ensure no width constraints
+      popper.style.overflow = "visible"; // Ensure content isn't clipped
+      popper.style.pointerEvents = "auto"; // Ensure it's interactive
+      
+      // If popper would go off-screen at top, position it below instead
+      if (topPosition < 10) {
+        popper.style.top = `${buttonRect.bottom + verticalOffset}px`;
+      }
+    };
+
+    // Use multiple animation frames to ensure DOM is fully rendered
+    requestAnimationFrame(() => {
+      requestAnimationFrame(updatePosition);
+    });
+
+    // Handle click outside
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        profilePopperRef.current &&
+        profileButtonRef.current &&
+        !profilePopperRef.current.contains(event.target as Node) &&
+        !profileButtonRef.current.contains(event.target as Node)
+      ) {
+        setProfilePopperOpen(false);
+      }
+    };
+
+    // Handle window resize
+    const handleResize = () => {
+      updatePosition();
+    };
+
+    // Add event listeners
+    document.addEventListener("mousedown", handleClickOutside);
+    window.addEventListener("resize", handleResize);
+    window.addEventListener("scroll", updatePosition, true);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("scroll", updatePosition, true);
+    };
+  }, [profilePopperOpen, setProfilePopperOpen]);
 
   const isActive = (path: string) => pathname === path;
 
@@ -369,8 +451,9 @@ export default function Sidebar({
               </TooltipWrapper>
 
               {/* Profile */}
-              <div className="flex relative" ref={profilePopperRef}>
+              <div className="flex relative">
                 <button
+                  ref={profileButtonRef}
                   onClick={() => setProfilePopperOpen(!profilePopperOpen)}
                   className="avatar size-12 cursor-pointer"
                 >
@@ -384,9 +467,14 @@ export default function Sidebar({
                   <span className="absolute right-0 size-3.5 rounded-full border-2 border-white bg-success dark:border-navy-700"></span>
                 </button>
 
-                {profilePopperOpen && (
-                  <div className="popper-root fixed show">
-                    <div className="popper-box w-64 rounded-lg border border-slate-150 bg-white shadow-soft dark:border-navy-600 dark:bg-navy-700">
+                {profilePopperOpen &&
+                  typeof window !== "undefined" &&
+                  createPortal(
+                    <div
+                      ref={profilePopperRef}
+                      className="popper-root fixed show"
+                    >
+                      <div className="popper-box w-64 rounded-lg border border-slate-150 bg-white shadow-soft dark:border-navy-600 dark:bg-navy-700">
                       <div className="flex items-center space-x-4 rounded-t-lg bg-slate-100 py-5 px-4 dark:bg-navy-800">
                         <div className="avatar size-14">
                           <Image
@@ -399,19 +487,21 @@ export default function Sidebar({
                         </div>
                         <div>
                           <Link
-                            href="#"
+                            href="/profile"
+                            onClick={() => setProfilePopperOpen(false)}
                             className="text-base font-medium text-slate-700 hover:text-primary focus:text-primary dark:text-navy-100 dark:hover:text-accent-light dark:focus:text-accent-light"
                           >
-                            Travis Fuller
+                            {user?.email?.split("@")[0] || "User"}
                           </Link>
                           <p className="text-xs text-slate-400 dark:text-navy-300">
-                            Product Designer
+                            {user?.role || "User"}
                           </p>
                         </div>
                       </div>
                       <div className="flex flex-col pt-2 pb-5">
                         <Link
-                          href="#"
+                          href="/profile"
+                          onClick={() => setProfilePopperOpen(false)}
                           className="group flex items-center space-x-3 py-2 px-4 tracking-wide outline-hidden transition-all hover:bg-slate-100 focus:bg-slate-100 dark:hover:bg-navy-600 dark:focus:bg-navy-600"
                         >
                           <div className="flex size-8 items-center justify-center rounded-lg bg-warning text-white">
@@ -584,7 +674,8 @@ export default function Sidebar({
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </div>,
+                  document.body
                 )}
               </div>
             </div>
