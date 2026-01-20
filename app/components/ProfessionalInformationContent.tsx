@@ -1,0 +1,156 @@
+"use client";
+
+import { useState } from "react";
+import { useAuthStore } from "../stores/authStore";
+import ProfileSidebar from "./ProfileSidebar";
+
+export default function ProfessionalInformationContent() {
+  const user = useAuthStore((state) => state.user);
+
+  const [formData, setFormData] = useState({
+    specialty: "",
+    subSpecialty: "",
+    yearsOfExperience: "",
+    licenseNumber: "",
+    issuingAuthority: "",
+    licenseExpiryDate: "",
+  });
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSave = () => {
+    // TODO: Implement save functionality
+    console.log("Saving professional information:", formData);
+  };
+
+  const handleCancel = () => {
+    // TODO: Reset form to original values
+    console.log("Canceling changes");
+  };
+
+  return (
+    <>
+      <div className="flex items-center space-x-4 py-5 lg:py-6">
+        <h2 className="text-xl font-medium text-slate-800 dark:text-navy-50 lg:text-2xl">
+          Profile
+        </h2>
+      </div>
+      <div className="grid grid-cols-12 gap-4 sm:gap-5 lg:gap-6">
+        <ProfileSidebar />
+
+        {/* Main Content */}
+        <div className="col-span-12 lg:col-span-8">
+          <div className="card">
+            <div className="flex flex-col items-center space-y-4 border-b border-slate-200 p-4 dark:border-navy-500 sm:flex-row sm:justify-between sm:space-y-0 sm:px-5">
+              <h2 className="text-lg font-medium tracking-wide text-slate-700 dark:text-navy-100">
+                Professional Information
+              </h2>
+              <div className="flex justify-center space-x-2">
+                <button
+                  onClick={handleCancel}
+                  className="btn min-w-28 rounded-full border border-slate-300 font-medium text-slate-700 hover:bg-slate-150 focus:bg-slate-150 active:bg-slate-150/80 dark:border-navy-450 dark:text-navy-100 dark:hover:bg-navy-500 dark:focus:bg-navy-500 dark:active:bg-navy-500/90"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSave}
+                  className="btn min-w-28 rounded-full bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+            <div className="p-4 sm:p-5">
+              <div className="grid grid-cols-1 gap-4 p-5 my-5 sm:grid-cols-2">
+                <label className="block">
+                  <span>Specialty </span>
+                  <span className="relative mt-1.5 flex">
+                    <input
+                      name="specialty"
+                      value={formData.specialty}
+                      onChange={handleInputChange}
+                      className="form-input peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
+                      placeholder="Enter Specialty"
+                      type="text"
+                    />
+                  </span>
+                </label>
+                <label className="block">
+                  <span>Sub-Specialty </span>
+                  <span className="relative mt-1.5 flex">
+                    <input
+                      name="subSpecialty"
+                      value={formData.subSpecialty}
+                      onChange={handleInputChange}
+                      className="form-input peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
+                      placeholder="Enter Sub-Specialty"
+                      type="text"
+                    />
+                  </span>
+                </label>
+                <label className="block">
+                  <span>Years of Experience</span>
+                  <span className="relative mt-1.5 flex">
+                    <input
+                      name="yearsOfExperience"
+                      value={formData.yearsOfExperience}
+                      onChange={handleInputChange}
+                      className="form-input peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
+                      placeholder="Enter Years of Experience"
+                      type="text"
+                    />
+                  </span>
+                </label>
+                <label className="block">
+                  <span>License Number </span>
+                  <span className="relative mt-1.5 flex">
+                    <input
+                      name="licenseNumber"
+                      value={formData.licenseNumber}
+                      onChange={handleInputChange}
+                      className="form-input peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
+                      placeholder="Enter License Number "
+                      type="text"
+                    />
+                  </span>
+                </label>
+                <label className="block">
+                  <span>Issuing Authority</span>
+                  <span className="relative mt-1.5 flex">
+                    <input
+                      name="issuingAuthority"
+                      value={formData.issuingAuthority}
+                      onChange={handleInputChange}
+                      className="form-input peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
+                      placeholder="Enter Issuing Authority"
+                      type="text"
+                    />
+                  </span>
+                </label>
+                <label className="block">
+                  <span>License Expiry Date</span>
+                  <span className="relative mt-1.5 flex">
+                    <input
+                      name="licenseExpiryDate"
+                      value={formData.licenseExpiryDate}
+                      onChange={handleInputChange}
+                      className="form-input peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
+                      placeholder="Enter License Expiry Date"
+                      type="date"
+                    />
+                  </span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
