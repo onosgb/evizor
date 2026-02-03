@@ -1,0 +1,28 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls",
+      "delegate_permission/common.get_login_creds"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.evizor.evizor",
+      "sha256_cert_fingerprints": [
+        "BD:9B:6D:DA:F2:3A:34:4F:33:0A:ED:AF:5E:97:15:D8:9C:9A:4E:C4:2E:75:48:0B:91:08:44:8D:C2:89:E7:04"
+      ]
+    }
+  },
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls",
+      "delegate_permission/common.get_login_creds"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.evizor.evizor",
+      "sha256_cert_fingerprints": [
+        "69:06:70:5F:2C:1D:C3:DD:93:1E:CA:3B:37:C1:4F:98:DD:57:42:5B:99:6B:44:7C:83:A9:FA:4D:47:F2:C1:7B"
+      ]
+    }
+  }
+]

@@ -9,6 +9,7 @@ interface Document {
   id: number;
   name: string;
   timestamp: string;
+  description: string;
 }
 
 export default function QualificationsContent() {
@@ -16,10 +17,10 @@ export default function QualificationsContent() {
   const theme = user?.role === "ADMIN" ? "admin" : "doctor";
   const [showModal, setShowModal] = useState(false);
   const [documents] = useState<Document[]>([
-    { id: 1, name: "Cy Ganderton", timestamp: "Quality Control Specialist" },
-    { id: 2, name: "Hart Hagerty", timestamp: "Desktop Support Technician" },
-    { id: 3, name: "Brice Swyre", timestamp: "Tax Accountant" },
-    { id: 4, name: "Marjy Ferencz", timestamp: "Office Assistant I" },
+    { id: 1, name: "Cy Ganderton", description: "Quality Control Specialist", timestamp: "2026-01-31" },
+    { id: 2, name: "Hart Hagerty", description: "Desktop Support Technician", timestamp: "2026-01-31" },
+    { id: 3, name: "Brice Swyre", description: "Tax Accountant", timestamp: "2026-01-31" },
+    { id: 4, name: "Marjy Ferencz", description: "Office Assistant I", timestamp: "2026-01-31" },
   ]);
 
   const [uploadFormData, setUploadFormData] = useState({
@@ -107,6 +108,9 @@ export default function QualificationsContent() {
                         Name
                       </th>
                       <th className="whitespace-nowrap bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">
+                        Description
+                      </th>
+                      <th className="whitespace-nowrap bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">
                         TimeStamp
                       </th>
                       <th className="whitespace-nowrap rounded-r-lg bg-slate-200 px-3 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">
@@ -121,6 +125,7 @@ export default function QualificationsContent() {
                           {doc.id}
                         </td>
                         <td className="whitespace-nowrap px-4 py-3 sm:px-5">{doc.name}</td>
+                        <td className="whitespace-nowrap px-4 py-3 sm:px-5">{doc.description}</td>
                         <td className="whitespace-nowrap px-4 py-3 sm:px-5">{doc.timestamp}</td>
                         <td className="whitespace-nowrap rounded-r-lg px-4 py-3 sm:px-5">
                           <div className="flex justify-center space-x-2">

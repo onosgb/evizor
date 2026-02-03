@@ -9,13 +9,15 @@ export default function ProfileContent() {
   const theme = user?.role === "ADMIN" ? "admin" : "doctor";
   
   const [formData, setFormData] = useState({
-    displayName: "Dr. Jane Smith",
+    title: "Dr",
     firstName: "Jane",
     lastName: "Smith",
     email: user?.email || "",
     phoneNumber: "",
     gender: "",
     location: "",
+    address: "",
+    dateOfBirth: "",
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -74,9 +76,6 @@ export default function ProfileContent() {
           <div className="p-4 sm:p-5">
             {/* Avatar Section */}
             <div className="flex flex-col">
-              <span className="text-base font-medium text-slate-600 dark:text-navy-100">
-                Avatar
-              </span>
               <div className="avatar mt-1.5 size-20 relative">
                 <Image
                   className="mask is-squircle"
@@ -105,11 +104,11 @@ export default function ProfileContent() {
             {/* Form Fields */}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <label className="block">
-                <span>Display name</span>
+                <span>Title</span>
                 <span className="relative mt-1.5 flex">
                   <input
-                    name="displayName"
-                    value={formData.displayName}
+                    name="title"
+                    value={formData.title}
                     onChange={handleInputChange}
                     className="form-input peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 pl-9 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
                     placeholder="Enter name"
@@ -312,6 +311,64 @@ export default function ProfileContent() {
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"
+                      />
+                    </svg>
+                  </span>
+                </span>
+              </label>
+              <label className="block">
+                <span>Date of Birth</span>
+                <span className="relative mt-1.5 flex">
+                  <input
+                    name="dateOfBirth"
+                    value={formData.dateOfBirth}
+                    onChange={handleInputChange}
+                    className="form-input peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 pl-9 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
+                    placeholder="Enter date of birth"
+                    type="date"
+                  />
+                  <span className="pointer-events-none absolute flex h-full w-10 items-center justify-center text-slate-400 peer-focus:text-primary dark:text-navy-300 dark:peer-focus:text-accent">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="size-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
+                      />
+                    </svg>
+                  </span>
+                </span>
+              </label>
+              <label className="block w-full">
+                <span>Address</span>
+                <span className="relative mt-1.5 flex w-full">
+                  <input
+                    name="address"
+                    value={formData.address}
+                    onChange={handleInputChange}
+                    className="form-input peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 pl-9 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
+                    placeholder="Enter address"
+                    type="text"
+                  />
+                  <span className="pointer-events-none absolute flex h-full w-10 items-center justify-center text-slate-400 peer-focus:text-primary dark:text-navy-300 dark:peer-focus:text-accent">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="size-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
                       />
                     </svg>
                   </span>
