@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { CreateStaffRequest } from "../models";
+import { useTenantStore } from "../stores";
 
 // Helper function to check if status is active
 const isActiveStatus = (status: string | null | undefined): boolean => {
@@ -25,6 +26,10 @@ export default function CreateStaffForm({
   isSubmitting = false,
   theme = "doctor",
 }: CreateStaffFormProps) {
+  // Get tenants from store
+  const tenants = useTenantStore((state) => state.tenants);
+  const isLoadingTenants = useTenantStore((state) => state.isLoading);
+  
   // Theme-based outline switch styling
   const getOutlineSwitchClasses = () => {
     return theme === "admin"
@@ -40,6 +45,7 @@ export default function CreateStaffForm({
     fullName: "",
     role: "",
     status: "ACTIVE",
+    tenantId: "",
   });
 
   // Reset form when modal closes
@@ -54,6 +60,7 @@ export default function CreateStaffForm({
         fullName: "",
         role: "",
         status: "ACTIVE",
+        tenantId: ''
       });
     }
   }, [isOpen]);
@@ -74,6 +81,7 @@ export default function CreateStaffForm({
       fullName: "",
       role: "",
       status: "ACTIVE",
+      tenantId: ''
     });
     onClose();
   };
@@ -149,6 +157,29 @@ export default function CreateStaffForm({
                 <option value="">Select role</option>
                 <option value="DOCTOR">Doctor</option>
                 <option value="ADMIN">Admin</option>
+              </select>
+            </label>
+            <label className="block">
+              <span>Location (Province):</span>
+              <select
+                className="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 hover:border-slate-400 focus:border-navy dark:border-navy-450 dark:bg-navy-700 dark:hover:border-navy-400 dark:focus:border-accent"
+                value={formData.tenantId}
+                onChange={(e) =>
+                  setFormData({ ...formData, tenantId: e.target.value })
+                }
+                required
+                disabled={isLoadingTenants}
+              >
+                <option value="">
+                  {isLoadingTenants ? "Loading locations..." : "Select location"}
+                </option>
+                {(tenants || [])
+                  .filter((tenant) => tenant.isActive)
+                  .map((tenant) => (
+                    <option key={tenant.id} value={tenant.id}>
+                      {tenant.province}
+                    </option>
+                  ))}
               </select>
             </label>
             <label className="block">

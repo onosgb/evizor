@@ -42,7 +42,7 @@ export default function DashboardPage() {
 
   return (
     <DashboardLayout theme={theme}>
-      {theme === "admin" ? <AdminDashboard /> : <DoctorDashboard />}
+      {theme === "admin" ? <AdminDashboard user={user} /> : <DoctorDashboard user={user} />}
     </DashboardLayout>
   );
 }

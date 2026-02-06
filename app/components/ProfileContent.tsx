@@ -1,24 +1,66 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuthStore } from "../stores/authStore";
+import { useTenantStore } from "../stores/tenantStore";
+import { authService } from "../lib/services";
 import ProfileSidebar from "./ProfileSidebar";
 import Image from "next/image";
 export default function ProfileContent() {
   const user = useAuthStore((state) => state.user);
+  const setUser = useAuthStore((state) => state.setUser);
   const theme = user?.role === "ADMIN" ? "admin" : "doctor";
+  const getTenantById = useTenantStore((state) => state.getTenantById);
+  
+  // Get user's tenant/location
+  const userTenant = user?.tenantId ? getTenantById(user.tenantId) : null;
   
   const [formData, setFormData] = useState({
-    title: "Dr",
-    firstName: "Jane",
-    lastName: "Smith",
+    firstName: user?.firstName || "",
+    lastName: user?.lastName || "",
     email: user?.email || "",
-    phoneNumber: "",
-    gender: "",
-    location: "",
-    address: "",
-    dateOfBirth: "",
+    phoneNumber: user?.phoneNumber || "",
+    gender: user?.gender || "",
+    location: userTenant?.province || "",
+    address: user?.address || "",
+    dob: user?.dob || "",
   });
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  // Fetch fresh profile data on mount
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const response = await authService.getMyProfile();
+        if (response.data) {
+          setUser(response.data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch profile:", err);
+      }
+    };
+    
+    fetchProfile();
+  }, [setUser]);
+
+  // Update form data when user changes
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        firstName: user.firstName || "",
+        lastName: user.lastName || "",
+        email: user.email || "",
+        phoneNumber: user.phoneNumber || "",
+        gender: user.gender || "",
+        location: userTenant?.province || "",
+        address: user.address || "",
+        dob: user.dob || "",
+      });
+    }
+  }, [user, userTenant]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -28,9 +70,32 @@ export default function ProfileContent() {
     }));
   };
 
-  const handleSave = () => {
-    // TODO: Implement save functionality
-    console.log("Saving profile:", formData);
+  const handleSave = async () => {
+    // Exclude email and location from submission (readonly fields)
+    const { email, location, ...dataToSubmit } = formData;
+    
+    setIsSubmitting(true);
+    setError(null);
+    setSuccessMessage(null);
+    
+    try {
+      const response = await authService.updateProfile(dataToSubmit);
+      
+      // Update the auth store with the updated user data
+      if (response.data) {
+        setUser(response.data);
+      }
+      
+      setSuccessMessage("Profile updated successfully!");
+      
+      // Clear success message after 3 seconds
+      setTimeout(() => setSuccessMessage(null), 3000);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to update profile";
+      setError(errorMessage);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleCancel = () => {
@@ -63,13 +128,14 @@ export default function ProfileContent() {
               </button>
               <button
                 onClick={handleSave}
+                disabled={isSubmitting}
                 className={`btn min-w-28 rounded-full font-medium text-white ${
                   theme === "admin"
                     ? "bg-success hover:bg-success-focus focus:bg-success-focus active:bg-success-focus/90 dark:bg-success dark:hover:bg-success-focus dark:focus:bg-success-focus dark:active:bg-success/90"
                     : "bg-primary hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
-                }`}
+                } ${isSubmitting ? "opacity-60 cursor-not-allowed" : ""}`}
               >
-                Save
+                {isSubmitting ? "Saving..." : "Save"}
               </button>
             </div>
           </div>
@@ -101,37 +167,20 @@ export default function ProfileContent() {
 
             <div className="my-7 h-px bg-slate-200 dark:bg-navy-500"></div>
 
+            {/* Error and Success Messages */}
+            {error && (
+              <div className="mb-4 rounded-lg bg-error/10 px-4 py-3 text-error dark:bg-error/20">
+                <p className="text-sm font-medium">{error}</p>
+              </div>
+            )}
+            {successMessage && (
+              <div className="mb-4 rounded-lg bg-success/10 px-4 py-3 text-success dark:bg-success/20">
+                <p className="text-sm font-medium">{successMessage}</p>
+              </div>
+            )}
+
             {/* Form Fields */}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <label className="block">
-                <span>Title</span>
-                <span className="relative mt-1.5 flex">
-                  <input
-                    name="title"
-                    value={formData.title}
-                    onChange={handleInputChange}
-                    className="form-input peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 pl-9 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
-                    placeholder="Enter name"
-                    type="text"
-                  />
-                  <span className="pointer-events-none absolute flex h-full w-10 items-center justify-center text-slate-400 peer-focus:text-primary dark:text-navy-300 dark:peer-focus:text-accent">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="size-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
-                      />
-                    </svg>
-                  </span>
-                </span>
-              </label>
               <label className="block">
                 <span>First Name</span>
                 <span className="relative mt-1.5 flex">
@@ -196,12 +245,12 @@ export default function ProfileContent() {
                   <input
                     name="email"
                     value={formData.email}
-                    onChange={handleInputChange}
-                    className="form-input peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 pl-9 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
+                    readOnly
+                    className="form-input peer w-full rounded-full border border-slate-300 bg-slate-100 px-3 py-2 pl-9 text-slate-600 dark:border-navy-450 dark:bg-navy-800 dark:text-navy-200 cursor-not-allowed"
                     placeholder="Enter email address"
                     type="email"
                   />
-                  <span className="pointer-events-none absolute flex h-full w-10 items-center justify-center text-slate-400 peer-focus:text-primary dark:text-navy-300 dark:peer-focus:text-accent">
+                  <span className="pointer-events-none absolute flex h-full w-10 items-center justify-center text-slate-400 dark:text-navy-300">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       className="size-4"
@@ -251,15 +300,18 @@ export default function ProfileContent() {
               <label className="block">
                 <span>Gender</span>
                 <span className="relative mt-1.5 flex">
-                  <input
+                  <select
                     name="gender"
                     value={formData.gender}
                     onChange={handleInputChange}
-                    className="form-input peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 pl-9 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
-                    placeholder="Enter gender"
-                    type="text"
-                  />
-                  <span className="pointer-events-none absolute flex h-full w-10 items-center justify-center text-slate-400 peer-focus:text-primary dark:text-navy-300 dark:peer-focus:text-accent">
+                    className="form-select w-full rounded-full border border-slate-300 bg-white px-3 py-2 pl-9 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:bg-navy-700 dark:hover:border-navy-400 dark:focus:border-accent"
+                  >
+                    <option value="">Select gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                  <span className="pointer-events-none absolute flex h-full w-10 items-center justify-center text-slate-400 dark:text-navy-300">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       className="size-4"
@@ -278,22 +330,17 @@ export default function ProfileContent() {
                 </span>
               </label>
               <label className="block">
-                <span>Location</span>
+                <span>Location (Province)</span>
                 <span className="relative mt-1.5 flex">
-                  <select
+                  <input
                     name="location"
                     value={formData.location}
-                    onChange={handleInputChange}
-                    className="form-select mt-1.5 w-full rounded-full border border-slate-300 bg-white px-3 py-2 pl-9 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:bg-navy-700 dark:hover:border-navy-400 dark:focus:border-accent"
-                  >
-                    <option value="">Select location</option>
-                    <option value="lagos">Lagos</option>
-                    <option value="abuja">Abuja</option>
-                    <option value="port-harcourt">Port Harcourt</option>
-                    <option value="kano">Kano</option>
-                    <option value="ibadan">Ibadan</option>
-                  </select>
-                  <span className="pointer-events-none absolute flex h-full w-10 items-center justify-center text-slate-400 peer-focus:text-primary dark:text-navy-300 dark:peer-focus:text-accent">
+                    readOnly
+                    className="form-input peer w-full rounded-full border border-slate-300 bg-slate-100 px-3 py-2 pl-9 text-slate-600 dark:border-navy-450 dark:bg-navy-800 dark:text-navy-200 cursor-not-allowed"
+                    placeholder="No location assigned"
+                    type="text"
+                  />
+                  <span className="pointer-events-none absolute flex h-full w-10 items-center justify-center text-slate-400 dark:text-navy-300">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       className="size-4"
@@ -320,9 +367,10 @@ export default function ProfileContent() {
                 <span>Date of Birth</span>
                 <span className="relative mt-1.5 flex">
                   <input
-                    name="dateOfBirth"
-                    value={formData.dateOfBirth}
+                    name="dob"
+                    value={formData.dob}
                     onChange={handleInputChange}
+                    max={new Date(new Date().setFullYear(new Date().getFullYear() - 17)).toISOString().split('T')[0]}
                     className="form-input peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 pl-9 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
                     placeholder="Enter date of birth"
                     type="date"

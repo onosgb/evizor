@@ -1,5 +1,5 @@
 import apiClient from "../api-client";
-import { LoginResponse, ApiResponse } from "../../models";
+import { LoginResponse, ApiResponse, UpdateUser, User } from "../../models";
 import { useAuthStore } from "../../stores/authStore";
 
 /**
@@ -51,6 +51,25 @@ class AuthService {
       // Clear tokens from store
       useAuthStore.getState().logout();
     }
+  }
+
+  /**
+   * Get current user's profile
+   */
+  async getMyProfile(): Promise<ApiResponse<User>> {
+    const response = await apiClient.get<ApiResponse<User>>("/users/my-profile");
+    return response.data;
+  }
+
+  /**
+   * Update user profile
+   */
+  async updateProfile(data: UpdateUser): Promise<ApiResponse<User>> {
+    const response = await apiClient.put<ApiResponse<User>>(
+      "/users/update-profile",
+      data
+    );
+    return response.data;
   }
 }
 

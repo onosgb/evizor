@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
+import { User } from "../models";
 
 interface QueueItem {
   id: number;
@@ -56,7 +57,14 @@ const queueData: QueueItem[] = [
   },
 ];
 
-export default function AdminDashboard() {
+const getGreeting = () => {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning";
+  if (hour < 18) return "Good afternoon";
+  return "Good evening";
+};
+
+export default function AdminDashboard({ user }: { user: User | null }) {
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -141,7 +149,7 @@ export default function AdminDashboard() {
       <div className="mt-4 grid grid-cols-12 gap-4 sm:mt-5 sm:gap-5 lg:mt-6 lg:gap-6">
         <div className="col-span-12 lg:col-span-12 xl:col-span-12">
           <div
-            className="card col-span-12 mt-12 bg-gradient-to-r p-5 sm:col-span-8 sm:mt-0 sm:flex-row"
+            className="card col-span-12 mt-12 bg-linear-to-r p-5 sm:col-span-8 sm:mt-0 sm:flex-row"
             style={{ background: "#49941c" }}
           >
             <div className="flex justify-center sm:order-last">
@@ -154,10 +162,10 @@ export default function AdminDashboard() {
               />
             </div>
             <div className="mt-2 flex-1 pt-2 text-center text-white sm:mt-0 sm:text-left">
-              <p className="text-white pb-2">Otario, Canada</p>
+              <p className="text-white pb-2">System Administrator</p>
               <hr />
               <h3 className="text-xl mt-4">
-                Good morning, <span className="font-semibold">Benjamin</span>
+                {getGreeting()}, <span className="font-semibold">{user?.firstName || "Admin"}</span>
               </h3>
               <p className="mt-2 leading-relaxed">
                 Have a great day at work. Your progress is excellent.

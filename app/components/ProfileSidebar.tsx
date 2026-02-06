@@ -50,9 +50,14 @@ export default function ProfileSidebar({ theme }: ProfileSidebarProps) {
           </div>
           <div>
             <h3 className="text-base font-medium text-slate-700 dark:text-navy-100">
-              Dr. Jane Smith
+              {user?.firstName && user?.lastName 
+                ? `${user.firstName} ${user.lastName}` 
+                : ""}
             </h3>
-            <p className="text-xs-plus">Cardiologist | MDCN-234567</p>
+            <p className="text-xs-plus">
+              {user?.role === "DOCTOR" && user?.specialty ? `${user.specialty}` : user?.role || "Role"}
+              {user?.licenseNo ? ` | ${user.licenseNo}` : ""}
+            </p>
           </div>
         </div>
         <ul className="mt-6 space-y-1.5 font-inter font-medium">

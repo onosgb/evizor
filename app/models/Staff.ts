@@ -10,6 +10,7 @@ export interface CreateStaffRequest {
   fullName: string;
   role: string;
   status: string;
+  tenantId: string;
 }
 
 /**
@@ -25,6 +26,7 @@ export interface Staff {
   fullName: string;
   role: string;
   status: string;
+  tenantId: string;
   createdAt?: string;
   updatedAt?: string;
 }
