@@ -2,3 +2,5 @@
 export { useAuthStore } from "./authStore";
 export { useUIStore } from "./uiStore";
 export { useTenantStore } from "./tenantStore";
+export { useQualificationStore } from "./qualificationStore";
+export { useProfessionalProfileStore } from "./professionalProfileStore";

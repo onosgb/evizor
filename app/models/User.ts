@@ -11,11 +11,21 @@ export interface User {
   socialId: string;
   licenseNo: string;
   specialty?: string;
+  specialtyId?: string;
   tenantId?: string;
   dob?: string;
   gender?: string;
   profilePhotoUrl?: string;
   address?: string;
+}
+
+export interface ProfessionalProfile {
+  specialtyId: string;
+  subSpecialty?: string;
+  yearsOfExperience: string;
+  licenseNumber: string;
+  issuingAuthority: string;
+  licenseExpiryDate: string;
 }
 
 export interface UpdateUser {
@@ -26,4 +36,5 @@ export interface UpdateUser {
   gender: string;
   profilePhotoUrl?: string;
   address: string;
+  specialtyId?: string;
 }

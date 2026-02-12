@@ -1,56 +1,73 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuthStore } from "../stores/authStore";
 import { createPortal } from "react-dom";
 import ProfileSidebar from "./ProfileSidebar";
-
-interface Document {
-  id: number;
-  name: string;
-  timestamp: string;
-  description: string;
-}
+import { useQualificationStore } from "../stores/qualificationStore";
 
 export default function QualificationsContent() {
   const user = useAuthStore((state) => state.user);
   const theme = user?.role === "ADMIN" ? "admin" : "doctor";
   const [showModal, setShowModal] = useState(false);
-  const [documents] = useState<Document[]>([
-    { id: 1, name: "Cy Ganderton", description: "Quality Control Specialist", timestamp: "2026-01-31" },
-    { id: 2, name: "Hart Hagerty", description: "Desktop Support Technician", timestamp: "2026-01-31" },
-    { id: 3, name: "Brice Swyre", description: "Tax Accountant", timestamp: "2026-01-31" },
-    { id: 4, name: "Marjy Ferencz", description: "Office Assistant I", timestamp: "2026-01-31" },
-  ]);
+
+  const {
+    qualifications,
+    isLoading,
+    isUploading,
+    uploadError,
+    fetchQualifications,
+    uploadQualification,
+  } = useQualificationStore();
+
+  useEffect(() => {
+    fetchQualifications();
+  }, [fetchQualifications]);
 
   const [uploadFormData, setUploadFormData] = useState({
-    category: "",
+    title: "",
     description: "",
-    websiteAddress: "",
-    publicPin: false,
   });
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [fileError, setFileError] = useState<string | null>(null);
 
   const handleUploadFormChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
-    const { name, value, type } = e.target;
+    const { name, value } = e.target;
     setUploadFormData((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
+      [name]: value,
     }));
   };
 
-  const handleUpload = () => {
-    // TODO: Implement upload functionality
-    console.log("Uploading document:", uploadFormData);
-    setShowModal(false);
-    // Reset form
-    setUploadFormData({
-      category: "",
-      description: "",
-      websiteAddress: "",
-      publicPin: false,
-    });
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setSelectedFile(file);
+    setFileError(null);
+  };
+
+  const handleUpload = async () => {
+    if (!selectedFile) {
+      setFileError("Please select a file to upload");
+      return;
+    }
+    if (!uploadFormData.title.trim()) {
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("title", uploadFormData.title);
+    formData.append("description", uploadFormData.description);
+    formData.append("file", selectedFile);
+
+    const success = await uploadQualification(formData);
+    if (success) {
+      setShowModal(false);
+      setUploadFormData({ title: "", description: "" });
+      setSelectedFile(null);
+      setFileError(null);
+    }
   };
 
   const handleViewDocument = (id: number) => {
@@ -61,13 +78,6 @@ export default function QualificationsContent() {
   const handleDeleteDocument = (id: number) => {
     // TODO: Implement delete functionality
     console.log("Deleting document:", id);
-  };
-
-  // Theme-based outline switch styling
-  const getOutlineSwitchClasses = () => {
-    return theme === "admin"
-      ? "form-switch is-outline h-5 w-10 rounded-full border border-slate-400/70 bg-transparent before:rounded-full before:bg-slate-300 checked:border-green-600 checked:before:bg-green-600 dark:border-navy-400 dark:before:bg-navy-300 dark:checked:border-green-500 dark:checked:before:bg-green-500"
-      : "form-switch is-outline h-5 w-10 rounded-full border border-slate-400/70 bg-transparent before:rounded-full before:bg-slate-300 checked:border-primary checked:before:bg-primary dark:border-navy-400 dark:before:bg-navy-300 dark:checked:border-accent dark:checked:before:bg-accent";
   };
 
   return (
@@ -97,6 +107,18 @@ export default function QualificationsContent() {
               </div>
             </div>
             <div className="p-4 sm:p-5">
+              {isLoading ? (
+                <div className="flex items-center justify-center py-10">
+                  <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent"></div>
+                </div>
+              ) : qualifications.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-10 text-slate-400 dark:text-navy-300">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="size-12 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                  </svg>
+                  <p>No documents uploaded yet</p>
+                </div>
+              ) : (
               <div className="is-scrollbar-hidden min-w-full overflow-x-auto">
                 <table className="is-zebra w-full text-left">
                   <thead>
@@ -105,13 +127,13 @@ export default function QualificationsContent() {
                         #
                       </th>
                       <th className="whitespace-nowrap bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">
-                        Name
+                        Title
                       </th>
                       <th className="whitespace-nowrap bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">
                         Description
                       </th>
                       <th className="whitespace-nowrap bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">
-                        TimeStamp
+                        Date
                       </th>
                       <th className="whitespace-nowrap rounded-r-lg bg-slate-200 px-3 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">
                         Action
@@ -119,14 +141,16 @@ export default function QualificationsContent() {
                     </tr>
                   </thead>
                   <tbody>
-                    {documents.map((doc) => (
+                    {qualifications.map((doc, index) => (
                       <tr key={doc.id}>
                         <td className="whitespace-nowrap rounded-l-lg px-4 py-3 sm:px-5">
-                          {doc.id}
+                          {index + 1}
                         </td>
-                        <td className="whitespace-nowrap px-4 py-3 sm:px-5">{doc.name}</td>
-                        <td className="whitespace-nowrap px-4 py-3 sm:px-5">{doc.description}</td>
-                        <td className="whitespace-nowrap px-4 py-3 sm:px-5">{doc.timestamp}</td>
+                        <td className="whitespace-nowrap px-4 py-3 sm:px-5">{doc.title}</td>
+                        <td className="whitespace-nowrap px-4 py-3 sm:px-5">{doc.description || "—"}</td>
+                        <td className="whitespace-nowrap px-4 py-3 sm:px-5">
+                          {doc.createdAt ? new Date(doc.createdAt).toLocaleDateString() : "—"}
+                        </td>
                         <td className="whitespace-nowrap rounded-r-lg px-4 py-3 sm:px-5">
                           <div className="flex justify-center space-x-2">
                             <button
@@ -179,6 +203,7 @@ export default function QualificationsContent() {
                   </tbody>
                 </table>
               </div>
+              )}
             </div>
           </div>
         </div>
@@ -228,73 +253,113 @@ export default function QualificationsContent() {
                 </button>
               </div>
               <div className="px-4 py-4 sm:px-5">
-                <p>
-                  Lorem ipsum dolor sit amet, consectetur adipisicing elit. Assumenda incidunt
+                <p className="text-slate-600 dark:text-navy-200">
+                  Upload a qualification or document. All fields marked with <span className="text-error">*</span> are required.
                 </p>
+                {uploadError && (
+                  <div className="mt-3 bg-error/10 text-error px-4 py-3 rounded-lg text-center text-sm" role="alert">
+                    {uploadError}
+                  </div>
+                )}
                 <div className="mt-4 space-y-4">
                   <label className="block">
-                    <span>Choose category :</span>
-                    <select
-                      name="category"
-                      value={uploadFormData.category}
+                    <span>Document Title <span className="text-error">*</span></span>
+                    <input
+                      name="title"
+                      value={uploadFormData.title}
                       onChange={handleUploadFormChange}
-                      className="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:bg-navy-700 dark:hover:border-navy-400 dark:focus:border-accent"
-                    >
-                      <option value="">Select category</option>
-                      <option value="laravel">Laravel</option>
-                      <option value="nodejs">Node JS</option>
-                      <option value="django">Django</option>
-                      <option value="other">Other</option>
-                    </select>
+                      className="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
+                      placeholder="Enter document title"
+                      type="text"
+                      required
+                    />
                   </label>
                   <label className="block">
-                    <span>Description:</span>
+                    <span>Description</span>
                     <textarea
                       name="description"
                       value={uploadFormData.description}
                       onChange={handleUploadFormChange}
-                      rows={4}
-                      placeholder=" Enter Text"
+                      rows={3}
+                      placeholder="Enter description"
                       className="form-textarea mt-1.5 w-full resize-none rounded-lg border border-slate-300 bg-transparent p-2.5 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
                     ></textarea>
                   </label>
-                  <label className="block">
-                    <span>Website Address:</span>
-                    <input
-                      name="websiteAddress"
-                      value={uploadFormData.websiteAddress}
-                      onChange={handleUploadFormChange}
-                      className="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
-                      placeholder="URL Address"
-                      type="text"
-                    />
-                  </label>
-                  <label className="inline-flex items-center space-x-2">
-                    <input
-                      name="publicPin"
-                      type="checkbox"
-                      checked={uploadFormData.publicPin}
-                      onChange={handleUploadFormChange}
-                      className={getOutlineSwitchClasses()}
-                    />
-                    <span>Public pin</span>
-                  </label>
+                  <div className="block">
+                    <span>Attachment <span className="text-error">*</span></span>
+                    <label
+                      className={`mt-1.5 flex w-full cursor-pointer flex-col items-center rounded-lg border-2 border-dashed px-4 py-6 transition-colors ${
+                        fileError
+                          ? "border-error bg-error/5"
+                          : selectedFile
+                          ? "border-success bg-success/5"
+                          : "border-slate-300 hover:border-slate-400 dark:border-navy-450 dark:hover:border-navy-400"
+                      }`}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className={`size-8 ${
+                          selectedFile ? "text-success" : "text-slate-400 dark:text-navy-300"
+                        }`}
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"
+                        />
+                      </svg>
+                      {selectedFile ? (
+                        <p className="mt-2 text-sm font-medium text-success">
+                          {selectedFile.name}{" "}
+                          <span className="text-slate-400">
+                            ({(selectedFile.size / 1024).toFixed(1)} KB)
+                          </span>
+                        </p>
+                      ) : (
+                        <p className="mt-2 text-sm text-slate-500 dark:text-navy-300">
+                          Click to browse or drag and drop a file
+                        </p>
+                      )}
+                      <input
+                        type="file"
+                        className="hidden"
+                        onChange={handleFileChange}
+                        accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                      />
+                    </label>
+                    {fileError && (
+                      <p className="mt-1 text-sm text-error">{fileError}</p>
+                    )}
+                    <p className="mt-1 text-xs text-slate-400 dark:text-navy-300">
+                      Accepted: PDF, DOC, DOCX, JPG, PNG
+                    </p>
+                  </div>
                   <div className="space-x-2 text-right">
                     <button
-                      onClick={() => setShowModal(false)}
+                      onClick={() => {
+                        setShowModal(false);
+                        setUploadFormData({ title: "", description: "" });
+                        setSelectedFile(null);
+                        setFileError(null);
+                      }}
                       className="btn min-w-28 rounded-full border border-slate-300 font-medium text-slate-800 hover:bg-slate-150 focus:bg-slate-150 active:bg-slate-150/80 dark:border-navy-450 dark:text-navy-50 dark:hover:bg-navy-500 dark:focus:bg-navy-500 dark:active:bg-navy-500/90"
                     >
                       Cancel
                     </button>
                     <button
                       onClick={handleUpload}
-                      className={`btn min-w-28 rounded-full font-medium text-white ${
+                      disabled={isUploading}
+                      className={`btn min-w-28 rounded-full font-medium text-white disabled:opacity-50 disabled:cursor-not-allowed ${
                     theme === "admin"
                       ? "bg-success hover:bg-success-focus focus:bg-success-focus active:bg-success-focus/90 dark:bg-success dark:hover:bg-success-focus dark:focus:bg-success-focus dark:active:bg-success/90"
                       : "bg-primary hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
                   }`}
                     >
-                      Apply
+                      {isUploading ? "Uploading..." : "Upload"}
                     </button>
                   </div>
                 </div>

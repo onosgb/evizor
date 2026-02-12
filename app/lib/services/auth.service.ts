@@ -1,5 +1,5 @@
 import apiClient from "../api-client";
-import { LoginResponse, ApiResponse, UpdateUser, User } from "../../models";
+import { LoginResponse, ApiResponse, UpdateUser, User, ProfessionalProfile, Qualification } from "../../models";
 import { useAuthStore } from "../../stores/authStore";
 
 /**
@@ -93,6 +93,55 @@ class AuthService {
     const response = await apiClient.put<ApiResponse<User>>(
       "/users/update-profile",
       data
+    );
+    return response.data;
+  }
+
+  /**
+   * Get professional profile
+   */
+  async getProfessionalProfile(): Promise<ApiResponse<ProfessionalProfile>> {
+    const response = await apiClient.get<ApiResponse<ProfessionalProfile>>(
+      "/profile/professional"
+    );
+    return response.data;
+  }
+
+  /**
+   * Update professional profile
+   */
+  async updateProfessionalProfile(
+    data: ProfessionalProfile
+  ): Promise<ApiResponse<ProfessionalProfile>> {
+    const response = await apiClient.put<ApiResponse<ProfessionalProfile>>(
+      "/profile/professional",
+      data
+    );
+    return response.data;
+  }
+
+  /**
+   * Upload qualification document
+   */
+  async uploadQualification(data: FormData): Promise<ApiResponse<any>> {
+    const response = await apiClient.post<ApiResponse<any>>(
+      "/profile/qualifications/upload",
+      data,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+    return response.data;
+  }
+
+  /**
+   * Get all qualifications
+   */
+  async getQualifications(): Promise<ApiResponse<Qualification[]>> {
+    const response = await apiClient.get<ApiResponse<Qualification[]>>(
+      "/profile/qualifications"
     );
     return response.data;
   }

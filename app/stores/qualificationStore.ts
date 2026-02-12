@@ -1,0 +1,59 @@
+import { create } from "zustand";
+import { Qualification } from "../models";
+import { authService } from "../lib/services";
+
+interface QualificationState {
+  qualifications: Qualification[];
+  isLoading: boolean;
+  isUploading: boolean;
+  error: string | null;
+  uploadError: string | null;
+  fetchQualifications: () => Promise<void>;
+  uploadQualification: (data: FormData) => Promise<boolean>;
+}
+
+export const useQualificationStore = create<QualificationState>((set, get) => ({
+  qualifications: [],
+  isLoading: false,
+  isUploading: false,
+  error: null,
+  uploadError: null,
+
+  fetchQualifications: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await authService.getQualifications();
+      if (response.status) {
+        set({ qualifications: response.data || [] });
+      } else {
+        set({ error: response.message || "Failed to fetch qualifications" });
+      }
+    } catch (error: any) {
+      set({ error: error.message || "An unexpected error occurred" });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  uploadQualification: async (data: FormData): Promise<boolean> => {
+    set({ isUploading: true, uploadError: null });
+    try {
+      const response = await authService.uploadQualification(data);
+      if (response.status) {
+        // Refresh the list after successful upload
+        await get().fetchQualifications();
+        return true;
+      } else {
+        set({ uploadError: response.message || "Failed to upload qualification" });
+        return false;
+      }
+    } catch (error: any) {
+      set({
+        uploadError: error?.response?.data?.message || error.message || "An unexpected error occurred",
+      });
+      return false;
+    } finally {
+      set({ isUploading: false });
+    }
+  },
+}));
