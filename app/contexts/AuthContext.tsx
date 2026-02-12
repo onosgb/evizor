@@ -46,14 +46,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!isLoading) {
       const publicRoutes = ["/login", "/", "/landing"];
       const isPublicRoute = publicRoutes.includes(pathname || "");
+      const isProfileRoute = pathname?.startsWith("/profile");
 
-      // If authenticated and on login or landing, redirect to dashboard
-      if (
-        isAuthenticated &&
-        (pathname === "/login" || pathname === "/" || pathname === "/landing")
-      ) {
-        router.push("/dashboard");
-        return;
+      // Check profile completion status
+      const { profileCompleted, user } = useAuthStore.getState();
+
+      // If authenticated
+      if (isAuthenticated) {
+        // Enforce profile completion (skip for ADMIN)
+        if (!profileCompleted && !isProfileRoute && user?.role !== "ADMIN") {
+          router.push("/profile");
+          return;
+        }
+
+        // If authenticated and on login or landing, redirect to dashboard (only if profile is complete)
+        if (
+          profileCompleted &&
+          (pathname === "/login" || pathname === "/" || pathname === "/landing")
+        ) {
+          router.push("/dashboard");
+          return;
+        }
       }
 
       // If not authenticated and trying to access protected routes

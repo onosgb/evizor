@@ -1,5 +1,5 @@
 import apiClient from "../api-client";
-import { ApiResponse, Tenant } from "../../models";
+import { Tenant } from "../../models";
 
 /**
  * Tenant service

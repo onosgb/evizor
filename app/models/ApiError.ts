@@ -15,7 +15,7 @@ export class ApiError extends Error {
     statusCode: number,
     status: boolean = false,
     error?: string,
-    data?: any
+    data?: any,
   ) {
     super(message);
     this.name = "ApiError";
@@ -29,11 +29,16 @@ export class ApiError extends Error {
    * Create ApiError from ApiResponse
    */
   static fromResponse<T = any>(response: ApiResponse<T>): ApiError {
+    // Handle case where response might be undefined or null at runtime
+    if (!response) {
+      return new ApiError("Unknown API Error", 500, false, "UnknownError");
+    }
+
     return new ApiError(
-      response.message,
-      response.statusCode,
-      response.status,
-      response.error,
+      response.message || "An error occurred",
+      response.statusCode || 500,
+      response.status || false,
+      response.error || "API Error",
       response.data
     );
   }

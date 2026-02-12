@@ -5,9 +5,9 @@ import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
 
 interface PatientCardWithMenuProps {
-  id: number;
+  id: string | number;
   name: string;
-  age: number;
+  age?: number;
   timeAgo: string;
   symptom?: string;
   avatarSrc?: string;
@@ -154,9 +154,11 @@ export default function PatientCardWithMenu({
           </h3>
           <p className="text-xs-plus">{symptom}</p>
           <div className="inline-space mt-3 flex grow flex-wrap items-start">
-            <span className="tag rounded-full bg-success/10 text-success hover:bg-success/20 focus:bg-success/20 active:bg-success/25">
-              {age} years
-            </span>
+            {age !== undefined && (
+              <span className="tag rounded-full bg-success/10 text-success hover:bg-success/20 focus:bg-success/20 active:bg-success/25">
+                {age} years
+              </span>
+            )}
             <span className="tag rounded-full bg-primary/10 text-primary hover:bg-primary/20 focus:bg-primary/20 active:bg-primary/25 dark:bg-accent-light/10 dark:text-accent-light dark:hover:bg-accent-light/20 dark:focus:bg-accent-light/20 dark:active:bg-accent-light/25">
               {timeAgo}
             </span>
@@ -186,7 +188,7 @@ export default function PatientCardWithMenu({
 
       {/* Accept Modal */}
       {acceptModalOpen && (
-        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden px-4 py-6 sm:px-5">
+        <div className="fixed inset-0 z-100 flex flex-col items-center justify-center overflow-hidden px-4 py-6 sm:px-5">
           <div
             className="absolute inset-0 bg-slate-900/60 transition-opacity duration-300"
             onClick={() => setAcceptModalOpen(false)}
@@ -227,7 +229,7 @@ export default function PatientCardWithMenu({
 
       {/* Reassign Modal */}
       {reassignModalOpen && (
-        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden px-4 py-6 sm:px-5">
+        <div className="fixed inset-0 z-100 flex flex-col items-center justify-center overflow-hidden px-4 py-6 sm:px-5">
           <div
             className="absolute inset-0 bg-slate-900/60 transition-opacity duration-300"
             onClick={() => setReassignModalOpen(false)}
@@ -295,13 +297,13 @@ export default function PatientCardWithMenu({
                 <div className="space-x-2 text-right">
                   <button
                     onClick={() => setReassignModalOpen(false)}
-                    className="btn min-w-[7rem] rounded-full border border-slate-300 font-medium text-slate-800 hover:bg-slate-150 focus:bg-slate-150 active:bg-slate-150/80 dark:border-navy-450 dark:text-navy-50 dark:hover:bg-navy-500 dark:focus:bg-navy-500 dark:active:bg-navy-500/90"
+                    className="btn min-w-28 rounded-full border border-slate-300 font-medium text-slate-800 hover:bg-slate-150 focus:bg-slate-150 active:bg-slate-150/80 dark:border-navy-450 dark:text-navy-50 dark:hover:bg-navy-500 dark:focus:bg-navy-500 dark:active:bg-navy-500/90"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={() => setReassignModalOpen(false)}
-                    className="btn min-w-[7rem] rounded-full bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
+                    className="btn min-w-28 rounded-full bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
                   >
                     Apply
                   </button>
@@ -314,7 +316,7 @@ export default function PatientCardWithMenu({
 
       {/* Schedule Modal */}
       {scheduleModalOpen && (
-        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden px-4 py-6 sm:px-5">
+        <div className="fixed inset-0 z-100 flex flex-col items-center justify-center overflow-hidden px-4 py-6 sm:px-5">
           <div
             className="absolute inset-0 bg-slate-900/60 transition-opacity duration-300"
             onClick={() => setScheduleModalOpen(false)}
@@ -383,13 +385,13 @@ export default function PatientCardWithMenu({
                 <div className="space-x-2 text-right">
                   <button
                     onClick={() => setScheduleModalOpen(false)}
-                    className="btn min-w-[7rem] rounded-full border border-slate-300 font-medium text-slate-800 hover:bg-slate-150 focus:bg-slate-150 active:bg-slate-150/80 dark:border-navy-450 dark:text-navy-50 dark:hover:bg-navy-500 dark:focus:bg-navy-500 dark:active:bg-navy-500/90"
+                    className="btn min-w-28 rounded-full border border-slate-300 font-medium text-slate-800 hover:bg-slate-150 focus:bg-slate-150 active:bg-slate-150/80 dark:border-navy-450 dark:text-navy-50 dark:hover:bg-navy-500 dark:focus:bg-navy-500 dark:active:bg-navy-500/90"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={() => setScheduleModalOpen(false)}
-                    className="btn min-w-[7rem] rounded-full bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
+                    className="btn min-w-28 rounded-full bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
                   >
                     Apply
                   </button>
@@ -402,7 +404,7 @@ export default function PatientCardWithMenu({
 
       {/* Clinical Alert Modal */}
       {clinicalAlertModalOpen && (
-        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden px-4 py-6 sm:px-5">
+        <div className="fixed inset-0 z-100 flex flex-col items-center justify-center overflow-hidden px-4 py-6 sm:px-5">
           <div
             className="absolute inset-0 bg-slate-900/60 transition-opacity duration-300"
             onClick={() => setClinicalAlertModalOpen(false)}
@@ -471,13 +473,13 @@ export default function PatientCardWithMenu({
                 <div className="space-x-2 text-right">
                   <button
                     onClick={() => setClinicalAlertModalOpen(false)}
-                    className="btn min-w-[7rem] rounded-full border border-slate-300 font-medium text-slate-800 hover:bg-slate-150 focus:bg-slate-150 active:bg-slate-150/80 dark:border-navy-450 dark:text-navy-50 dark:hover:bg-navy-500 dark:focus:bg-navy-500 dark:active:bg-navy-500/90"
+                    className="btn min-w-28 rounded-full border border-slate-300 font-medium text-slate-800 hover:bg-slate-150 focus:bg-slate-150 active:bg-slate-150/80 dark:border-navy-450 dark:text-navy-50 dark:hover:bg-navy-500 dark:focus:bg-navy-500 dark:active:bg-navy-500/90"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={() => setClinicalAlertModalOpen(false)}
-                    className="btn min-w-[7rem] rounded-full bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
+                    className="btn min-w-28 rounded-full bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
                   >
                     Apply
                   </button>

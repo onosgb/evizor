@@ -1,12 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuthStore } from "../stores/authStore";
+import { useSpecialtyStore } from "../stores/specialtyStore";
 import ProfileSidebar from "./ProfileSidebar";
 
 export default function ProfessionalInformationContent() {
   const user = useAuthStore((state) => state.user);
+  const { specialties, fetchSpecialties, isLoading } = useSpecialtyStore();
   const theme = user?.role === "ADMIN" ? "admin" : "doctor";
+
+  useEffect(() => {
+    fetchSpecialties();
+  }, [fetchSpecialties]);
 
   const [formData, setFormData] = useState({
     specialty: "",
@@ -17,7 +23,9 @@ export default function ProfessionalInformationContent() {
     licenseExpiryDate: "",
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -76,27 +84,37 @@ export default function ProfessionalInformationContent() {
                 <label className="block">
                   <span>Specialty </span>
                   <span className="relative mt-1.5 flex">
-                    <input
+                    <select
                       name="specialty"
                       value={formData.specialty}
                       onChange={handleInputChange}
-                      className="form-input peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
-                      placeholder="Enter Specialty"
-                      type="text"
-                    />
+                      className="form-select peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
+                    >
+                      <option value="">Select Specialty</option>
+                      {specialties.map((specialty) => (
+                        <option key={specialty.name} value={specialty.name}>
+                          {specialty.name}
+                        </option>
+                      ))}
+                    </select>
                   </span>
                 </label>
                 <label className="block">
                   <span>Sub-Specialty </span>
                   <span className="relative mt-1.5 flex">
-                    <input
+                    <select
                       name="subSpecialty"
                       value={formData.subSpecialty}
                       onChange={handleInputChange}
-                      className="form-input peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
-                      placeholder="Enter Sub-Specialty"
-                      type="text"
-                    />
+                      className="form-select peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
+                    >
+                      <option value="">Select Sub-Specialty</option>
+                      {specialties.map((specialty) => (
+                        <option key={specialty.name} value={specialty.name}>
+                          {specialty.name}
+                        </option>
+                      ))}
+                    </select>
                   </span>
                 </label>
                 <label className="block">

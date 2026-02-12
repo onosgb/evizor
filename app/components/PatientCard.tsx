@@ -2,9 +2,9 @@ import Image from "next/image";
 import Link from "next/link";
 
 interface PatientCardProps {
-  id: number;
+  id: string | number;
   name: string;
-  age: number;
+  age?: number;
   timeAgo: string;
   symptom?: string;
   avatarSrc?: string;
@@ -34,9 +34,11 @@ export default function PatientCard({
         </h3>
         <p className="text-xs-plus">{symptom}</p>
         <div className="inline-space mt-3 flex grow flex-wrap items-start">
-          <span className="tag rounded-full bg-success/10 text-success hover:bg-success/20 focus:bg-success/20 active:bg-success/25">
-            {age} years
-          </span>
+          {age !== undefined && (
+            <span className="tag rounded-full bg-success/10 text-success hover:bg-success/20 focus:bg-success/20 active:bg-success/25">
+              {age} years
+            </span>
+          )}
           <span className="tag rounded-full bg-primary/10 text-primary hover:bg-primary/20 focus:bg-primary/20 active:bg-primary/25 dark:bg-accent-light/10 dark:text-accent-light dark:hover:bg-accent-light/20 dark:focus:bg-accent-light/20 dark:active:bg-accent-light/25">
             {timeAgo}
           </span>

@@ -1,22 +1,55 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import DashboardLayout from "../components/DashboardLayout";
 import PatientCard from "../components/PatientCard";
 import PatientCardWithMenu from "../components/PatientCardWithMenu";
+import { Appointment } from "../models";
+import { appointmentService } from "../lib/services";
 
 export default function LiveQueuePage() {
-  const patients = [
-    { id: 1, name: "Konnor Guzman", age: 34, timeAgo: "8 mins ago", symptom: "Patient Symptom" },
-    { id: 2, name: "Travis Fuller", age: 34, timeAgo: "8 mins ago", symptom: "Patient Symptom" },
-    { id: 3, name: "Alfredo Elliott", age: 34, timeAgo: "8 mins ago", symptom: "Patient Symptom" },
-    { id: 4, name: "Derrick Simmons", age: 34, timeAgo: "8 mins ago", symptom: "Patient Symptom" },
-    { id: 5, name: "Katrina West", age: 34, timeAgo: "8 mins ago", symptom: "Patient Symptom" },
-    { id: 6, name: "Henry Curtis", age: 34, timeAgo: "8 mins ago", symptom: "Patient Symptom" },
-    { id: 7, name: "Raul Bradley", age: 34, timeAgo: "8 mins ago", symptom: "Patient Symptom" },
-    { id: 8, name: "Samantha Shelton", age: 34, timeAgo: "8 mins ago", symptom: "Patient Symptom" },
-    { id: 9, name: "Corey Evans", age: 34, timeAgo: "8 mins ago", symptom: "Patient Symptom" },
-    { id: 10, name: "Lance Tucker", age: 34, timeAgo: "8 mins ago", symptom: "Patient Symptom" },
-    { id: 11, name: "Anthony Jensen", age: 34, timeAgo: "8 mins ago", symptom: "Patient Symptom" },
-    { id: 12, name: "Joe Perkins", age: 34, timeAgo: "8 mins ago", symptom: "Patient Symptom" },
-  ];
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchLiveQueue = async () => {
+      try {
+        setLoading(true);
+        const response = await appointmentService.getLiveQueue();
+        if (response.data && response.data.appointments) {
+          setAppointments(response.data.appointments);
+        }
+      } catch (err: any) {
+        setError(err.message || "Failed to fetch live queue");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLiveQueue();
+  }, []);
+
+  const getTimeAgo = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    const diffInDays = Math.floor(diffInHours / 24);
+
+    if (diffInDays > 0) {
+      return `${diffInDays} day${diffInDays > 1 ? "s" : ""} ago`;
+    }
+    if (diffInHours > 0) {
+      return `${diffInHours} hour${diffInHours > 1 ? "s" : ""} ago`;
+    }
+    if (diffInMinutes > 0) {
+      return `${diffInMinutes} min${diffInMinutes > 1 ? "s" : ""} ago`;
+    }
+    return "Just now";
+  };
 
   return (
     <DashboardLayout>
@@ -47,15 +80,46 @@ export default function LiveQueuePage() {
           </label>
         </div>
       </div>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 lg:gap-6 xl:grid-cols-4">
-        {patients.slice(0, 11).map((patient) => (
-          <PatientCard key={patient.id} {...patient} />
-        ))}
-        {/* Last card with menu */}
-        <PatientCardWithMenu {...patients[11]} />
-      </div>
-      <div className="mt-10">
-        <ol className="pagination space-x-1.5">
+
+      {loading && (
+        <div className="flex justify-center p-10">
+          <div className="spinner is-elastic h-7 w-7 animate-spin rounded-full border-[3px] border-primary/30 border-r-primary dark:border-accent/30 dark:border-r-accent"></div>
+        </div>
+      )}
+
+      {error && (
+        <div className="alert flex rounded-lg bg-error/10 py-4 px-4 text-error dark:bg-error/15 sm:px-5">
+            {error}
+        </div>
+      )}
+
+      {!loading && !error && (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 lg:gap-6 xl:grid-cols-4">
+          {appointments.slice(0, 11).map((appointment) => (
+            <PatientCard 
+              key={appointment.id} 
+              id={appointment.id}
+              name={appointment.patientName}
+              timeAgo={getTimeAgo(appointment.scheduledAt)}
+              symptom={appointment.description}
+            />
+          ))}
+          {/* Example of PatientCardWithMenu for the last item or specific logic */}
+          {appointments.length > 11 && (
+             <PatientCardWithMenu 
+               id={appointments[11].id}
+               name={appointments[11].patientName}
+               timeAgo={getTimeAgo(appointments[11].scheduledAt)}
+               symptom={appointments[11].description}
+             />
+          )}
+        </div>
+      )}
+      
+      {!loading && !error && appointments.length > 0 && (
+        <div className="mt-10">
+            {/* Pagination Logic placeholder */}
+           <ol className="pagination space-x-1.5">
           <li>
             <a
               href="#"
@@ -80,41 +144,9 @@ export default function LiveQueuePage() {
           <li>
             <a
               href="#"
-              className="flex h-8 min-w-[2rem] items-center justify-center rounded-lg bg-primary px-3 leading-tight text-white transition-colors hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
+              className="flex h-8 min-w-8 items-center justify-center rounded-lg bg-primary px-3 leading-tight text-white transition-colors hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
             >
               1
-            </a>
-          </li>
-          <li>
-            <a
-              href="#"
-              className="flex h-8 min-w-[2rem] items-center justify-center rounded-lg bg-slate-150 px-3 leading-tight transition-colors hover:bg-slate-300 focus:bg-slate-300 active:bg-slate-300/80 dark:bg-navy-500 dark:hover:bg-navy-450 dark:focus:bg-navy-450 dark:active:bg-navy-450/90"
-            >
-              2
-            </a>
-          </li>
-          <li>
-            <a
-              href="#"
-              className="flex h-8 min-w-[2rem] items-center justify-center rounded-lg bg-slate-150 px-3 leading-tight transition-colors hover:bg-slate-300 focus:bg-slate-300 active:bg-slate-300/80 dark:bg-navy-500 dark:hover:bg-navy-450 dark:focus:bg-navy-450 dark:active:bg-navy-450/90"
-            >
-              3
-            </a>
-          </li>
-          <li>
-            <a
-              href="#"
-              className="flex h-8 min-w-[2rem] items-center justify-center rounded-lg bg-slate-150 px-3 leading-tight transition-colors hover:bg-slate-300 focus:bg-slate-300 active:bg-slate-300/80 dark:bg-navy-500 dark:hover:bg-navy-450 dark:focus:bg-navy-450 dark:active:bg-navy-450/90"
-            >
-              4
-            </a>
-          </li>
-          <li>
-            <a
-              href="#"
-              className="flex h-8 min-w-[2rem] items-center justify-center rounded-lg bg-slate-150 px-3 leading-tight transition-colors hover:bg-slate-300 focus:bg-slate-300 active:bg-slate-300/80 dark:bg-navy-500 dark:hover:bg-navy-450 dark:focus:bg-navy-450 dark:active:bg-navy-450/90"
-            >
-              5
             </a>
           </li>
           <li>
@@ -139,7 +171,8 @@ export default function LiveQueuePage() {
             </a>
           </li>
         </ol>
-      </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }

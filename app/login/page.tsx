@@ -33,6 +33,7 @@ export default function LoginPage() {
           response.data.accessToken,
           response.data.refreshToken,
           response.data.user,
+          response.data.profileCompleted,
           rememberMe
         );
 

@@ -9,16 +9,20 @@ interface AuthState {
   refreshToken: string | null;
   user: User | null;
   rememberMe: boolean;
+  profileCompleted: boolean;
+
   login: (
     accessToken: string,
     refreshToken: string,
     user: User,
+    profileCompleted: boolean,
     rememberMe?: boolean
   ) => void;
   logout: () => void;
   setLoading: (loading: boolean) => void;
   setTokens: (accessToken: string, refreshToken: string) => void;
   setUser: (user: User) => void;
+  setProfileStatus: (completed: boolean) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -30,13 +34,15 @@ export const useAuthStore = create<AuthState>()(
       refreshToken: null,
       user: null,
       rememberMe: false,
+      profileCompleted: false,
 
-      login: (accessToken, refreshToken, user, rememberMe = false) => {
+      login: (accessToken, refreshToken, user, profileCompleted, rememberMe = false) => {
         set({
           isAuthenticated: true,
           accessToken,
           refreshToken,
           user,
+          profileCompleted,
           rememberMe,
         });
       },
@@ -48,6 +54,7 @@ export const useAuthStore = create<AuthState>()(
           refreshToken: null,
           user: null,
           rememberMe: false,
+          profileCompleted: false,
         });
       },
 
@@ -64,6 +71,10 @@ export const useAuthStore = create<AuthState>()(
       setUser: (user) => {
         set({ user });
       },
+
+      setProfileStatus: (completed) => {
+        set({ profileCompleted: completed });
+      },
     }),
     {
       name: "auth-storage",
@@ -73,6 +84,7 @@ export const useAuthStore = create<AuthState>()(
         refreshToken: state.refreshToken,
         user: state.user,
         rememberMe: state.rememberMe,
+        profileCompleted: state.profileCompleted,
       }),
     }
   )

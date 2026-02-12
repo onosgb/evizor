@@ -11,17 +11,32 @@ class AuthService {
    * Login user with email and password
    */
   async login(email: string, password: string): Promise<LoginResponse> {
-    const response = await apiClient.post<LoginResponse>(
-      "/auth/login",
-      {
-        email,
-        password,
-      },
-      {
-        skipAuth: true,
+    try {
+      const response = await apiClient.post<LoginResponse>(
+        "/auth/login",
+        {
+          email,
+          password,
+        },
+        {
+          skipAuth: true,
+        }
+      );
+      const { accessToken, refreshToken: newRefreshToken, user, profileCompleted } = response.data.data;
+
+      // Check if user has allowed role
+      if (user.role !== "DOCTOR" && user.role !== "ADMIN" && user.role !== "STAFF") {
+        // If not allowed, logout (clears state) and throw error
+        await this.logout();
+        throw new Error("Unauthorized: Only Doctors, Admins and Staff can access this portal");
       }
-    );
-    return response.data;
+
+      useAuthStore.getState().login(accessToken, newRefreshToken, user, profileCompleted);
+      return response.data;
+    } catch (error) {
+      console.error("Login error:", error);
+      throw error;
+    }
   }
 
   /**
@@ -35,6 +50,16 @@ class AuthService {
         skipAuth: true,
       }
     );
+    const { accessToken, refreshToken: newRefreshToken, user, profileCompleted } = response.data.data;
+
+    // Check if user has allowed role
+    if (user.role !== "DOCTOR" && user.role !== "ADMIN" && user.role !== "STAFF") {
+      await this.logout();
+      throw new Error("Unauthorized: Only Doctors, Admins and Staff can access this portal");
+    }
+
+    useAuthStore.getState().login(accessToken, newRefreshToken, user, profileCompleted);
+    // Note: We might want to keep rememberMe preference, but here we just update tokens and user
     return response.data;
   }
 
