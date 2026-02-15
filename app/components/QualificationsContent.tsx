@@ -10,6 +10,8 @@ export default function QualificationsContent() {
   const user = useAuthStore((state) => state.user);
   const theme = user?.role === "ADMIN" ? "admin" : "doctor";
   const [showModal, setShowModal] = useState(false);
+  const [showViewerModal, setShowViewerModal] = useState(false);
+  const [selectedDocument, setSelectedDocument] = useState<Qualification | null>(null);
 
   const {
     qualifications,
@@ -43,6 +45,22 @@ export default function QualificationsContent() {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
+    
+    if (file) {
+      // Validate file type - only PDF and Word documents
+      const validTypes = [
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      ];
+      
+      if (!validTypes.includes(file.type)) {
+        setFileError('Please upload only PDF or Word documents (.pdf, .doc, .docx)');
+        setSelectedFile(null);
+        return;
+      }
+    }
+    
     setSelectedFile(file);
     setFileError(null);
   };
@@ -71,8 +89,11 @@ export default function QualificationsContent() {
   };
 
   const handleViewDocument = (id: number) => {
-    // TODO: Implement view functionality
-    console.log("Viewing document:", id);
+    const document = qualifications.find(q => q.id === id);
+    if (document) {
+      setSelectedDocument(document);
+      setShowViewerModal(true);
+    }
   };
 
   const handleDeleteDocument = (id: number) => {
@@ -328,14 +349,14 @@ export default function QualificationsContent() {
                         type="file"
                         className="hidden"
                         onChange={handleFileChange}
-                        accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                        accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                       />
                     </label>
                     {fileError && (
                       <p className="mt-1 text-sm text-error">{fileError}</p>
                     )}
                     <p className="mt-1 text-xs text-slate-400 dark:text-navy-300">
-                      Accepted: PDF, DOC, DOCX, JPG, PNG
+                      Accepted formats: PDF, DOC, DOCX only
                     </p>
                   </div>
                   <div className="space-x-2 text-right">
@@ -363,6 +384,114 @@ export default function QualificationsContent() {
                     </button>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
+
+      {/* Document Viewer Modal */}
+      {showViewerModal &&
+        selectedDocument &&
+        typeof window !== "undefined" &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-100 flex flex-col items-center justify-center overflow-hidden px-4 py-6 sm:px-5"
+            role="dialog"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                setShowViewerModal(false);
+                setSelectedDocument(null);
+              }
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Escape") {
+                setShowViewerModal(false);
+                setSelectedDocument(null);
+              }
+            }}
+          >
+            <div
+              className="absolute inset-0 bg-slate-900/60 transition-opacity duration-300"
+              onClick={() => {
+                setShowViewerModal(false);
+                setSelectedDocument(null);
+              }}
+            ></div>
+            <div className="relative w-full max-w-4xl h-[90vh] origin-top rounded-lg bg-white transition-all duration-300 dark:bg-navy-700 flex flex-col">
+              <div className="flex justify-between items-center rounded-t-lg bg-slate-200 px-4 py-3 dark:bg-navy-800 sm:px-5">
+                <div>
+                  <h3 className="text-base font-medium text-slate-700 dark:text-navy-100">
+                    {selectedDocument.title}
+                  </h3>
+                  {selectedDocument.description && (
+                    <p className="text-sm text-slate-500 dark:text-navy-300 mt-1">
+                      {selectedDocument.description}
+                    </p>
+                  )}
+                </div>
+                <button
+                  onClick={() => {
+                    setShowViewerModal(false);
+                    setSelectedDocument(null);
+                  }}
+                  className="btn -mr-1.5 size-7 rounded-full p-0 hover:bg-slate-300/20 focus:bg-slate-300/20 active:bg-slate-300/25 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="size-4.5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <div className="flex-1 overflow-auto p-4 sm:p-5">
+                {selectedDocument.fileType.startsWith('image/') ? (
+                  <div className="flex items-center justify-center h-full">
+                    <img
+                      src={selectedDocument.fileUrl}
+                      alt={selectedDocument.title}
+                      className="max-w-full max-h-full object-contain"
+                    />
+                  </div>
+                ) : selectedDocument.fileType === 'application/pdf' ? (
+                  <iframe
+                    src={selectedDocument.fileUrl}
+                    className="w-full h-full border-0"
+                    title={selectedDocument.title}
+                  />
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-full text-slate-500 dark:text-navy-300">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="size-16 mb-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
+                      />
+                    </svg>
+                    <p className="text-lg font-medium mb-2">Preview not available</p>
+                    <p className="text-sm mb-4">This file type cannot be previewed in the browser</p>
+                    <a
+                      href={selectedDocument.fileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn bg-primary hover:bg-primary-focus text-white rounded-full px-6"
+                    >
+                      Download File
+                    </a>
+                  </div>
+                )}
               </div>
             </div>
           </div>,

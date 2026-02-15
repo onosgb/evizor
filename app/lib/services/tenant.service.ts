@@ -1,5 +1,6 @@
 import apiClient from "../api-client";
 import { Tenant } from "../../models";
+import { ApiResponse } from "../../models/ApiResponse";
 
 /**
  * Tenant service
@@ -8,12 +9,13 @@ import { Tenant } from "../../models";
 class TenantService {
   /**
    * Get all tenants
+   * Response: { "message": "string", "statusCode": number, "data": [...] }
    */
   async getAllTenants(): Promise<Tenant[]> {
-    const response = await apiClient.get<Tenant[]>(
+    const response = await apiClient.get<ApiResponse<Tenant[]>>(
       "/tenant/all-tenants"
     );
-    return response.data;
+    return response.data.data;
   }
 }
 
