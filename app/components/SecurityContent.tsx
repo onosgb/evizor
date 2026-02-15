@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ProfileSidebar from "./ProfileSidebar";
 import { useAuthStore } from "../stores/authStore";
+import { useSearchParams } from "next/navigation";
+import { authService } from "../lib/services";
 
 interface ActiveSession {
   date: string;
@@ -12,6 +14,10 @@ interface ActiveSession {
 
 export default function SecurityContent() {
   const user = useAuthStore((state) => state.user);
+  const searchParams = useSearchParams();
+  const userId = searchParams.get("userId");
+  const isReadOnly = !!userId;
+
   const theme = user?.role === "ADMIN" ? "admin" : "doctor";
 
   const [formData, setFormData] = useState({
@@ -37,6 +43,26 @@ export default function SecurityContent() {
       status: "Active",
     },
   ]);
+
+  // Fetch security settings if userId is present
+  useEffect(() => {
+    if (userId) {
+      const fetchSecuritySettings = async () => {
+        try {
+          const response = await authService.getUserSecuritySettings(userId);
+          if (response.status && response.data) {
+             setFormData(prev => ({
+               ...prev,
+               ...response.data
+             }));
+          }
+        } catch (error) {
+          console.error("Failed to fetch security settings:", error);
+        }
+      };
+      fetchSecuritySettings();
+    }
+  }, [userId]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement>
@@ -87,24 +113,26 @@ export default function SecurityContent() {
               <h2 className="text-lg font-medium tracking-wide text-slate-700 dark:text-navy-100">
                 Security Settings
               </h2>
-              <div className="flex justify-center space-x-2">
-                <button
-                  onClick={handleCancel}
-                  className="btn min-w-28 rounded-full border border-slate-300 font-medium text-slate-700 hover:bg-slate-150 focus:bg-slate-150 active:bg-slate-150/80 dark:border-navy-450 dark:text-navy-100 dark:hover:bg-navy-500 dark:focus:bg-navy-500 dark:active:bg-navy-500/90"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSave}
-                  className={`btn min-w-28 rounded-full font-medium text-white ${
-                    theme === "admin"
-                      ? "bg-success hover:bg-success-focus focus:bg-success-focus active:bg-success-focus/90 dark:bg-success dark:hover:bg-success-focus dark:focus:bg-success-focus dark:active:bg-success/90"
-                      : "bg-primary hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
-                  }`}
-                >
-                  Save
-                </button>
-              </div>
+              {!isReadOnly && (
+                <div className="flex justify-center space-x-2">
+                  <button
+                    onClick={handleCancel}
+                    className="btn min-w-28 rounded-full border border-slate-300 font-medium text-slate-700 hover:bg-slate-150 focus:bg-slate-150 active:bg-slate-150/80 dark:border-navy-450 dark:text-navy-100 dark:hover:bg-navy-500 dark:focus:bg-navy-500 dark:active:bg-navy-500/90"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSave}
+                    className={`btn min-w-28 rounded-full font-medium text-white ${
+                      theme === "admin"
+                        ? "bg-success hover:bg-success-focus focus:bg-success-focus active:bg-success-focus/90 dark:bg-success dark:hover:bg-success-focus dark:focus:bg-success-focus dark:active:bg-success/90"
+                        : "bg-primary hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
+                    }`}
+                  >
+                    Save
+                  </button>
+                </div>
+              )}
             </div>
             <div className="p-4 sm:p-5">
               <div className="p-5">
@@ -116,8 +144,9 @@ export default function SecurityContent() {
                         name="newPassword"
                         value={formData.newPassword}
                         onChange={handleInputChange}
-                        className="form-input peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 pl-9 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
-                        placeholder="Enter new password"
+                        disabled={isReadOnly}
+                        className={`form-input peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 pl-9 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent ${isReadOnly ? "opacity-60 cursor-not-allowed" : ""}`}
+                        placeholder={isReadOnly ? "********" : "Enter new password"}
                         type="password"
                       />
                       <span className="pointer-events-none absolute flex h-full w-10 items-center justify-center text-slate-400 peer-focus:text-primary dark:text-navy-300 dark:peer-focus:text-accent">
@@ -145,8 +174,9 @@ export default function SecurityContent() {
                         name="confirmPassword"
                         value={formData.confirmPassword}
                         onChange={handleInputChange}
-                        className="form-input peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 pl-9 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
-                        placeholder="Confirm password"
+                        disabled={isReadOnly}
+                        className={`form-input peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 pl-9 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent ${isReadOnly ? "opacity-60 cursor-not-allowed" : ""}`}
+                        placeholder={isReadOnly ? "********" : "Confirm password"}
                         type="password"
                       />
                       <span className="pointer-events-none absolute flex h-full w-10 items-center justify-center text-slate-400 peer-focus:text-primary dark:text-navy-300 dark:peer-focus:text-accent">
@@ -176,7 +206,8 @@ export default function SecurityContent() {
                       name="twoFactorAuth"
                       checked={formData.twoFactorAuth}
                       onChange={handleInputChange}
-                      className={getSwitchClasses()}
+                      disabled={isReadOnly}
+                      className={`${getSwitchClasses()} ${isReadOnly ? "opacity-60 cursor-not-allowed" : ""}`}
                       type="checkbox"
                     />
                   </label>

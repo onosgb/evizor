@@ -9,13 +9,14 @@ interface ProfessionalProfileState {
   error: string | null;
   saveError: string | null;
   saveSuccess: boolean;
-  fetchProfile: () => Promise<void>;
+  fetchProfile: (userId?: string) => Promise<void>;
   updateProfile: (data: ProfessionalProfile) => Promise<boolean>;
+  approveProfile: (userId: string) => Promise<boolean>;
   clearMessages: () => void;
 }
 
 export const useProfessionalProfileStore = create<ProfessionalProfileState>(
-  (set) => ({
+  (set, get) => ({
     profile: null,
     isLoading: false,
     isSaving: false,
@@ -23,10 +24,16 @@ export const useProfessionalProfileStore = create<ProfessionalProfileState>(
     saveError: null,
     saveSuccess: false,
 
-    fetchProfile: async () => {
+    fetchProfile: async (userId?: string) => {
       set({ isLoading: true, error: null });
       try {
-        const response = await authService.getProfessionalProfile();
+        let response;
+        if (userId) {
+          response = await authService.getProfessionalProfileByUserId(userId);
+        } else {
+          response = await authService.getProfessionalProfile();
+        }
+        
         if (response.status && response.data) {
           set({ profile: response.data });
         } else {
@@ -49,6 +56,34 @@ export const useProfessionalProfileStore = create<ProfessionalProfileState>(
         } else {
           set({
             saveError: response.message || "Failed to save professional information",
+          });
+          return false;
+        }
+      } catch (error: any) {
+        set({
+          saveError:
+            error?.response?.data?.message ||
+            error.message ||
+            "An unexpected error occurred",
+        });
+        return false;
+      } finally {
+        set({ isSaving: false });
+      }
+    },
+
+    approveProfile: async (userId: string): Promise<boolean> => {
+      set({ isSaving: true, saveError: null, saveSuccess: false });
+      try {
+        const response = await authService.approveProfessionalProfile(userId);
+        if (response.status) {
+          set({ saveSuccess: true });
+          // Refresh profile after approval
+          await get().fetchProfile(userId);
+          return true;
+        } else {
+          set({
+            saveError: response.message || "Failed to approve profile",
           });
           return false;
         }

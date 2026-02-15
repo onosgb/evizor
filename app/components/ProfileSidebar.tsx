@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useAuthStore } from "../stores/authStore";
 
 interface ProfileSidebarProps {
@@ -11,7 +11,14 @@ interface ProfileSidebarProps {
 
 export default function ProfileSidebar({ theme }: ProfileSidebarProps) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const userId = searchParams.get("userId");
   const user = useAuthStore((state) => state.user);
+  
+  // Helper to build links with userId query param if present
+  const getLink = (path: string) => {
+    return userId ? `${path}?userId=${userId}` : path;
+  };
   
   // Determine theme from user role if not provided
   const currentTheme = theme || (user?.role === "ADMIN" ? "admin" : "doctor");
@@ -64,7 +71,7 @@ export default function ProfileSidebar({ theme }: ProfileSidebarProps) {
           <li>
             <Link
               className={`flex items-center space-x-2 rounded-lg px-4 py-2.5 tracking-wide outline-hidden transition-all ${getActiveClasses(isActive("/profile"))}`}
-              href="/profile"
+              href={getLink("/profile")}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -86,7 +93,7 @@ export default function ProfileSidebar({ theme }: ProfileSidebarProps) {
           <li>
             <Link
               className={`flex items-center space-x-2 rounded-lg px-4 py-2.5 tracking-wide outline-hidden transition-all ${getActiveClasses(isActive("/profile/professional"))}`}
-              href="/profile/professional"
+              href={getLink("/profile/professional")}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -110,7 +117,7 @@ export default function ProfileSidebar({ theme }: ProfileSidebarProps) {
           <li>
             <Link
               className={`flex items-center space-x-2 rounded-lg px-4 py-2.5 tracking-wide outline-hidden transition-all ${getActiveClasses(isActive("/profile/qualifications"))}`}
-              href="/profile/qualifications"
+              href={getLink("/profile/qualifications")}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -128,7 +135,7 @@ export default function ProfileSidebar({ theme }: ProfileSidebarProps) {
           <li>
             <Link
               className={`flex items-center space-x-2 rounded-lg px-4 py-2.5 tracking-wide outline-hidden transition-all ${getActiveClasses(isActive("/profile/availability"))}`}
-              href="/profile/availability"
+              href={getLink("/profile/availability")}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -148,36 +155,11 @@ export default function ProfileSidebar({ theme }: ProfileSidebarProps) {
               <span> Availability & Schedule </span>
             </Link>
           </li>
-          <li>
-            <Link
-              className={`flex items-center space-x-2 rounded-lg px-4 py-2.5 tracking-wide outline-hidden transition-all ${getActiveClasses(isActive("/profile/consultation"))}`}
-              href="/profile/consultation"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className={`size-5 transition-colors ${getIconClasses(isActive("/profile/consultation"))}`}
-                viewBox="0 0 24 24"
-              >
-                <g
-                  fill="none"
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeWidth="2"
-                >
-                  <path
-                    strokeLinejoin="round"
-                    d="M14 19c3.771 0 5.657 0 6.828-1.172C22 16.657 22 14.771 22 11c0-3.771 0-5.657-1.172-6.828C19.657 3 17.771 3 14 3h-4C6.229 3 4.343 3 3.172 4.172C2 5.343 2 7.229 2 11c0 3.771 0 5.657 1.172 6.828c.653.654 1.528.943 2.828 1.07"
-                  />
-                  <path d="M10 8.484C10.5 7.494 11 7 12 7c1.246 0 2 .989 2 1.978s-.5 1.033-2 2.022v1m0 2.5v.5m2 4c-1.236 0-2.598.5-3.841 1.145c-1.998 1.037-2.997 1.556-3.489 1.225c-.492-.33-.399-1.355-.212-3.404L6.5 17.5" />
-                </g>
-              </svg>
-              <span>Consultation Preferences </span>
-            </Link>
-          </li>
+
           <li>
             <Link
               className={`flex items-center space-x-2 rounded-lg px-4 py-2.5 tracking-wide outline-hidden transition-all ${getActiveClasses(isActive("/profile/performance"))}`}
-              href="/profile/performance"
+              href={getLink("/profile/performance")}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -195,10 +177,11 @@ export default function ProfileSidebar({ theme }: ProfileSidebarProps) {
               <span>Performance Snapshot</span>
             </Link>
           </li>
+          {!userId && (
           <li>
             <Link
               className={`flex items-center space-x-2 rounded-lg px-4 py-2.5 tracking-wide outline-hidden transition-all ${getActiveClasses(isActive("/profile/security"))}`}
-              href="/profile/security"
+              href={getLink("/profile/security")}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -217,10 +200,12 @@ export default function ProfileSidebar({ theme }: ProfileSidebarProps) {
               <span>Security</span>
             </Link>
           </li>
+          )}
+          {!userId && (
           <li>
             <Link
               className={`flex items-center space-x-2 rounded-lg px-4 py-2.5 tracking-wide outline-hidden transition-all ${getActiveClasses(isActive("/profile/activity"))}`}
-              href="/profile/activity"
+              href={getLink("/profile/activity")}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -239,6 +224,7 @@ export default function ProfileSidebar({ theme }: ProfileSidebarProps) {
               <span>Activity Log</span>
             </Link>
           </li>
+          )}
         </ul>
       </div>
     </div>

@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuthStore } from "../stores/authStore";
 import ProfileSidebar from "./ProfileSidebar";
+import { useSearchParams } from "next/navigation";
+import { authService } from "../lib/services";
 
 interface ActivityLog {
   timestamp: string;
@@ -11,8 +13,10 @@ interface ActivityLog {
 
 export default function ActivityLogContent() {
   const user = useAuthStore((state) => state.user);
+  const searchParams = useSearchParams();
+  const userId = searchParams.get("userId");
 
-  const [activityLogs] = useState<ActivityLog[]>([
+  const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([
     {
       timestamp: "Friday 25 January, 2026 | 10:02 AM",
       activity: "Accepted patient John D.",
@@ -26,6 +30,23 @@ export default function ActivityLogContent() {
       activity: "Updated availability",
     },
   ]);
+
+  // Fetch activity logs if userId is present
+  useEffect(() => {
+    if (userId) {
+      const fetchActivityLogs = async () => {
+        try {
+          const response = await authService.getUserActivityLog(userId);
+          if (response.status && response.data) {
+             // setActivityLogs(response.data);
+          }
+        } catch (error) {
+          console.error("Failed to fetch activity logs:", error);
+        }
+      };
+      fetchActivityLogs();
+    }
+  }, [userId]);
 
   return (
     <>

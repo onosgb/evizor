@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuthStore } from "../stores/authStore";
 import ProfileSidebar from "./ProfileSidebar";
+import { useSearchParams } from "next/navigation";
+import { authService } from "../lib/services";
 
 interface PerformanceData {
   date: string;
@@ -14,8 +16,10 @@ interface PerformanceData {
 
 export default function PerformanceContent() {
   const user = useAuthStore((state) => state.user);
+  const searchParams = useSearchParams();
+  const userId = searchParams.get("userId");
 
-  const [performanceData] = useState<PerformanceData[]>([
+  const [performanceData, setPerformanceData] = useState<PerformanceData[]>([
     {
       date: "Mon, 12 May",
       consultationsToday: 15,
@@ -59,6 +63,23 @@ export default function PerformanceContent() {
       completionRate: "90%",
     },
   ]);
+
+  // Fetch performance data if userId is present
+  useEffect(() => {
+    if (userId) {
+      const fetchPerformance = async () => {
+        try {
+          const response = await authService.getUserPerformance(userId);
+          if (response.status && response.data) {
+            // setPerformanceData(response.data);
+          }
+        } catch (error) {
+          console.error("Failed to fetch performance data:", error);
+        }
+      };
+      fetchPerformance();
+    }
+  }, [userId]);
 
   return (
     <>

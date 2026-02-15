@@ -26,9 +26,15 @@ const formatDateForInput = (dateString: string | undefined): string => {
   }
 };
 
+import { useSearchParams } from "next/navigation";
+
 export default function ProfileContent() {
   const user = useAuthStore((state) => state.user);
-  const setUser = useAuthStore((state) => state.setUser);
+  const { setUser } = useAuthStore();
+  const searchParams = useSearchParams();
+  const userId = searchParams.get("userId");
+  
+  const isReadOnly = !!userId; // Readonly if viewing another user
   const theme = user?.role === "ADMIN" ? "admin" : "doctor";
   const getTenantById = useTenantStore((state) => state.getTenantById);
   
@@ -57,19 +63,28 @@ export default function ProfileContent() {
 
   // Fetch fresh profile data on mount
   useEffect(() => {
-    const fetchProfile = async () => {
+    const loadProfile = async () => {
       try {
-        const response = await authService.getMyProfile();
-        if (response.data) {
-          setUser(response.data);
+        if (userId) {
+          // Admin viewing another user's profile
+          const response = await authService.getUserProfile(userId);
+          if (response.status && response.data) {
+            setUser(response.data);
+          }
+        } else {
+          // User viewing their own profile
+          const response = await authService.getMyProfile();
+          if (response.status && response.data) {
+            setUser(response.data);
+          }
         }
-      } catch (err) {
-        console.error("Failed to fetch profile:", err);
+      } catch (error) {
+        console.error("Failed to fetch profile:", error);
       }
     };
     
-    fetchProfile();
-  }, [setUser]);
+    loadProfile();
+  }, [setUser, userId]);
 
   // Update form data when user changes
   useEffect(() => {
@@ -196,25 +211,27 @@ export default function ProfileContent() {
             <h2 className="text-lg font-medium tracking-wide text-slate-700 dark:text-navy-100">
               Personal Information
             </h2>
-            <div className="flex justify-center space-x-2">
-              <button
-                onClick={handleCancel}
-                className="btn min-w-28 rounded-full border border-slate-300 font-medium text-slate-700 hover:bg-slate-150 focus:bg-slate-150 active:bg-slate-150/80 dark:border-navy-450 dark:text-navy-100 dark:hover:bg-navy-500 dark:focus:bg-navy-500 dark:active:bg-navy-500/90"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={isSubmitting}
-                className={`btn min-w-28 rounded-full font-medium text-white ${
-                  theme === "admin"
-                    ? "bg-success hover:bg-success-focus focus:bg-success-focus active:bg-success-focus/90 dark:bg-success dark:hover:bg-success-focus dark:focus:bg-success-focus dark:active:bg-success/90"
-                    : "bg-primary hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
-                } ${isSubmitting ? "opacity-60 cursor-not-allowed" : ""}`}
-              >
-                {isSubmitting ? "Saving..." : "Save"}
-              </button>
-            </div>
+              {!isReadOnly && (
+                <div className="flex justify-center space-x-2 pt-4">
+                  <button
+                    onClick={handleCancel}
+                    className="btn min-w-28 rounded-full border border-slate-300 font-medium text-slate-700 hover:bg-slate-150 focus:bg-slate-150 active:bg-slate-150/80 dark:border-navy-450 dark:text-navy-100 dark:hover:bg-navy-500 dark:focus:bg-navy-500 dark:active:bg-navy-500/90"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSave}
+                    disabled={isSubmitting}
+                    className={`btn min-w-28 rounded-full font-medium text-white disabled:opacity-50 disabled:cursor-not-allowed ${
+                      user?.role === "ADMIN"
+                        ? "bg-success hover:bg-success-focus focus:bg-success-focus active:bg-success-focus/90 dark:bg-success dark:hover:bg-success-focus dark:focus:bg-success-focus dark:active:bg-success/90"
+                        : "bg-primary hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
+                    }`}
+                  >
+                    {isSubmitting ? "Saving..." : "Save"}
+                  </button>
+                </div>
+              )}
           </div>
           <div className="p-4 sm:p-5">
             {/* Avatar Section */}
@@ -233,25 +250,28 @@ export default function ProfileContent() {
                     height={80}
                   />
                 )}
-                <div className="absolute bottom-0 right-0 flex items-center justify-center rounded-full bg-white dark:bg-navy-700">
-                  <label className="btn size-6 rounded-full border border-slate-200 p-0 hover:bg-slate-300/20 focus:bg-slate-300/20 active:bg-slate-300/25 dark:border-navy-500 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25 cursor-pointer">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="size-3.5"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                    </svg>
-                    <input
-                      type="file"
-                      className="hidden"
-                      accept="image/jpeg,image/jpg,image/png"
-                      onChange={handleAvatarChange}
-                      disabled={isUploadingAvatar}
-                    />
-                  </label>
-                </div>
+                {/* Only show edit button if not readonly */}
+                {!isReadOnly && (
+                  <div className="absolute bottom-0 right-0 flex items-center justify-center rounded-full bg-white dark:bg-navy-700">
+                    <label className="btn size-6 rounded-full border border-slate-200 p-0 hover:bg-slate-300/20 focus:bg-slate-300/20 active:bg-slate-300/25 dark:border-navy-500 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25 cursor-pointer">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="size-3.5"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                      </svg>
+                      <input
+                        type="file"
+                        className="hidden"
+                        accept="image/jpeg,image/jpg,image/png"
+                        onChange={handleAvatarChange}
+                        disabled={isUploadingAvatar}
+                      />
+                    </label>
+                  </div>
+                )}
               </div>
               {avatarError && (
                 <p className="mt-2 text-xs text-error">{avatarError}</p>
@@ -281,7 +301,8 @@ export default function ProfileContent() {
                     name="firstName"
                     value={formData.firstName}
                     onChange={handleInputChange}
-                    className="form-input peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 pl-9 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
+                    readOnly={isReadOnly}
+                    className={`form-input peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 pl-9 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent ${isReadOnly ? 'bg-slate-50 dark:bg-navy-900 cursor-not-allowed' : ''}`}
                     placeholder="Enter first name"
                     type="text"
                   />
@@ -310,7 +331,8 @@ export default function ProfileContent() {
                     name="lastName"
                     value={formData.lastName}
                     onChange={handleInputChange}
-                    className="form-input peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 pl-9 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
+                    readOnly={isReadOnly}
+                    className={`form-input peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 pl-9 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent ${isReadOnly ? 'bg-slate-50 dark:bg-navy-900 cursor-not-allowed' : ''}`}
                     placeholder="Enter last name"
                     type="text"
                   />
@@ -338,7 +360,8 @@ export default function ProfileContent() {
                   <input
                     name="email"
                     value={formData.email}
-                    readOnly
+                    disabled={true} // Email is always disabled
+                    readOnly={true}
                     className="form-input peer w-full rounded-full border border-slate-300 bg-slate-100 px-3 py-2 pl-9 text-slate-600 dark:border-navy-450 dark:bg-navy-800 dark:text-navy-200 cursor-not-allowed"
                     placeholder="Enter email address"
                     type="email"
@@ -368,7 +391,8 @@ export default function ProfileContent() {
                     name="phoneNumber"
                     value={formData.phoneNumber}
                     onChange={handleInputChange}
-                    className="form-input peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 pl-9 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
+                    readOnly={isReadOnly}
+                    className={`form-input peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 pl-9 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent ${isReadOnly ? 'bg-slate-50 dark:bg-navy-900 cursor-not-allowed' : ''}`}
                     placeholder="Enter phone number"
                     type="tel"
                   />
@@ -397,7 +421,8 @@ export default function ProfileContent() {
                     name="gender"
                     value={formData.gender}
                     onChange={handleInputChange}
-                    className="form-select w-full rounded-full border border-slate-300 bg-white px-3 py-2 pl-9 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:bg-navy-700 dark:hover:border-navy-400 dark:focus:border-accent"
+                    disabled={isReadOnly}
+                    className={`form-select w-full rounded-full border border-slate-300 bg-white px-3 py-2 pl-9 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:bg-navy-700 dark:hover:border-navy-400 dark:focus:border-accent ${isReadOnly ? 'bg-slate-50 dark:bg-navy-900 cursor-not-allowed' : ''}`}
                   >
                     <option value="">Select gender</option>
                     <option value="Male">Male</option>
@@ -428,7 +453,8 @@ export default function ProfileContent() {
                   <input
                     name="location"
                     value={formData.location}
-                    readOnly
+                    disabled={true} // Location is always disabled for now as per requirement
+                    readOnly={true}
                     className="form-input peer w-full rounded-full border border-slate-300 bg-slate-100 px-3 py-2 pl-9 text-slate-600 dark:border-navy-450 dark:bg-navy-800 dark:text-navy-200 cursor-not-allowed"
                     placeholder="No location assigned"
                     type="text"
@@ -463,8 +489,9 @@ export default function ProfileContent() {
                     name="dob"
                     value={formData.dob}
                     onChange={handleInputChange}
+                    readOnly={isReadOnly}
                     max={new Date(new Date().setFullYear(new Date().getFullYear() - 17)).toISOString().split('T')[0]}
-                    className="form-input peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 pl-9 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
+                    className={`form-input peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 pl-9 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent ${isReadOnly ? 'bg-slate-50 dark:bg-navy-900 cursor-not-allowed' : ''}`}
                     placeholder="Enter date of birth"
                     type="date"
                   />
@@ -493,7 +520,8 @@ export default function ProfileContent() {
                     name="address"
                     value={formData.address}
                     onChange={handleInputChange}
-                    className="form-input peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 pl-9 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
+                    readOnly={isReadOnly}
+                    className={`form-input peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 pl-9 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent ${isReadOnly ? 'bg-slate-50 dark:bg-navy-900 cursor-not-allowed' : ''}`}
                     placeholder="Enter address"
                     type="text"
                   />

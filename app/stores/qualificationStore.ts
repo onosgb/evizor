@@ -8,7 +8,7 @@ interface QualificationState {
   isUploading: boolean;
   error: string | null;
   uploadError: string | null;
-  fetchQualifications: () => Promise<void>;
+  fetchQualifications: (userId?: string) => Promise<void>;
   uploadQualification: (data: FormData) => Promise<boolean>;
 }
 
@@ -19,10 +19,16 @@ export const useQualificationStore = create<QualificationState>((set, get) => ({
   error: null,
   uploadError: null,
 
-  fetchQualifications: async () => {
+  fetchQualifications: async (userId?: string) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await authService.getQualifications();
+      let response;
+      if (userId) {
+        response = await authService.getUserQualifications(userId);
+      } else {
+        response = await authService.getQualifications();
+      }
+
       if (response.status) {
         set({ qualifications: response.data || [] });
       } else {

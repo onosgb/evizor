@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ProfileSidebar from "./ProfileSidebar";
 import { useAuthStore } from "../stores/authStore";
+import { useSearchParams } from "next/navigation";
+import { authService } from "../lib/services";
 
 interface ConsultationPreferences {
   acceptOnDemandVisits: boolean;
@@ -14,6 +16,10 @@ interface ConsultationPreferences {
 
 export default function ConsultationContent() {
   const user = useAuthStore((state) => state.user);
+  const searchParams = useSearchParams();
+  const userId = searchParams.get("userId");
+  const isReadOnly = !!userId;
+  
   const theme = user?.role === "ADMIN" ? "admin" : "doctor";
   
   // Theme-based switch styling
@@ -29,6 +35,23 @@ export default function ConsultationContent() {
     preferredTypeGeneral: true,
     preferredTypeSpecialist: false,
   });
+
+  // Fetch preferences if userId is present
+  useEffect(() => {
+    if (userId) {
+      const fetchPreferences = async () => {
+        try {
+          const response = await authService.getUserConsultationPreferences(userId);
+          if (response.status && response.data) {
+            setPreferences(response.data);
+          }
+        } catch (error) {
+          console.error("Failed to fetch consultation preferences:", error);
+        }
+      };
+      fetchPreferences();
+    }
+  }, [userId]);
 
   const handleToggle = (key: keyof ConsultationPreferences) => {
     setPreferences((prev) => ({
@@ -71,9 +94,10 @@ export default function ConsultationContent() {
                       <td className="whitespace-nowrap px-4 py-3 sm:px-5">
                         <label className="inline-flex items-center">
                           <input
+                            disabled={isReadOnly}
                             checked={preferences.acceptOnDemandVisits}
-                            onChange={() => handleToggle("acceptOnDemandVisits")}
-                            className={getSwitchClasses()}
+                            onChange={() => !isReadOnly && handleToggle("acceptOnDemandVisits")}
+                            className={`${getSwitchClasses()} ${isReadOnly ? "opacity-60 cursor-not-allowed" : ""}`}
                             type="checkbox"
                           />
                         </label>
@@ -86,9 +110,10 @@ export default function ConsultationContent() {
                       <td className="whitespace-nowrap px-4 py-3 sm:px-5">
                         <label className="inline-flex items-center">
                           <input
+                            disabled={isReadOnly}
                             checked={preferences.acceptScheduledVisits}
-                            onChange={() => handleToggle("acceptScheduledVisits")}
-                            className={getSwitchClasses()}
+                            onChange={() => !isReadOnly && handleToggle("acceptScheduledVisits")}
+                            className={`${getSwitchClasses()} ${isReadOnly ? "opacity-60 cursor-not-allowed" : ""}`}
                             type="checkbox"
                           />
                         </label>
@@ -101,9 +126,10 @@ export default function ConsultationContent() {
                       <td className="whitespace-nowrap px-4 py-3 sm:px-5">
                         <label className="inline-flex items-center">
                           <input
+                            disabled={isReadOnly}
                             checked={preferences.followUpOnly}
-                            onChange={() => handleToggle("followUpOnly")}
-                            className={getSwitchClasses()}
+                            onChange={() => !isReadOnly && handleToggle("followUpOnly")}
+                            className={`${getSwitchClasses()} ${isReadOnly ? "opacity-60 cursor-not-allowed" : ""}`}
                             type="checkbox"
                           />
                         </label>
@@ -116,9 +142,10 @@ export default function ConsultationContent() {
                       <td className="whitespace-nowrap px-4 py-3 sm:px-5">
                         <label className="inline-flex items-center">
                           <input
+                            disabled={isReadOnly}
                             checked={preferences.preferredTypeGeneral}
-                            onChange={() => handleToggle("preferredTypeGeneral")}
-                            className={getSwitchClasses()}
+                            onChange={() => !isReadOnly && handleToggle("preferredTypeGeneral")}
+                            className={`${getSwitchClasses()} ${isReadOnly ? "opacity-60 cursor-not-allowed" : ""}`}
                             type="checkbox"
                           />
                         </label>
@@ -131,9 +158,10 @@ export default function ConsultationContent() {
                       <td className="whitespace-nowrap px-4 py-3 sm:px-5">
                         <label className="inline-flex items-center">
                           <input
+                            disabled={isReadOnly}
                             checked={preferences.preferredTypeSpecialist}
-                            onChange={() => handleToggle("preferredTypeSpecialist")}
-                            className={getSwitchClasses()}
+                            onChange={() => !isReadOnly && handleToggle("preferredTypeSpecialist")}
+                            className={`${getSwitchClasses()} ${isReadOnly ? "opacity-60 cursor-not-allowed" : ""}`}
                             type="checkbox"
                           />
                         </label>

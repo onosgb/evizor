@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import DashboardLayout from "../components/DashboardLayout";
 import CreateStaffForm from "../components/CreateStaffForm";
+import ScheduleManagementModal from "../components/ScheduleManagementModal";
 import Image from "next/image";
 import { Staff, CreateStaffRequest } from "../models";
 import { staffService } from "../lib/services";
@@ -28,8 +30,11 @@ const isActiveStatus = (status: string | null | undefined): boolean => {
 };
 
 export default function StaffManagementPage() {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [selectedStaffForSchedule, setSelectedStaffForSchedule] = useState<{id: string, name: string} | null>(null);
   const [staff, setStaff] = useState<Staff[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -37,8 +42,10 @@ export default function StaffManagementPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const menuRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
 
   // Fetch staff on component mount
   useEffect(() => {
@@ -155,29 +162,55 @@ export default function StaffManagementPage() {
     }
   };
 
+  const handleOpenSchedule = (staffId: string, staffName: string) => {
+    setSelectedStaffForSchedule({ id: staffId, name: staffName });
+    setShowScheduleModal(true);
+    setOpenMenuId(null);
+  };
+
+
+
   const toggleMenu = (memberId: string) => {
-    setOpenMenuId(openMenuId === memberId ? null : memberId);
+    if (openMenuId === memberId) {
+      setOpenMenuId(null);
+    } else {
+      const element = menuRefs.current[memberId];
+      if (element) {
+        const rect = element.getBoundingClientRect();
+        setMenuPosition({
+          top: rect.bottom + window.scrollY,
+          left: rect.right + window.scrollX - 144, // Align right edge, assuming menu width approx 9rem (144px)
+        });
+      }
+      setOpenMenuId(memberId);
+    }
   };
 
   // Close menu when clicking outside
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (openMenuId !== null) {
-        const menuRef = menuRefs.current[openMenuId];
-        if (menuRef && !menuRef.contains(event.target as Node)) {
-          setOpenMenuId(null);
-        }
-      }
-    };
-
+    const handleClick = () => setOpenMenuId(null);
     if (openMenuId !== null) {
-      document.addEventListener("mousedown", handleClickOutside);
+      // Small delay/timeout to avoid immediate close from the trigger click bubbling
+      // But since we attach to document, it should be fine if we stop propagation on the trigger 
+      // or just trust that the trigger itself handles the toggle logic before this runs?
+      // Better: check if click target is NOT the menu or the button
+      const handleOutsideClick = (e: MouseEvent) => {
+         // simplified for now, any click closes it unless stopped prop elsewhere
+         // We'll rely on the menu logic to not propagate if needed, but actually
+         // clicking outside is what we want.
+         setOpenMenuId(null);
+      };
+      
+      // Delay attaching so current click doesn't trigger it immediately
+      requestAnimationFrame(() => {
+          document.addEventListener('click', handleOutsideClick);
+      });
+      return () => document.removeEventListener('click', handleOutsideClick);
     }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
   }, [openMenuId]);
+  
+  // Find active member for the menu
+  const activeMember = staff.find(m => m.id === openMenuId);
 
   return (
     <DashboardLayout theme="admin">
@@ -209,6 +242,20 @@ export default function StaffManagementPage() {
         isSubmitting={isSubmitting}
         theme="admin"
       />
+
+      {/* Schedule Management Modal */}
+      {selectedStaffForSchedule && (
+        <ScheduleManagementModal
+          isOpen={showScheduleModal}
+          onClose={() => {
+            setShowScheduleModal(false);
+            setSelectedStaffForSchedule(null);
+          }}
+          userId={selectedStaffForSchedule.id}
+          userName={selectedStaffForSchedule.name}
+          theme="admin"
+        />
+      )}
 
       {/* Search Card */}
       <div className="card rounded-2xl px-4 py-4 sm:px-5">
@@ -372,7 +419,10 @@ export default function StaffManagementPage() {
                             }}
                           >
                             <button
-                              onClick={() => toggleMenu(member.id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleMenu(member.id);
+                              }}
                               className="btn size-8 rounded-full p-0 hover:bg-slate-300/20 focus:bg-slate-300/20 active:bg-slate-300/25 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25"
                               aria-label="Menu"
                             >
@@ -391,58 +441,6 @@ export default function StaffManagementPage() {
                                 />
                               </svg>
                             </button>
-                            {openMenuId === member.id && (
-                              <div className="popper-root show absolute right-0 top-full mt-2 z-10">
-                                <div className="popper-box w-auto min-w-fit rounded-md border border-slate-150 bg-white py-1.5 font-inter dark:border-navy-500 dark:bg-navy-700 shadow-lg">
-                                  <ul>
-                                    <li>
-                                      <a
-                                        href="#"
-                                        onClick={(e) => {
-                                          e.preventDefault();
-                                          console.log("Edit", member.fullName);
-                                          setOpenMenuId(null);
-                                        }}
-                                        className="flex h-8 items-center whitespace-nowrap px-3 pr-8 font-medium tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
-                                      >
-                                        Edit
-                                      </a>
-                                    </li>
-                                    <li>
-                                      <a
-                                        href="#"
-                                        onClick={(e) => {
-                                          e.preventDefault();
-                                          console.log(
-                                            "View Details",
-                                            member.fullName
-                                          );
-                                          setOpenMenuId(null);
-                                        }}
-                                        className="flex h-8 items-center whitespace-nowrap px-3 pr-8 font-medium tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
-                                      >
-                                        View Details
-                                      </a>
-                                    </li>
-                                  </ul>
-                                  <div className="my-1 h-px bg-slate-150 dark:bg-navy-500"></div>
-                                  <ul>
-                                    <li>
-                                      <a
-                                        href="#"
-                                        onClick={(e) => {
-                                          e.preventDefault();
-                                          handleDeleteStaff(member.id);
-                                        }}
-                                        className="flex h-8 items-center whitespace-nowrap px-3 pr-8 font-medium tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
-                                      >
-                                        Delete
-                                      </a>
-                                    </li>
-                                  </ul>
-                                </div>
-                              </div>
-                            )}
                           </div>
                         </td>
                       </tr>
@@ -546,6 +544,75 @@ export default function StaffManagementPage() {
           </div>
         </div>
       </div>
+      
+      {/* Global Staff Menu */}
+      {openMenuId && activeMember && (
+        <div 
+          className="fixed z-50 rounded-md border border-slate-150 bg-white py-1.5 font-inter shadow-lg dark:border-navy-500 dark:bg-navy-700"
+          style={{ top: `${menuPosition.top}px`, left: `${menuPosition.left}px` }}
+          onClick={(e) => e.stopPropagation()} 
+        >
+          <ul>
+            <li>
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  console.log("Edit", activeMember.fullName);
+                  setOpenMenuId(null);
+                }}
+                className="flex h-8 items-center whitespace-nowrap px-3 pr-8 font-medium tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
+              >
+                Edit
+              </a>
+            </li>
+            <li>
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  // console.log("View Details", activeMember.fullName);
+                  router.push(`/profile?userId=${activeMember.id}`);
+                  setOpenMenuId(null);
+                }}
+                className="flex h-8 items-center whitespace-nowrap px-3 pr-8 font-medium tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
+              >
+                View Details
+              </a>
+            </li>
+          </ul>
+          <div className="my-1 h-px bg-slate-150 dark:bg-navy-500"></div>
+              <ul>
+                <li>
+                  <a
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleOpenSchedule(activeMember.id, activeMember.fullName);
+                    }}
+                    className="flex h-8 items-center whitespace-nowrap px-3 pr-8 font-medium tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
+                  >
+                    Schedule
+                  </a>
+                </li>
+              </ul>
+              <div className="my-1 h-px bg-slate-150 dark:bg-navy-500"></div>
+          <ul>
+            <li>
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleDeleteStaff(activeMember.id);
+                }}
+                className="flex h-8 items-center whitespace-nowrap px-3 pr-8 font-medium tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
+              >
+                Delete
+              </a>
+            </li>
+          </ul>
+        </div>
+      )}
     </DashboardLayout>
   );
 }

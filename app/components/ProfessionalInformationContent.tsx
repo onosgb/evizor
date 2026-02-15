@@ -7,8 +7,13 @@ import { useProfessionalProfileStore } from "../stores/professionalProfileStore"
 import ProfileSidebar from "./ProfileSidebar";
 import { ProfessionalProfile } from "../models";
 
+import { useSearchParams } from "next/navigation";
+
 export default function ProfessionalInformationContent() {
   const user = useAuthStore((state) => state.user);
+  const searchParams = useSearchParams();
+  const userId = searchParams.get("userId");
+  
   const { specialties, fetchSpecialties, isLoading: isLoadingSpecialties } = useSpecialtyStore();
   const {
     profile,
@@ -19,8 +24,12 @@ export default function ProfessionalInformationContent() {
     fetchProfile,
     updateProfile,
     clearMessages,
+    approveProfile,
   } = useProfessionalProfileStore();
   const theme = user?.role === "ADMIN" ? "admin" : "doctor";
+  
+  const isReadOnly = !!userId; // Readonly if viewing another user
+  const showApproveButton = !!userId && user?.role === "ADMIN";
 
   const [formData, setFormData] = useState({
     specialtyId: "",
@@ -35,8 +44,12 @@ export default function ProfessionalInformationContent() {
 
   useEffect(() => {
     fetchSpecialties();
-    fetchProfile();
-  }, [fetchSpecialties, fetchProfile]);
+    if (userId) {
+      fetchProfile(userId);
+    } else {
+      fetchProfile();
+    }
+  }, [fetchSpecialties, fetchProfile, userId]);
 
   // Sync form data when profile loads from the store
   useEffect(() => {
@@ -68,17 +81,23 @@ export default function ProfessionalInformationContent() {
   };
 
   const handleSave = async () => {
-    const payload: ProfessionalProfile = {
-      specialtyId: formData.specialtyId,
-      subSpecialty: formData.subSpecialty || undefined,
-      yearsOfExperience: formData.yearsOfExperience,
-      licenseNumber: formData.licenseNumber,
-      issuingAuthority: formData.issuingAuthority,
-      licenseExpiryDate: formData.licenseExpiryDate,
-    };
-    const success = await updateProfile(payload);
-    if (success) {
-      setOriginalData(formData);
+    if (showApproveButton && userId) {
+      // Admin approving profile
+      await approveProfile(userId);
+    } else {
+      // User updating their own profile
+      const payload: ProfessionalProfile = {
+        specialtyId: formData.specialtyId,
+        subSpecialty: formData.subSpecialty || undefined,
+        yearsOfExperience: formData.yearsOfExperience,
+        licenseNumber: formData.licenseNumber,
+        issuingAuthority: formData.issuingAuthority,
+        licenseExpiryDate: formData.licenseExpiryDate,
+      };
+      const success = await updateProfile(payload);
+      if (success) {
+        setOriginalData(formData);
+      }
     }
   };
 
@@ -105,23 +124,27 @@ export default function ProfessionalInformationContent() {
                 Professional Information
               </h2>
               <div className="flex justify-center space-x-2">
-                <button
-                  onClick={handleCancel}
-                  className="btn min-w-28 rounded-full border border-slate-300 font-medium text-slate-700 hover:bg-slate-150 focus:bg-slate-150 active:bg-slate-150/80 dark:border-navy-450 dark:text-navy-100 dark:hover:bg-navy-500 dark:focus:bg-navy-500 dark:active:bg-navy-500/90"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSave}
-                  disabled={isSaving}
-                  className={`btn min-w-28 rounded-full font-medium text-white disabled:opacity-50 disabled:cursor-not-allowed ${
-                    theme === "admin"
-                      ? "bg-success hover:bg-success-focus focus:bg-success-focus active:bg-success-focus/90 dark:bg-success dark:hover:bg-success-focus dark:focus:bg-success-focus dark:active:bg-success/90"
-                      : "bg-primary hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
-                  }`}
-                >
-                  {isSaving ? "Saving..." : "Save"}
-                </button>
+                {!isReadOnly && (
+                  <button
+                    onClick={handleCancel}
+                    className="btn min-w-28 rounded-full border border-slate-300 font-medium text-slate-700 hover:bg-slate-150 focus:bg-slate-150 active:bg-slate-150/80 dark:border-navy-450 dark:text-navy-100 dark:hover:bg-navy-500 dark:focus:bg-navy-500 dark:active:bg-navy-500/90"
+                  >
+                    Cancel
+                  </button>
+                )}
+                {(!isReadOnly || showApproveButton) && (
+                  <button
+                    onClick={handleSave}
+                    disabled={isSaving}
+                    className={`btn min-w-28 rounded-full font-medium text-white disabled:opacity-50 disabled:cursor-not-allowed ${
+                      theme === "admin"
+                        ? "bg-success hover:bg-success-focus focus:bg-success-focus active:bg-success-focus/90 dark:bg-success dark:hover:bg-success-focus dark:focus:bg-success-focus dark:active:bg-success/90"
+                        : "bg-primary hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
+                    }`}
+                  >
+                    {isSaving ? (showApproveButton ? "Approving..." : "Saving...") : (showApproveButton ? "Approve" : "Save")}
+                  </button>
+                )}
               </div>
             </div>
             <div className="p-4 sm:p-5">
@@ -138,7 +161,7 @@ export default function ProfessionalInformationContent() {
                   className="mb-4 bg-success/10 text-success px-4 py-3 rounded-lg text-center"
                   role="alert"
                 >
-                  Professional information saved successfully!
+                  {showApproveButton ? "Professional information approved successfully!" : "Professional information saved successfully!"}
                 </div>
               )}
               {loadingProfile ? (
@@ -154,8 +177,8 @@ export default function ProfessionalInformationContent() {
                         name="specialtyId"
                         value={formData.specialtyId}
                         onChange={handleInputChange}
-                        disabled={isLoadingSpecialties}
-                        className="form-select peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
+                        disabled={isLoadingSpecialties || isReadOnly}
+                        className={`form-select peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent ${isReadOnly ? 'bg-slate-50 dark:bg-navy-900 cursor-not-allowed' : ''}`}
                       >
                         <option value="">
                           {isLoadingSpecialties
@@ -179,7 +202,8 @@ export default function ProfessionalInformationContent() {
                         name="subSpecialty"
                         value={formData.subSpecialty}
                         onChange={handleInputChange}
-                        className="form-input peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
+                        readOnly={isReadOnly}
+                        className={`form-input peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent ${isReadOnly ? 'bg-slate-50 dark:bg-navy-900 cursor-not-allowed' : ''}`}
                         placeholder="Enter Sub-Specialty"
                         type="text"
                       />
@@ -192,7 +216,8 @@ export default function ProfessionalInformationContent() {
                         name="yearsOfExperience"
                         value={formData.yearsOfExperience}
                         onChange={handleInputChange}
-                        className="form-input peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
+                        readOnly={isReadOnly}
+                        className={`form-input peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent ${isReadOnly ? 'bg-slate-50 dark:bg-navy-900 cursor-not-allowed' : ''}`}
                         placeholder="Enter Years of Experience"
                         type="text"
                       />
@@ -205,7 +230,8 @@ export default function ProfessionalInformationContent() {
                         name="licenseNumber"
                         value={formData.licenseNumber}
                         onChange={handleInputChange}
-                        className="form-input peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
+                        readOnly={isReadOnly}
+                        className={`form-input peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent ${isReadOnly ? 'bg-slate-50 dark:bg-navy-900 cursor-not-allowed' : ''}`}
                         placeholder="Enter License Number "
                         type="text"
                       />
@@ -218,7 +244,8 @@ export default function ProfessionalInformationContent() {
                         name="issuingAuthority"
                         value={formData.issuingAuthority}
                         onChange={handleInputChange}
-                        className="form-input peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
+                        readOnly={isReadOnly}
+                        className={`form-input peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent ${isReadOnly ? 'bg-slate-50 dark:bg-navy-900 cursor-not-allowed' : ''}`}
                         placeholder="Enter Issuing Authority"
                         type="text"
                       />
@@ -231,7 +258,8 @@ export default function ProfessionalInformationContent() {
                         name="licenseExpiryDate"
                         value={formData.licenseExpiryDate}
                         onChange={handleInputChange}
-                        className="form-input peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
+                        readOnly={isReadOnly}
+                        className={`form-input peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent ${isReadOnly ? 'bg-slate-50 dark:bg-navy-900 cursor-not-allowed' : ''}`}
                         placeholder="Enter License Expiry Date"
                         type="date"
                       />

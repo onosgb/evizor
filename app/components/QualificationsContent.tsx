@@ -7,8 +7,14 @@ import ProfileSidebar from "./ProfileSidebar";
 import { useQualificationStore } from "../stores/qualificationStore";
 import { Qualification } from "../models";
 
+import { useSearchParams } from "next/navigation";
+
 export default function QualificationsContent() {
   const user = useAuthStore((state) => state.user);
+  const searchParams = useSearchParams();
+  const userId = searchParams.get("userId");
+  const isReadOnly = !!userId;
+  
   const theme = user?.role === "ADMIN" ? "admin" : "doctor";
   const [showModal, setShowModal] = useState(false);
   const [showViewerModal, setShowViewerModal] = useState(false);
@@ -24,8 +30,12 @@ export default function QualificationsContent() {
   } = useQualificationStore();
 
   useEffect(() => {
-    fetchQualifications();
-  }, [fetchQualifications]);
+    if (userId) {
+      fetchQualifications(userId);
+    } else {
+      fetchQualifications();
+    }
+  }, [fetchQualifications, userId]);
 
   const [uploadFormData, setUploadFormData] = useState({
     title: "",
@@ -116,16 +126,18 @@ export default function QualificationsContent() {
                 Qualifications & Documents
               </h2>
               <div className="flex justify-center space-x-2">
-                <button
-                  onClick={() => setShowModal(true)}
-                  className={`btn min-w-28 rounded-full font-medium text-white ${
-                    theme === "admin"
-                      ? "bg-success hover:bg-success-focus focus:bg-success-focus active:bg-success-focus/90 dark:bg-success dark:hover:bg-success-focus dark:focus:bg-success-focus dark:active:bg-success/90"
-                      : "bg-primary hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
-                  }`}
-                >
-                  Upload New Document
-                </button>
+                {!isReadOnly && (
+                  <button
+                    onClick={() => setShowModal(true)}
+                    className={`btn min-w-28 rounded-full font-medium text-white ${
+                      theme === "admin"
+                        ? "bg-success hover:bg-success-focus focus:bg-success-focus active:bg-success-focus/90 dark:bg-success dark:hover:bg-success-focus dark:focus:bg-success-focus dark:active:bg-success/90"
+                        : "bg-primary hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
+                    }`}
+                  >
+                    Upload New Document
+                  </button>
+                )}
               </div>
             </div>
             <div className="p-4 sm:p-5">
