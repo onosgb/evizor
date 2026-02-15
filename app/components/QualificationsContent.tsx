@@ -5,6 +5,7 @@ import { useAuthStore } from "../stores/authStore";
 import { createPortal } from "react-dom";
 import ProfileSidebar from "./ProfileSidebar";
 import { useQualificationStore } from "../stores/qualificationStore";
+import { Qualification } from "../models";
 
 export default function QualificationsContent() {
   const user = useAuthStore((state) => state.user);
