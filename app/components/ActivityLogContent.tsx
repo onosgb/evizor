@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useAuthStore } from "../stores/authStore";
 import ProfileSidebar from "./ProfileSidebar";
 import { useSearchParams } from "next/navigation";
-import { authService } from "../lib/services";
+import { authService, adminService } from "../lib/services";
 
 interface ActivityLog {
   timestamp: string;
@@ -36,7 +36,7 @@ export default function ActivityLogContent() {
     if (userId) {
       const fetchActivityLogs = async () => {
         try {
-          const response = await authService.getUserActivityLog(userId);
+          const response = await adminService.getUserActivityLog(userId);
           if (response.status && response.data) {
              // setActivityLogs(response.data);
           }

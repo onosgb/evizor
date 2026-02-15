@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { ProfessionalProfile } from "../models";
-import { authService } from "../lib/services";
+import { authService, adminService } from "../lib/services";
 
 interface ProfessionalProfileState {
   profile: ProfessionalProfile | null;
@@ -29,7 +29,7 @@ export const useProfessionalProfileStore = create<ProfessionalProfileState>(
       try {
         let response;
         if (userId) {
-          response = await authService.getProfessionalProfileByUserId(userId);
+          response = await adminService.getProfessionalProfileByUserId(userId);
         } else {
           response = await authService.getProfessionalProfile();
         }
@@ -75,7 +75,7 @@ export const useProfessionalProfileStore = create<ProfessionalProfileState>(
     approveProfile: async (userId: string): Promise<boolean> => {
       set({ isSaving: true, saveError: null, saveSuccess: false });
       try {
-        const response = await authService.approveProfessionalProfile(userId);
+        const response = await adminService.approveProfessionalProfile(userId);
         if (response.status) {
           set({ saveSuccess: true });
           // Refresh profile after approval

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import ProfileSidebar from "./ProfileSidebar";
 import { useAuthStore } from "../stores/authStore";
 import { useSearchParams } from "next/navigation";
-import { authService } from "../lib/services";
+import { authService, adminService } from "../lib/services";
 
 interface ActiveSession {
   date: string;
@@ -49,7 +49,7 @@ export default function SecurityContent() {
     if (userId) {
       const fetchSecuritySettings = async () => {
         try {
-          const response = await authService.getUserSecuritySettings(userId);
+          const response = await adminService.getUserSecuritySettings(userId);
           if (response.status && response.data) {
              setFormData(prev => ({
                ...prev,

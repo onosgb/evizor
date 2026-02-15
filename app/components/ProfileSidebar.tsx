@@ -68,6 +68,7 @@ export default function ProfileSidebar({ theme }: ProfileSidebarProps) {
           </div>
         </div>
         <ul className="mt-6 space-y-1.5 font-inter font-medium">
+
           <li>
             <Link
               className={`flex items-center space-x-2 rounded-lg px-4 py-2.5 tracking-wide outline-hidden transition-all ${getActiveClasses(isActive("/profile"))}`}

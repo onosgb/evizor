@@ -357,6 +357,7 @@ export default function Sidebar({
               )}
 
               {/* Queue Monitor - Admin Only */}
+
               {isAdmin && (
                 <TooltipWrapper text="Queue Monitor">
                   <Link
@@ -386,6 +387,36 @@ export default function Sidebar({
                           d="M5 5L3 7m16-2l2 2M9 11l2.81 1.873a.25.25 0 0 0 .333-.052L14 10.5"
                         />
                       </g>
+                    </svg>
+                  </Link>
+                </TooltipWrapper>
+              )}
+
+              {/* Pending Verifications - Admin Only */}
+              {isAdmin && (
+                <TooltipWrapper text="Pending Verifications">
+                  <Link
+                    href="/pending-verifications"
+                    onClick={handleLinkClick}
+                    className={`flex size-11 items-center justify-center rounded-lg text-white outline-hidden transition-colors duration-200 hover:bg-white/20 focus:bg-white/20 active:bg-white/25 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25 ${
+                      isActive("/pending-verifications")
+                        ? "bg-primary/10 dark:bg-navy-600 dark:text-accent-light"
+                        : ""
+                    }`}
+                  >
+                   <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="size-8"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      />
                     </svg>
                   </Link>
                 </TooltipWrapper>

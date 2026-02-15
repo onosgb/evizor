@@ -6,6 +6,7 @@ export type { Staff, CreateStaffRequest } from "./Staff";
 export { ApiError } from "./ApiError";
 export type { RequestOptions } from "./RequestOptions";
 export * from "./tenant";
+export * from "./PendingVerification";
 export type { Appointment, LiveQueueResponse } from "./Appointment";
 export type { Specialty } from "./Specialty";
 export type { Qualification } from "./Qualification";

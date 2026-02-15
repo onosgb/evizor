@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useAuthStore } from "../stores/authStore";
 import { useTenantStore } from "../stores/tenantStore";
-import { authService } from "../lib/services";
+import { authService, adminService } from "../lib/services";
 import ProfileSidebar from "./ProfileSidebar";
 import Image from "next/image";
 
@@ -67,7 +67,7 @@ export default function ProfileContent() {
       try {
         if (userId) {
           // Admin viewing another user's profile
-          const response = await authService.getUserProfile(userId);
+          const response = await adminService.getUserProfile(userId);
           if (response.status && response.data) {
             setUser(response.data);
           }

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useAuthStore } from "../stores/authStore";
 import ProfileSidebar from "./ProfileSidebar";
 import { useSearchParams } from "next/navigation";
-import { authService } from "../lib/services";
+import { authService, adminService } from "../lib/services";
 
 interface PerformanceData {
   date: string;
@@ -69,7 +69,7 @@ export default function PerformanceContent() {
     if (userId) {
       const fetchPerformance = async () => {
         try {
-          const response = await authService.getUserPerformance(userId);
+          const response = await adminService.getUserPerformance(userId);
           if (response.status && response.data) {
             // setPerformanceData(response.data);
           }

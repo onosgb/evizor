@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useAuthStore } from "../stores/authStore";
 import { createPortal } from "react-dom";
 import { useSearchParams } from "next/navigation";
-import { authService } from "../lib/services";
+import { authService, adminService } from "../lib/services";
 import ProfileSidebar from "./ProfileSidebar";
 
 interface Schedule {
@@ -46,7 +46,7 @@ export default function AvailabilityContent() {
     if (userId) {
       const fetchAvailability = async () => {
         try {
-          const response = await authService.getUserAvailability(userId);
+          const response = await adminService.getUserAvailability(userId);
           if (response.status && response.data) {
             // Transform response data to match Schedule interface if needed
             // For now assuming response matches or keeping mock data if empty

@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { Qualification } from "../models";
-import { authService } from "../lib/services";
+import { authService, adminService } from "../lib/services";
 
 interface QualificationState {
   qualifications: Qualification[];
@@ -24,7 +24,7 @@ export const useQualificationStore = create<QualificationState>((set, get) => ({
     try {
       let response;
       if (userId) {
-        response = await authService.getUserQualifications(userId);
+        response = await adminService.getUserQualifications(userId);
       } else {
         response = await authService.getQualifications();
       }

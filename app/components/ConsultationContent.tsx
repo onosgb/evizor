@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import ProfileSidebar from "./ProfileSidebar";
 import { useAuthStore } from "../stores/authStore";
 import { useSearchParams } from "next/navigation";
-import { authService } from "../lib/services";
+import { authService, adminService } from "../lib/services";
 
 interface ConsultationPreferences {
   acceptOnDemandVisits: boolean;
@@ -41,7 +41,7 @@ export default function ConsultationContent() {
     if (userId) {
       const fetchPreferences = async () => {
         try {
-          const response = await authService.getUserConsultationPreferences(userId);
+          const response = await adminService.getUserConsultationPreferences(userId);
           if (response.status && response.data) {
             setPreferences(response.data);
           }

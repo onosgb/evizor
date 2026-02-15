@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { authService } from "../lib/services";
+import { authService, adminService } from "../lib/services";
 
 interface Schedule {
   id: string;
@@ -50,7 +50,7 @@ export default function ScheduleManagementModal({
     setIsLoading(true);
     setError(null);
     try {
-      const response = await authService.getUserAvailability(userId);
+      const response = await adminService.getUserAvailability(userId);
       if (response.status && response.data) {
         // Map response to Schedule interface if necessary, or use as is if it matches
         // For now assuming the API returns data in a compatible format or we mock it if empty
@@ -95,7 +95,7 @@ export default function ScheduleManagementModal({
         status: "available",
       };
 
-      const response = await authService.scheduleUserAvailability(userId, payload);
+      const response = await adminService.scheduleUserAvailability(userId, payload);
       
       if (response.status) {
         // Refresh list or append locally
@@ -125,7 +125,7 @@ export default function ScheduleManagementModal({
     if (!confirm("Are you sure you want to remove this time slot?")) return;
 
     try {
-      const response = await authService.removeUserAvailabilitySchedule(userId, scheduleId);
+      const response = await adminService.removeUserAvailabilitySchedule(userId, scheduleId);
       if (response.status) {
         setSchedules(schedules.filter(s => s.id !== scheduleId));
       } else {
