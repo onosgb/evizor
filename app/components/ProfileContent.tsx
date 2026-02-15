@@ -23,7 +23,7 @@ export default function ProfileContent() {
     gender: user?.gender || "",
     location: userTenant?.province || "",
     address: user?.address || "",
-    dob: user?.dob || "",
+    dob: user?.dob || "",    
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);

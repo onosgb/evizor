@@ -2,8 +2,6 @@
  * Request model for creating a new staff member
  */
 export interface CreateStaffRequest {
-  specialty: string;
-  licenseNo: string;
   email: string;
   socialId: string;
   phoneNumber: string;

@@ -37,8 +37,6 @@ export default function CreateStaffForm({
       : "form-switch is-outline h-5 w-10 rounded-full border border-slate-400/70 bg-transparent before:rounded-full before:bg-slate-300 checked:border-primary checked:before:bg-primary dark:border-navy-400 dark:before:bg-navy-300 dark:checked:border-accent dark:checked:before:bg-accent";
   };
   const [formData, setFormData] = useState<CreateStaffRequest>({
-    specialty: "",
-    licenseNo: "",
     email: "",
     socialId: "",
     phoneNumber: "",
@@ -52,8 +50,6 @@ export default function CreateStaffForm({
   useEffect(() => {
     if (!isOpen) {
       setFormData({
-        specialty: "",
-        licenseNo: "",
         email: "",
         socialId: "",
         phoneNumber: "",
@@ -73,8 +69,6 @@ export default function CreateStaffForm({
 
   const handleCancel = () => {
     setFormData({
-      specialty: "",
-      licenseNo: "",
       email: "",
       socialId: "",
       phoneNumber: "",
@@ -234,32 +228,7 @@ export default function CreateStaffForm({
                 required
               />
             </label>
-            <label className="block">
-              <span>License Number:</span>
-              <input
-                className="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-navy dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-success"
-                placeholder="Enter license number"
-                type="text"
-                value={formData.licenseNo}
-                onChange={(e) =>
-                  setFormData({ ...formData, licenseNo: e.target.value })
-                }
-                required
-              />
-            </label>
-            <label className="block">
-              <span>Specialty:</span>
-              <input
-                className="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-navy dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-success"
-                placeholder="Enter specialty"
-                type="text"
-                value={formData.specialty}
-                onChange={(e) =>
-                  setFormData({ ...formData, specialty: e.target.value })
-                }
-                required
-              />
-            </label>
+            
             <label className="inline-flex items-center space-x-2">
               <input
                 className={getOutlineSwitchClasses()}
