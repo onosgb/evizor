@@ -6,6 +6,26 @@ import { useTenantStore } from "../stores/tenantStore";
 import { authService } from "../lib/services";
 import ProfileSidebar from "./ProfileSidebar";
 import Image from "next/image";
+
+// Helper function to convert date string to yyyy-MM-dd format for date input
+const formatDateForInput = (dateString: string | undefined): string => {
+  if (!dateString) return "";
+  
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "";
+    
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    
+    return `${year}-${month}-${day}`;
+  } catch (error) {
+    console.error("Error formatting date:", error);
+    return "";
+  }
+};
+
 export default function ProfileContent() {
   const user = useAuthStore((state) => state.user);
   const setUser = useAuthStore((state) => state.setUser);
@@ -23,12 +43,17 @@ export default function ProfileContent() {
     gender: user?.gender || "",
     location: userTenant?.province || "",
     address: user?.address || "",
-    dob: user?.dob || "",    
+    dob: formatDateForInput(user?.dob),    
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  
+  // Avatar upload states
+  const [selectedAvatar, setSelectedAvatar] = useState<File | null>(null);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [avatarError, setAvatarError] = useState<string | null>(null);
 
   // Fetch fresh profile data on mount
   useEffect(() => {
@@ -57,7 +82,7 @@ export default function ProfileContent() {
         gender: user.gender || "",
         location: userTenant?.province || "",
         address: user.address || "",
-        dob: user.dob || "",
+        dob: formatDateForInput(user.dob),
       });
     }
   }, [user, userTenant]);
@@ -103,6 +128,58 @@ export default function ProfileContent() {
     console.log("Canceling changes");
   };
 
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const validTypes = ["image/jpeg", "image/jpg", "image/png"];
+    if (!validTypes.includes(file.type)) {
+      setAvatarError("Please select a valid image file (JPG, JPEG, or PNG)");
+      return;
+    }
+
+    // Validate file size (5MB max)
+    const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+    if (file.size > maxSize) {
+      setAvatarError("File size must be less than 5MB");
+      return;
+    }
+
+    setSelectedAvatar(file);
+    setAvatarError(null);
+    
+    // Auto-upload after selection
+    handleAvatarUpload(file);
+  };
+
+  const handleAvatarUpload = async (file: File) => {
+    setIsUploadingAvatar(true);
+    setAvatarError(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await authService.uploadProfilePicture(formData);
+      
+      // Response returns { url: string }, update user's profilePictureUrl
+      if (response.data && response.data.url && user) {
+        setUser({
+          ...user,
+          profilePictureUrl: response.data.url
+        });
+      }
+      
+      setSelectedAvatar(null);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to upload avatar";
+      setAvatarError(errorMessage);
+    } finally {
+      setIsUploadingAvatar(false);
+    }
+  };
+
   return (
     <>
       <div className="flex items-center space-x-4 py-5 lg:py-6">
@@ -143,15 +220,21 @@ export default function ProfileContent() {
             {/* Avatar Section */}
             <div className="flex flex-col">
               <div className="avatar mt-1.5 size-20 relative">
-                <Image
-                  className="mask is-squircle"
-                  src="/images/200x200.png"
-                  alt="avatar"
-                  width={80}
-                  height={80}
-                />
+                {isUploadingAvatar ? (
+                  <div className="flex items-center justify-center size-20 rounded-lg bg-slate-100 dark:bg-navy-600">
+                    <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent"></div>
+                  </div>
+                ) : (
+                  <Image
+                    className="mask is-squircle"
+                    src={user?.profilePictureUrl || "/images/200x200.png"}
+                    alt="avatar"
+                    width={80}
+                    height={80}
+                  />
+                )}
                 <div className="absolute bottom-0 right-0 flex items-center justify-center rounded-full bg-white dark:bg-navy-700">
-                  <button className="btn size-6 rounded-full border border-slate-200 p-0 hover:bg-slate-300/20 focus:bg-slate-300/20 active:bg-slate-300/25 dark:border-navy-500 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25">
+                  <label className="btn size-6 rounded-full border border-slate-200 p-0 hover:bg-slate-300/20 focus:bg-slate-300/20 active:bg-slate-300/25 dark:border-navy-500 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25 cursor-pointer">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       className="size-3.5"
@@ -160,9 +243,19 @@ export default function ProfileContent() {
                     >
                       <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
                     </svg>
-                  </button>
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept="image/jpeg,image/jpg,image/png"
+                      onChange={handleAvatarChange}
+                      disabled={isUploadingAvatar}
+                    />
+                  </label>
                 </div>
               </div>
+              {avatarError && (
+                <p className="mt-2 text-xs text-error">{avatarError}</p>
+              )}
             </div>
 
             <div className="my-7 h-px bg-slate-200 dark:bg-navy-500"></div>

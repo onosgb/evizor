@@ -15,7 +15,7 @@ export interface User {
   tenantId?: string;
   dob?: string;
   gender?: string;
-  profilePhotoUrl?: string;
+  profilePictureUrl?: string;
   address?: string;
 }
 
@@ -34,7 +34,6 @@ export interface UpdateUser {
   phoneNumber: string;
   dob: string;
   gender: string;
-  profilePhotoUrl?: string;
   address: string;
   specialtyId?: string;
 }

@@ -145,6 +145,22 @@ class AuthService {
     );
     return response.data;
   }
+
+  /**
+   * Upload profile picture
+   */
+  async uploadProfilePicture(data: FormData): Promise<ApiResponse<{ url: string }>> {
+    const response = await apiClient.post<ApiResponse<{ url: string }>>(
+      "/users/upload-picture",
+      data,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+    return response.data;
+  }
 }
 
 export const authService = new AuthService();
