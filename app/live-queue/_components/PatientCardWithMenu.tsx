@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import TableActionMenu from "@/components/TableActionMenu";
+import TableActionMenu from "@/app/components/TableActionMenu";
 
 interface PatientCardWithMenuProps {
   id: string | number;

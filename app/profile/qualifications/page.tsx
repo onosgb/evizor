@@ -1,7 +1,7 @@
 "use client";
 
 import DashboardLayout from "../../components/DashboardLayout";
-import QualificationsContent from "../../components/QualificationsContent";
+import QualificationsContent from "../_components/QualificationsContent";
 import { useAuthStore } from "../../stores/authStore";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";

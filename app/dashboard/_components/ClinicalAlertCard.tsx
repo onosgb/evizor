@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
-import TableActionMenu from "@/components/TableActionMenu";
+import TableActionMenu from "@/app/components/TableActionMenu";
 
 interface PatientInfo {
   label: string;
