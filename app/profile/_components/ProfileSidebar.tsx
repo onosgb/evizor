@@ -4,9 +4,9 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { useAuthStore } from "@/stores/authStore";
-import { adminService } from "@/lib/services";
-import { User } from "@/models";
+import { useAuthStore } from "@/app/stores/authStore";
+import { adminService } from "@/app/lib/services";
+import { User } from "@/app/models";
 
 interface ProfileSidebarProps {
   theme?: "admin" | "doctor";
@@ -206,7 +206,7 @@ export default function ProfileSidebar({ theme }: ProfileSidebarProps) {
               <span>Performance Snapshot</span>
             </Link>
           </li>
-          {!userId && (
+          {(!userId || userId === user?.id) && (
           <li>
             <Link
               className={`flex items-center space-x-2 rounded-lg px-4 py-2.5 tracking-wide outline-hidden transition-all ${getActiveClasses(isActive("/profile/security"))}`}
@@ -230,7 +230,7 @@ export default function ProfileSidebar({ theme }: ProfileSidebarProps) {
             </Link>
           </li>
           )}
-          {!userId && (
+          {(!userId || userId === user?.id) && (
           <li>
             <Link
               className={`flex items-center space-x-2 rounded-lg px-4 py-2.5 tracking-wide outline-hidden transition-all ${getActiveClasses(isActive("/profile/activity"))}`}

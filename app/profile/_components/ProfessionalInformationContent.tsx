@@ -1,11 +1,11 @@
 ﻿"use client";
 
 import { useState, useEffect } from "react";
-import { useAuthStore } from "@/stores/authStore";
-import { useSpecialtyStore } from "@/stores/specialtyStore";
-import { useProfessionalProfileStore } from "@/stores/professionalProfileStore";
+import { useAuthStore } from "@/app/stores/authStore";
+import { useSpecialtyStore } from "@/app/stores/specialtyStore";
+import { useProfessionalProfileStore } from "@/app/stores/professionalProfileStore";
 import ProfileSidebar from "./ProfileSidebar";
-import { ProfessionalProfile } from "@/models";
+import { ProfessionalProfile } from "@/app/models";
 
 import { useSearchParams } from "next/navigation";
 

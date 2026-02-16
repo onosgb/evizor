@@ -2,8 +2,8 @@
 
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
-import { User } from "@/models";
-import TableActionMenu from "@/components/TableActionMenu";
+import { User } from "@/app/models";
+import TableActionMenu from "@/app/components/TableActionMenu";
 
 interface QueueItem {
   id: number;

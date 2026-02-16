@@ -1,9 +1,9 @@
 ﻿"use client";
 
 import { useState, useEffect } from "react";
-import { useAuthStore } from "@/stores/authStore";
-import { useTenantStore } from "@/stores/tenantStore";
-import { authService, adminService } from "@/lib/services";
+import { useAuthStore } from "@/app/stores/authStore";
+import { useTenantStore } from "@/app/stores/tenantStore";
+import { authService, adminService } from "@/app/lib/services";
 import ProfileSidebar from "./ProfileSidebar";
 import Image from "next/image";
 

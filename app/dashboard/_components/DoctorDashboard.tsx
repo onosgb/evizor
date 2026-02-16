@@ -1,12 +1,12 @@
 ﻿"use client";
 
-import WaitingPatientCard from "@/components/WaitingPatientCard";
+import WaitingPatientCard from "@/app/components/WaitingPatientCard";
 import ClinicalAlertCard from "./ClinicalAlertCard";
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
-import { User } from "@/models";
-import TableActionMenu from "@/components/TableActionMenu";
+import { User } from "@/app/models";
+import TableActionMenu from "@/app/components/TableActionMenu";
 
 interface Case {
   id: number;

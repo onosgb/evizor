@@ -59,6 +59,8 @@ class AdminService {
     return response.data;
   }
 
+  
+
   /**
    * Get qualifications by user ID (admin only)
    */
@@ -121,6 +123,8 @@ class AdminService {
     );
     return response.data;
   }
+
+ 
 }
 
 export const adminService = new AdminService();

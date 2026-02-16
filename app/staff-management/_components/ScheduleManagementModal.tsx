@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { authService, adminService } from "@/lib/services";
+import { authService, adminService } from "@/app/lib/services";
 
 interface Schedule {
   id: string;

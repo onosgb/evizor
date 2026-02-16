@@ -1,10 +1,9 @@
 ﻿"use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import ProfileSidebar from "./ProfileSidebar";
-import { useAuthStore } from "@/stores/authStore";
+import { useAuthStore } from "@/app/stores/authStore";
 import { useSearchParams } from "next/navigation";
-import { authService, adminService } from "@/lib/services";
 
 interface ActiveSession {
   date: string;
@@ -16,7 +15,17 @@ export default function SecurityContent() {
   const user = useAuthStore((state) => state.user);
   const searchParams = useSearchParams();
   const userId = searchParams.get("userId");
-  const isReadOnly = !!userId;
+
+  if (userId && user && userId !== user.id) {
+    return (
+      <div className="flex items-center justify-center h-full p-10">
+        <div className="text-center">
+          <h3 className="text-xl font-medium text-slate-700 dark:text-navy-100">Access Denied</h3>
+          <p className="mt-2 text-slate-500 dark:text-navy-200">You do not have permission to view these security settings.</p>
+        </div>
+      </div>
+    );
+  }
 
   const theme = user?.role === "ADMIN" ? "admin" : "doctor";
 
@@ -44,26 +53,7 @@ export default function SecurityContent() {
     },
   ]);
 
-  // Fetch security settings if userId is present
-  useEffect(() => {
-    if (userId) {
-      const fetchSecuritySettings = async () => {
-        try {
-          const response = await adminService.getUserSecuritySettings(userId);
-          if (response.status && response.data) {
-             setFormData(prev => ({
-               ...prev,
-               ...response.data
-             }));
-          }
-        } catch (error) {
-          console.error("Failed to fetch security settings:", error);
-        }
-      };
-      fetchSecuritySettings();
-    }
-  }, [userId]);
-
+ 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -113,7 +103,7 @@ export default function SecurityContent() {
               <h2 className="text-lg font-medium tracking-wide text-slate-700 dark:text-navy-100">
                 Security Settings
               </h2>
-              {!isReadOnly && (
+
                 <div className="flex justify-center space-x-2">
                   <button
                     onClick={handleCancel}
@@ -132,7 +122,7 @@ export default function SecurityContent() {
                     Save
                   </button>
                 </div>
-              )}
+
             </div>
             <div className="p-4 sm:p-5">
               <div className="p-5">
@@ -144,9 +134,8 @@ export default function SecurityContent() {
                         name="newPassword"
                         value={formData.newPassword}
                         onChange={handleInputChange}
-                        disabled={isReadOnly}
-                        className={`form-input peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 pl-9 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent ${isReadOnly ? "opacity-60 cursor-not-allowed" : ""}`}
-                        placeholder={isReadOnly ? "********" : "Enter new password"}
+                        className="form-input peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 pl-9 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
+                        placeholder="Enter new password"
                         type="password"
                       />
                       <span className="pointer-events-none absolute flex h-full w-10 items-center justify-center text-slate-400 peer-focus:text-primary dark:text-navy-300 dark:peer-focus:text-accent">
@@ -174,9 +163,8 @@ export default function SecurityContent() {
                         name="confirmPassword"
                         value={formData.confirmPassword}
                         onChange={handleInputChange}
-                        disabled={isReadOnly}
-                        className={`form-input peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 pl-9 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent ${isReadOnly ? "opacity-60 cursor-not-allowed" : ""}`}
-                        placeholder={isReadOnly ? "********" : "Confirm password"}
+                        className="form-input peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 pl-9 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
+                        placeholder="Confirm password"
                         type="password"
                       />
                       <span className="pointer-events-none absolute flex h-full w-10 items-center justify-center text-slate-400 peer-focus:text-primary dark:text-navy-300 dark:peer-focus:text-accent">
@@ -206,8 +194,7 @@ export default function SecurityContent() {
                       name="twoFactorAuth"
                       checked={formData.twoFactorAuth}
                       onChange={handleInputChange}
-                      disabled={isReadOnly}
-                      className={`${getSwitchClasses()} ${isReadOnly ? "opacity-60 cursor-not-allowed" : ""}`}
+                      className={getSwitchClasses()}
                       type="checkbox"
                     />
                   </label>

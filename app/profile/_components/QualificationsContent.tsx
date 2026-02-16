@@ -1,14 +1,14 @@
 ﻿"use client";
 
 import { useState, useEffect } from "react";
-import { useAuthStore } from "@/stores/authStore";
+import { useAuthStore } from "@/app/stores/authStore";
 import { createPortal } from "react-dom";
 import ProfileSidebar from "./ProfileSidebar";
-import { useQualificationStore } from "@/stores/qualificationStore";
-import { Qualification } from "@/models";
+import { useQualificationStore } from "@/app/stores/qualificationStore";
+import { Qualification } from "@/app/models";
 
 import { useSearchParams } from "next/navigation";
-import ConfirmationModal from "@/components/ConfirmationModal";
+import ConfirmationModal from "@/app/components/ConfirmationModal";
 
 export default function QualificationsContent() {
   const user = useAuthStore((state) => state.user);

@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from "react";
 import ProfileSidebar from "./ProfileSidebar";
-import { useAuthStore } from "@/stores/authStore";
+import { useAuthStore } from "@/app/stores/authStore";
 import { useSearchParams } from "next/navigation";
-import { authService, adminService } from "@/lib/services";
+import { authService, adminService } from "@/app/lib/services";
 
 interface ConsultationPreferences {
   acceptOnDemandVisits: boolean;

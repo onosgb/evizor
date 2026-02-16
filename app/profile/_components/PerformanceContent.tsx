@@ -1,10 +1,10 @@
 ﻿"use client";
 
 import { useState, useEffect } from "react";
-import { useAuthStore } from "@/stores/authStore";
+import { useAuthStore } from "@/app/stores/authStore";
 import ProfileSidebar from "./ProfileSidebar";
 import { useSearchParams } from "next/navigation";
-import { authService, adminService } from "@/lib/services";
+import { authService, adminService } from "@/app/lib/services";
 
 interface PerformanceData {
   date: string;

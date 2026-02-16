@@ -1,10 +1,9 @@
 ﻿"use client";
 
 import { useState, useEffect } from "react";
-import { useAuthStore } from "@/stores/authStore";
+import { useAuthStore } from "@/app/stores/authStore";
 import ProfileSidebar from "./ProfileSidebar";
 import { useSearchParams } from "next/navigation";
-import { authService, adminService } from "@/lib/services";
 
 interface ActivityLog {
   timestamp: string;
@@ -15,6 +14,17 @@ export default function ActivityLogContent() {
   const user = useAuthStore((state) => state.user);
   const searchParams = useSearchParams();
   const userId = searchParams.get("userId");
+
+  if (userId && user && userId !== user.id) {
+    return (
+      <div className="flex items-center justify-center h-full p-10">
+        <div className="text-center">
+          <h3 className="text-xl font-medium text-slate-700 dark:text-navy-100">Access Denied</h3>
+          <p className="mt-2 text-slate-500 dark:text-navy-200">You do not have permission to view this activity log.</p>
+        </div>
+      </div>
+    );
+  }
 
   const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([
     {
