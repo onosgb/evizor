@@ -497,7 +497,7 @@ export default function Sidebar({
                 >
                   <Image
                     className="rounded-full"
-                    src="/images/200x200.png"
+                    src={user?.profilePictureUrl && user.profilePictureUrl.trim() !== "" ? user.profilePictureUrl : "/images/200x200.png"}
                     alt="avatar"
                     width={48}
                     height={48}
@@ -517,7 +517,7 @@ export default function Sidebar({
                         <div className="avatar size-14">
                           <Image
                             className="rounded-full"
-                            src="/images/200x200.png"
+                            src={user?.profilePictureUrl && user.profilePictureUrl.trim() !== "" ? user.profilePictureUrl : "/images/200x200.png"}
                             alt="avatar"
                             width={56}
                             height={56}

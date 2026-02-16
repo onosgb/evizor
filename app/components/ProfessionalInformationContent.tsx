@@ -55,7 +55,7 @@ export default function ProfessionalInformationContent() {
   useEffect(() => {
     if (profile) {
       const profileData = {
-        specialtyId: profile.specialtyId || "",
+        specialtyId: profile.specialtyId ||"",
         subSpecialty: profile.subSpecialty || "",
         yearsOfExperience: profile.yearsOfExperience || "",
         licenseNumber: profile.licenseNumber || "",
@@ -175,7 +175,7 @@ export default function ProfessionalInformationContent() {
                     <span className="relative mt-1.5 flex">
                       <select
                         name="specialtyId"
-                        value={formData.specialtyId}
+                        value={String(formData.specialtyId || "")}
                         onChange={handleInputChange}
                         disabled={isLoadingSpecialties || isReadOnly}
                         className={`form-select peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent ${isReadOnly ? 'bg-slate-50 dark:bg-navy-900 cursor-not-allowed' : ''}`}

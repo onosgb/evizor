@@ -34,6 +34,10 @@ export default function ProfileContent() {
   const searchParams = useSearchParams();
   const userId = searchParams.get("userId");
   
+  // Local state for the user being viewed/edited
+  // Initialize with logged-in user if we are not viewing someone else, or if the data is already there
+  const [viewedUser, setViewedUser] = useState(user);
+  
   const isReadOnly = !!userId; // Readonly if viewing another user
   const theme = user?.role === "ADMIN" ? "admin" : "doctor";
   const getTenantById = useTenantStore((state) => state.getTenantById);
@@ -57,7 +61,6 @@ export default function ProfileContent() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   
   // Avatar upload states
-  const [selectedAvatar, setSelectedAvatar] = useState<File | null>(null);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [avatarError, setAvatarError] = useState<string | null>(null);
 
@@ -65,17 +68,21 @@ export default function ProfileContent() {
   useEffect(() => {
     const loadProfile = async () => {
       try {
-        if (userId) {
+        if (userId && userId !== user?.id) {
           // Admin viewing another user's profile
           const response = await adminService.getUserProfile(userId);
           if (response.status && response.data) {
-            setUser(response.data);
+             setViewedUser(response.data);
           }
         } else {
-          // User viewing their own profile
+          // User viewing their own profile - defaulting to what's in store first
+          setViewedUser(user);
+          
+          // Optionally refresh from API to get latest
           const response = await authService.getMyProfile();
           if (response.status && response.data) {
-            setUser(response.data);
+            setUser(response.data); // Update global store since it's "me"
+            setViewedUser(response.data);
           }
         }
       } catch (error) {
@@ -84,23 +91,23 @@ export default function ProfileContent() {
     };
     
     loadProfile();
-  }, [setUser, userId]);
+  }, [setUser, userId, user]);
 
-  // Update form data when user changes
+  // Update form data when viewedUser changes
   useEffect(() => {
-    if (user) {
+    if (viewedUser) {
       setFormData({
-        firstName: user.firstName || "",
-        lastName: user.lastName || "",
-        email: user.email || "",
-        phoneNumber: user.phoneNumber || "",
-        gender: user.gender || "",
+        firstName: viewedUser.firstName || "",
+        lastName: viewedUser.lastName || "",
+        email: viewedUser.email || "",
+        phoneNumber: viewedUser.phoneNumber || "",
+        gender: viewedUser.gender || "",
         location: userTenant?.province || "",
-        address: user.address || "",
-        dob: formatDateForInput(user.dob),
+        address: viewedUser.address || "",
+        dob: formatDateForInput(viewedUser.dob),
       });
     }
-  }, [user, userTenant]);
+  }, [viewedUser, userTenant]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -161,7 +168,6 @@ export default function ProfileContent() {
       return;
     }
 
-    setSelectedAvatar(file);
     setAvatarError(null);
     
     // Auto-upload after selection
@@ -179,14 +185,22 @@ export default function ProfileContent() {
       const response = await authService.uploadProfilePicture(formData);
       
       // Response returns { url: string }, update user's profilePictureUrl
-      if (response.data && response.data.url && user) {
-        setUser({
-          ...user,
+      if (response.data && response.data.url && viewedUser) {
+        const updatedUser = {
+          ...viewedUser,
           profilePictureUrl: response.data.url
-        });
+        };
+        setViewedUser(updatedUser);
+        
+        // If updating my own profile, sync with global store
+        if (!isReadOnly && user) {
+            setUser({
+                ...user,
+                profilePictureUrl: response.data.url
+            });
+        }
       }
       
-      setSelectedAvatar(null);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to upload avatar";
       setAvatarError(errorMessage);
@@ -244,7 +258,7 @@ export default function ProfileContent() {
                 ) : (
                   <Image
                     className="mask is-squircle"
-                    src={user?.profilePictureUrl || "/images/200x200.png"}
+                    src={viewedUser?.profilePictureUrl || "/images/200x200.png"}
                     alt="avatar"
                     width={80}
                     height={80}

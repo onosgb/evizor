@@ -31,22 +31,6 @@ export default function ActivityLogContent() {
     },
   ]);
 
-  // Fetch activity logs if userId is present
-  useEffect(() => {
-    if (userId) {
-      const fetchActivityLogs = async () => {
-        try {
-          const response = await adminService.getUserActivityLog(userId);
-          if (response.status && response.data) {
-             // setActivityLogs(response.data);
-          }
-        } catch (error) {
-          console.error("Failed to fetch activity logs:", error);
-        }
-      };
-      fetchActivityLogs();
-    }
-  }, [userId]);
 
   return (
     <>

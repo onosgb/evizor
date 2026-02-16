@@ -1,9 +1,12 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useAuthStore } from "../stores/authStore";
+import { adminService } from "../lib/services";
+import { User } from "../models";
 
 interface ProfileSidebarProps {
   theme?: "admin" | "doctor";
@@ -15,12 +18,37 @@ export default function ProfileSidebar({ theme }: ProfileSidebarProps) {
   const userId = searchParams.get("userId");
   const user = useAuthStore((state) => state.user);
   
+  const [displayUser, setDisplayUser] = useState<User | null>(user);
+
+  // Effect to determine which user to display
+  useEffect(() => {
+    const fetchUser = async () => {
+        if (userId && userId !== user?.id) {
+            try {
+                const response = await adminService.getUserProfile(userId);
+                if (response.status && response.data) {
+                    setDisplayUser(response.data);
+                }
+            } catch (error) {
+                console.error("Failed to fetch user profile for sidebar:", error);
+                // Fallback to current user or keep loading state if needed
+                setDisplayUser(user); 
+            }
+        } else {
+            // Viewing own profile or no userId param
+            setDisplayUser(user);
+        }
+    };
+
+    fetchUser();
+  }, [userId, user]);
+
   // Helper to build links with userId query param if present
   const getLink = (path: string) => {
     return userId ? `${path}?userId=${userId}` : path;
   };
   
-  // Determine theme from user role if not provided
+  // Determine theme from user role if not provided (use logged-in user role for theme)
   const currentTheme = theme || (user?.role === "ADMIN" ? "admin" : "doctor");
 
   const isActive = (path: string) => pathname === path;
@@ -49,7 +77,7 @@ export default function ProfileSidebar({ theme }: ProfileSidebarProps) {
           <div className="avatar size-14">
             <Image
               className="rounded-full"
-              src="/images/200x200.png"
+              src={displayUser?.profilePictureUrl || "/images/200x200.png"}
               alt="avatar"
               width={56}
               height={56}
@@ -57,13 +85,13 @@ export default function ProfileSidebar({ theme }: ProfileSidebarProps) {
           </div>
           <div>
             <h3 className="text-base font-medium text-slate-700 dark:text-navy-100">
-              {user?.firstName && user?.lastName 
-                ? `${user.firstName} ${user.lastName}` 
+              {displayUser?.firstName && displayUser?.lastName 
+                ? `${displayUser.firstName} ${displayUser.lastName}` 
                 : ""}
             </h3>
             <p className="text-xs-plus">
-              {user?.role === "DOCTOR" && user?.specialty ? `${user.specialty}` : user?.role || "Role"}
-              {user?.licenseNo ? ` | ${user.licenseNo}` : ""}
+              {displayUser?.role === "DOCTOR" && displayUser?.specialty ? `${displayUser.specialty}` : displayUser?.role || "Role"}
+              {displayUser?.licenseNo ? ` | ${displayUser.licenseNo}` : ""}
             </p>
           </div>
         </div>

@@ -125,7 +125,7 @@ export default function ScheduleManagementModal({
     if (!confirm("Are you sure you want to remove this time slot?")) return;
 
     try {
-      const response = await adminService.removeUserAvailabilitySchedule(userId, scheduleId);
+      const response = await adminService.removeUserAvailabilitySchedule(scheduleId);
       if (response.status) {
         setSchedules(schedules.filter(s => s.id !== scheduleId));
       } else {

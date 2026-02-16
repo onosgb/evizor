@@ -83,15 +83,6 @@ class AdminService {
     return response.data;
   }
 
-  /**
-   * Get consultation preferences by user ID (admin only)
-   */
-  async getUserConsultationPreferences(userId: string): Promise<ApiResponse<any>> {
-    const response = await apiClient.get<ApiResponse<any>>(
-      `/profile/consultation/user/${userId}`
-    );
-    return response.data;
-  }
 
   /**
    * Get performance data by user ID (admin only)
@@ -103,25 +94,7 @@ class AdminService {
     return response.data;
   }
 
-  /**
-   * Get security settings by user ID (admin only)
-   */
-  async getUserSecuritySettings(userId: string): Promise<ApiResponse<any>> {
-    const response = await apiClient.get<ApiResponse<any>>(
-      `/profile/security/user/${userId}`
-    );
-    return response.data;
-  }
 
-  /**
-   * Get activity log by user ID (admin only)
-   */
-  async getUserActivityLog(userId: string): Promise<ApiResponse<any[]>> {
-    const response = await apiClient.get<ApiResponse<any[]>>(
-      `/profile/activity/user/${userId}`
-    );
-    return response.data;
-  }
 
   /**
    * Schedule user availability (admin only)
@@ -137,9 +110,9 @@ class AdminService {
   /**
    * Remove user availability schedule (admin only)
    */
-  async removeUserAvailabilitySchedule(userId: string, scheduleId: string): Promise<ApiResponse<any>> {
+  async removeUserAvailabilitySchedule(scheduleId: string): Promise<ApiResponse<any>> {
     const response = await apiClient.delete<ApiResponse<any>>(
-      `/profile/availability/user/${userId}/${scheduleId}`
+      `/profile/availability/${scheduleId}`
     );
     return response.data;
   }

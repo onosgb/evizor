@@ -8,17 +8,27 @@ import { useQualificationStore } from "../stores/qualificationStore";
 import { Qualification } from "../models";
 
 import { useSearchParams } from "next/navigation";
+import ConfirmationModal from "./ConfirmationModal";
 
 export default function QualificationsContent() {
   const user = useAuthStore((state) => state.user);
   const searchParams = useSearchParams();
-  const userId = searchParams.get("userId");
-  const isReadOnly = !!userId;
+  const paramUserId = searchParams.get("userId");
+  // If userId param exists, it's read-only UNLESS it matches the logged-in user's ID
+  // If userId param is missing, we are viewing our own profile (not read-only)
+  const isReadOnly = !!paramUserId && String(paramUserId) !== String(user?.id);
+  
+  // The actual userId to fetch data for (either from params or current user)
+  const userId = paramUserId;
   
   const theme = user?.role === "ADMIN" ? "admin" : "doctor";
   const [showModal, setShowModal] = useState(false);
   const [showViewerModal, setShowViewerModal] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState<Qualification | null>(null);
+  
+  // Delete confirmation state
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [documentToDelete, setDocumentToDelete] = useState<number | null>(null);
 
   const {
     qualifications,
@@ -27,6 +37,8 @@ export default function QualificationsContent() {
     uploadError,
     fetchQualifications,
     uploadQualification,
+    deleteQualification,
+    isDeleting,
   } = useQualificationStore();
 
   useEffect(() => {
@@ -107,9 +119,21 @@ export default function QualificationsContent() {
     }
   };
 
-  const handleDeleteDocument = (id: number) => {
-    // TODO: Implement delete functionality
-    console.log("Deleting document:", id);
+
+
+  const confirmDeleteDocument = (id: number) => {
+    setDocumentToDelete(id);
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteDocument = async () => {
+    if (documentToDelete) {
+      const success = await deleteQualification(documentToDelete);
+      if (success) {
+        setShowDeleteModal(false);
+        setDocumentToDelete(null);
+      }
+    }
   };
 
   return (
@@ -211,10 +235,11 @@ export default function QualificationsContent() {
                                 />
                               </svg>
                             </button>
-                            <button
-                              onClick={() => handleDeleteDocument(doc.id)}
-                              className="btn size-8 p-0 text-error hover:bg-error/20 focus:bg-error/20 active:bg-error/25"
-                            >
+                              <button
+                                onClick={() => !isReadOnly && confirmDeleteDocument(doc.id)}
+                                disabled={isReadOnly}
+                                className={`btn size-8 p-0 text-error hover:bg-error/20 focus:bg-error/20 active:bg-error/25 ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+                              >
                               <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 className="size-4"
@@ -510,6 +535,20 @@ export default function QualificationsContent() {
           </div>,
           document.body
         )}
+
+        
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleDeleteDocument}
+        title="Delete Qualification"
+        message="Are you sure you want to delete this qualification? This action cannot be undone."
+        confirmText="Delete"
+        confirmButtonClass="bg-error hover:bg-error-focus focus:bg-error-focus active:bg-error-focus/90"
+        isLoading={isDeleting}
+        loadingText="Deleting..."
+      />
     </>
   );
 }
