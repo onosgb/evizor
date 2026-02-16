@@ -121,12 +121,20 @@ export default function LoginPage() {
                   </svg>
                 )}
               </button>
-              <label
-                htmlFor="inputPassword"
-                className="block mt-2 text-sm font-medium text-slate-700 dark:text-navy-200"
-              >
-                Password
-              </label>
+              <div className="flex justify-between items-center mt-2">
+                <label
+                    htmlFor="inputPassword"
+                    className="block text-sm font-medium text-slate-700 dark:text-navy-200"
+                >
+                    Password
+                </label>
+                <Link
+                    href="/forgot-password"
+                    className="text-sm font-medium text-primary hover:text-primary-focus dark:text-accent-light dark:hover:text-accent"
+                >
+                    Forgot Password?
+                </Link>
+              </div>
             </div>
 
             <div className="flex items-center">

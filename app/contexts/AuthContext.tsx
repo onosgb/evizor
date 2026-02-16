@@ -44,7 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // Protect routes - redirect based on authentication status
     if (!isLoading) {
-      const publicRoutes = ["/login", "/", "/landing"];
+      const publicRoutes = ["/login", "/", "/landing", '/forgot-password', '/reset-password'];
       const isPublicRoute = publicRoutes.includes(pathname || "");
       const isProfileRoute = pathname?.startsWith("/profile");
 

@@ -29,26 +29,31 @@ export default function SecurityContent() {
 
   const theme = user?.role === "ADMIN" ? "admin" : "doctor";
 
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+
   const [formData, setFormData] = useState({
+    currentPassword: "",
     newPassword: "",
-    confirmPassword: "",
     twoFactorAuth: false,
   });
 
   const [activeSessions] = useState<ActiveSession[]>([
     {
       date: "Friday 25 January, 2026",
-      device: "Chrome (Lagos) â€“ Active",
+      device: "Chrome (Lagos) – Active",
       status: "Active",
     },
     {
       date: "Friday 25 January, 2026",
-      device: "Chrome (Lagos) â€“ Active",
+      device: "Chrome (Lagos) – Active",
       status: "Active",
     },
     {
       date: "Friday 25 January, 2026",
-      device: "Chrome (Lagos) â€“ Active",
+      device: "Chrome (Lagos) – Active",
       status: "Active",
     },
   ]);
@@ -62,21 +67,62 @@ export default function SecurityContent() {
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }));
+    // Clear errors when user types
+    if (error) setError(null);
+    if (success) setSuccess(null);
   };
 
-  const handleSave = () => {
-    // TODO: Implement save functionality
-    console.log("Saving security settings:", formData);
+  const handleSave = async () => {
+    setError(null);
+    setSuccess(null);
+
+    // Basic validation
+    if (!formData.currentPassword) {
+        setError("Current password is required");
+        return;
+    }
+    if (!formData.newPassword) {
+        setError("New password is required");
+        return;
+    }
+    if (formData.newPassword.length < 8) {
+        setError("New password must be at least 8 characters");
+        return;
+    }
+
+    setIsLoading(true);
+
+    try {
+        // Call API to change password
+        const { authService } = await import("@/app/lib/services/auth.service");
+        
+        await authService.changePassword(
+            formData.currentPassword,
+            formData.newPassword
+        );
+
+        setSuccess("Password changed successfully");
+        setFormData(prev => ({
+            ...prev,
+            currentPassword: "",
+            newPassword: "",
+        }));
+    } catch (err: any) {
+        console.error("Change password error:", err);
+        setError(err.message || "Failed to change password. Please check your current password.");
+    } finally {
+        setIsLoading(false);
+    }
   };
 
   const handleCancel = () => {
-    // TODO: Reset form to original values
     setFormData({
+      currentPassword: "",
       newPassword: "",
-      confirmPassword: "",
       twoFactorAuth: false,
     });
-    console.log("Canceling changes");
+    setError(null);
+    setSuccess(null);
   };
 
   // Theme-based switch styling
@@ -107,35 +153,47 @@ export default function SecurityContent() {
                 <div className="flex justify-center space-x-2">
                   <button
                     onClick={handleCancel}
-                    className="btn min-w-28 rounded-full border border-slate-300 font-medium text-slate-700 hover:bg-slate-150 focus:bg-slate-150 active:bg-slate-150/80 dark:border-navy-450 dark:text-navy-100 dark:hover:bg-navy-500 dark:focus:bg-navy-500 dark:active:bg-navy-500/90"
+                    disabled={isLoading}
+                    className="btn min-w-28 rounded-full border border-slate-300 font-medium text-slate-700 hover:bg-slate-150 focus:bg-slate-150 active:bg-slate-150/80 dark:border-navy-450 dark:text-navy-100 dark:hover:bg-navy-500 dark:focus:bg-navy-500 dark:active:bg-navy-500/90 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={handleSave}
+                    disabled={isLoading}
                     className={`btn min-w-28 rounded-full font-medium text-white ${
                       theme === "admin"
                         ? "bg-success hover:bg-success-focus focus:bg-success-focus active:bg-success-focus/90 dark:bg-success dark:hover:bg-success-focus dark:focus:bg-success-focus dark:active:bg-success/90"
                         : "bg-primary hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
-                    }`}
+                    } disabled:opacity-50 disabled:cursor-not-allowed`}
                   >
-                    Save
+                    {isLoading ? "Saving..." : "Save"}
                   </button>
                 </div>
 
             </div>
             <div className="p-4 sm:p-5">
               <div className="p-5">
+                {error && (
+                    <div className="mb-4 rounded-lg bg-red-50 p-3 text-red-500 dark:bg-red-900/20">
+                        {error}
+                    </div>
+                )}
+                {success && (
+                    <div className="mb-4 rounded-lg bg-green-50 p-3 text-green-500 dark:bg-green-900/20">
+                        {success}
+                    </div>
+                )}
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <label className="block">
-                    <span>New Password</span>
+                   <label className="block sm:col-span-2">
+                    <span>Current Password</span>
                     <span className="relative mt-1.5 flex">
                       <input
-                        name="newPassword"
-                        value={formData.newPassword}
+                        name="currentPassword"
+                        value={formData.currentPassword}
                         onChange={handleInputChange}
                         className="form-input peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 pl-9 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
-                        placeholder="Enter new password"
+                        placeholder="Enter current password"
                         type="password"
                       />
                       <span className="pointer-events-none absolute flex h-full w-10 items-center justify-center text-slate-400 peer-focus:text-primary dark:text-navy-300 dark:peer-focus:text-accent">
@@ -150,24 +208,24 @@ export default function SecurityContent() {
                           <path
                             strokeLinecap="round"
                             strokeLinejoin="round"
-                            d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"
+                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
                           />
                         </svg>
                       </span>
                     </span>
                   </label>
-                  <label className="block">
-                    <span>Confirm Password</span>
-                    <span className="relative mt-1.5 flex">
+                  <label className="block sm:col-span-2">
+                    <span>New Password</span>
+                    <div className="relative mt-1.5 flex">
                       <input
-                        name="confirmPassword"
-                        value={formData.confirmPassword}
+                        name="newPassword"
+                        value={formData.newPassword}
                         onChange={handleInputChange}
-                        className="form-input peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 pl-9 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
-                        placeholder="Confirm password"
-                        type="password"
+                        className="form-input peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 pl-9 pr-9 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
+                        placeholder="Enter new password"
+                        type={showNewPassword ? "text" : "password"}
                       />
-                      <span className="pointer-events-none absolute flex h-full w-10 items-center justify-center text-slate-400 peer-focus:text-primary dark:text-navy-300 dark:peer-focus:text-accent">
+                      <span className="pointer-events-none absolute flex h-full w-10 items-center justify-center text-slate-400 peer-focus:text-primary dark:text-navy-300 dark:peer-focus:text-accent left-0">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           className="size-4"
@@ -183,7 +241,23 @@ export default function SecurityContent() {
                           />
                         </svg>
                       </span>
-                    </span>
+                      <button
+                        type="button"
+                        onClick={() => setShowNewPassword(!showNewPassword)}
+                        className="absolute right-0 flex h-full w-10 items-center justify-center text-slate-400 hover:text-primary focus:outline-none dark:text-navy-300 dark:hover:text-accent"
+                      >
+                         {showNewPassword ? (
+                            <svg xmlns="http://www.w3.org/2000/svg" className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                            </svg>
+                         ) : (
+                            <svg xmlns="http://www.w3.org/2000/svg" className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                         )}
+                      </button>
+                    </div>
                   </label>
                 </div>
                 <div className="my-7 h-px bg-slate-200 dark:bg-navy-500"></div>

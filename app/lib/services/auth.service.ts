@@ -134,18 +134,6 @@ class AuthService {
     return response.data;
   }
 
-
-
-
-
-
-
-
-
-
-
-
-
   /**
    * Upload profile picture
    */
@@ -163,17 +151,51 @@ class AuthService {
   }
 
 
+  /**
+   * Request password reset OTP
+   */
+  async forgotPassword(email: string): Promise<ApiResponse<void>> {
+    const response = await apiClient.post<ApiResponse<void>>(
+      "/auth/forgot-password",
+      { email },
+      { skipAuth: true }
+    );
+    return response.data;
+  }
 
+  /**
+   * Reset password with OTP token
+   */
+  async resetPassword(email: string, token: string, newPassword: string): Promise<ApiResponse<void>> {
+    const response = await apiClient.post<ApiResponse<void>>(
+      "/auth/reset-password",
+      { email, token, newPassword },
+      { skipAuth: true }
+    );
+    return response.data;
+  }
 
-
-
-
-
-
-
-
-
-
+  /**
+   * Resend password reset OTP
+   */
+  async resendPasswordReset(email: string): Promise<ApiResponse<void>> {
+    const response = await apiClient.post<ApiResponse<void>>(
+      "/auth/resend-password-reset",
+      { email },
+      { skipAuth: true }
+    );
+    return response.data;
+  }
+  /**
+   * Change password
+   */
+  async changePassword(oldPassword: string, newPassword: string): Promise<ApiResponse<void>> {
+    const response = await apiClient.post<ApiResponse<void>>(
+      "/auth/change-password",
+      { oldPassword, newPassword }
+    );
+    return response.data;
+  }
 }
 
 export const authService = new AuthService();
