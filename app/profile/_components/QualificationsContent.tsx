@@ -1,14 +1,14 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
-import { useAuthStore } from "../stores/authStore";
+import { useAuthStore } from "@/stores/authStore";
 import { createPortal } from "react-dom";
 import ProfileSidebar from "./ProfileSidebar";
-import { useQualificationStore } from "../stores/qualificationStore";
-import { Qualification } from "../models";
+import { useQualificationStore } from "@/stores/qualificationStore";
+import { Qualification } from "@/models";
 
 import { useSearchParams } from "next/navigation";
-import ConfirmationModal from "./ConfirmationModal";
+import ConfirmationModal from "@/components/ConfirmationModal";
 
 export default function QualificationsContent() {
   const user = useAuthStore((state) => state.user);
@@ -205,9 +205,9 @@ export default function QualificationsContent() {
                           {index + 1}
                         </td>
                         <td className="whitespace-nowrap px-4 py-3 sm:px-5">{doc.title}</td>
-                        <td className="whitespace-nowrap px-4 py-3 sm:px-5">{doc.description || "—"}</td>
+                        <td className="whitespace-nowrap px-4 py-3 sm:px-5">{doc.description || "â€”"}</td>
                         <td className="whitespace-nowrap px-4 py-3 sm:px-5">
-                          {doc.createdAt ? new Date(doc.createdAt).toLocaleDateString() : "—"}
+                          {doc.createdAt ? new Date(doc.createdAt).toLocaleDateString() : "â€”"}
                         </td>
                         <td className="whitespace-nowrap rounded-r-lg px-4 py-3 sm:px-5">
                           <div className="flex justify-center space-x-2">
@@ -552,3 +552,5 @@ export default function QualificationsContent() {
     </>
   );
 }
+
+

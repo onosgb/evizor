@@ -1,8 +1,8 @@
-"use client";
+﻿"use client";
 
 import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
-import TableActionMenu from "./TableActionMenu";
+import TableActionMenu from "@/components/TableActionMenu";
 
 interface PatientInfo {
   label: string;
@@ -123,3 +123,5 @@ export default function ClinicalAlertCard({
     </div>
   );
 }
+
+

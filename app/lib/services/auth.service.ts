@@ -67,14 +67,26 @@ class AuthService {
    * Logout user
    */
   async logout(): Promise<void> {
+    // 1. Capture token to potentially use for server-side logout
+    const accessToken = useAuthStore.getState().accessToken;
+
+    // 2. Clear store IMMEDIATELY to prevent any other requests from refreshing the session
+    // This stops the "revival" of the session if a concurrent request fails with 401
+    useAuthStore.getState().logout();
+
     try {
-      await apiClient.post("/auth/logout");
+      if (accessToken) {
+        // 3. Send logout to server with the captured token
+        // We manually set the Authorization header since store is empty
+        await apiClient.post("/auth/logout", {}, {
+            headers: {
+                Authorization: `Bearer ${accessToken}`
+            }
+        });
+      }
     } catch (error) {
-      // Even if logout fails on server, clear local tokens
-      console.error("Logout error:", error);
-    } finally {
-      // Clear tokens from store
-      useAuthStore.getState().logout();
+      // Server-side logout failed, but local session is already cleared so we are good
+      console.error("Logout error (server-side):", error);
     }
   }
 

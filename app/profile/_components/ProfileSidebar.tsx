@@ -1,12 +1,12 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { useAuthStore } from "../stores/authStore";
-import { adminService } from "../lib/services";
-import { User } from "../models";
+import { useAuthStore } from "@/stores/authStore";
+import { adminService } from "@/lib/services";
+import { User } from "@/models";
 
 interface ProfileSidebarProps {
   theme?: "admin" | "doctor";
@@ -259,3 +259,5 @@ export default function ProfileSidebar({ theme }: ProfileSidebarProps) {
     </div>
   );
 }
+
+

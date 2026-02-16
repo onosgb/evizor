@@ -1,10 +1,10 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
-import { useAuthStore } from "../stores/authStore";
+import { useAuthStore } from "@/stores/authStore";
 import { createPortal } from "react-dom";
 import { useSearchParams } from "next/navigation";
-import { authService, adminService } from "../lib/services";
+import { authService, adminService } from "@/lib/services";
 import ProfileSidebar from "./ProfileSidebar";
 
 interface Schedule {
@@ -28,14 +28,14 @@ export default function AvailabilityContent() {
     {
       id: "1",
       dateScheduled: "Monday Feb 9, 2026",
-      timeSlot: "09:00 – 13:00",
+      timeSlot: "09:00 â€“ 13:00",
       consultations: 20,
       status: "available",
     },
     {
       id: "2",
       dateScheduled: "Wednesday Feb 11, 2026",
-      timeSlot: "16:00 – 20:00",
+      timeSlot: "16:00 â€“ 20:00",
       consultations: 20,
       status: "offline",
     },
@@ -389,3 +389,5 @@ export default function AvailabilityContent() {
     </>
   );
 }
+
+

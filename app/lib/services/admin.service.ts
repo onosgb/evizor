@@ -11,27 +11,23 @@ class AdminService {
     return response.data;
   }
 
-  async approveVerification(userId: string): Promise<ApiResponse<any>> {
-    const response = await apiClient.post<ApiResponse<any>>(
+  async approveVerification(userId: string, status: boolean, reason: string = ""): Promise<ApiResponse<any>> {
+    const payload: any = {
+      approved: status,
+    };
+
+    if (!status) {
+      payload.rejectionReason = reason;
+    }
+
+    const response = await apiClient.put<ApiResponse<any>>(
       `/profile/admin/verify-profile/${userId}`,
-      {
-        approved: true,
-        rejectionReason: null,
-      }
+      payload
     );
     return response.data;
   }
 
-  async rejectVerification(userId: string, rejectionReason: string): Promise<ApiResponse<any>> {
-    const response = await apiClient.post<ApiResponse<any>>(
-      `/profile/admin/verify-profile/${userId}`,
-      {
-        approved: false,
-        rejectionReason,
-      }
-    );
-    return response.data;
-  }
+
 
   /**
    * Get any user's profile by ID (admin only)
@@ -113,6 +109,15 @@ class AdminService {
   async removeUserAvailabilitySchedule(scheduleId: string): Promise<ApiResponse<any>> {
     const response = await apiClient.delete<ApiResponse<any>>(
       `/profile/availability/${scheduleId}`
+    );
+    return response.data;
+  }
+  /**
+   * Get user consultation preferences by user ID (admin only)
+   */
+  async getUserConsultationPreferences(userId: string): Promise<ApiResponse<any>> {
+    const response = await apiClient.get<ApiResponse<any>>(
+      `/profile/consultation-preferences/user/${userId}`
     );
     return response.data;
   }

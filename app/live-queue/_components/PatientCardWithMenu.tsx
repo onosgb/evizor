@@ -1,9 +1,9 @@
-"use client";
+﻿"use client";
 
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import TableActionMenu from "./TableActionMenu";
+import TableActionMenu from "@/components/TableActionMenu";
 
 interface PatientCardWithMenuProps {
   id: string | number;
@@ -451,4 +451,5 @@ export default function PatientCardWithMenu({
     </>
   );
 }
+
 

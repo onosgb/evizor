@@ -1,9 +1,9 @@
-"use client";
+﻿"use client";
 
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
-import { User } from "../models";
-import TableActionMenu from "./TableActionMenu";
+import { User } from "@/models";
+import TableActionMenu from "@/components/TableActionMenu";
 
 interface QueueItem {
   id: number;
@@ -584,3 +584,5 @@ export default function AdminDashboard({ user }: { user: User | null }) {
     </>
   );
 }
+
+

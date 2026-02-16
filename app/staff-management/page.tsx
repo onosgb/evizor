@@ -3,8 +3,8 @@
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import DashboardLayout from "../components/DashboardLayout";
-import CreateStaffForm from "../components/CreateStaffForm";
-import ScheduleManagementModal from "../components/ScheduleManagementModal";
+import CreateStaffForm from "./_components/CreateStaffForm";
+import ScheduleManagementModal from "./_components/ScheduleManagementModal";
 import Image from "next/image";
 import { Staff, CreateStaffRequest } from "../models";
 import { staffService } from "../lib/services";

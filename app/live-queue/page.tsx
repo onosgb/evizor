@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import DashboardLayout from "../components/DashboardLayout";
 import PatientCard from "../components/PatientCard";
-import PatientCardWithMenu from "../components/PatientCardWithMenu";
+import PatientCardWithMenu from "./_components/PatientCardWithMenu";
 import { Appointment } from "../models";
 import { appointmentService } from "../lib/services";
 

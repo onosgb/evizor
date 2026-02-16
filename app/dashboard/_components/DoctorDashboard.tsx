@@ -1,12 +1,12 @@
-"use client";
+﻿"use client";
 
-import WaitingPatientCard from "./WaitingPatientCard";
+import WaitingPatientCard from "@/components/WaitingPatientCard";
 import ClinicalAlertCard from "./ClinicalAlertCard";
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
-import { User } from "../models";
-import TableActionMenu from "./TableActionMenu";
+import { User } from "@/models";
+import TableActionMenu from "@/components/TableActionMenu";
 
 interface Case {
   id: number;
@@ -473,3 +473,5 @@ export default function DoctorDashboard({ user }: { user: User | null }) {
     </div>
   );
 }
+
+

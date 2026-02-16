@@ -1,10 +1,10 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import ProfileSidebar from "./ProfileSidebar";
-import { useAuthStore } from "../stores/authStore";
+import { useAuthStore } from "@/stores/authStore";
 import { useSearchParams } from "next/navigation";
-import { authService, adminService } from "../lib/services";
+import { authService, adminService } from "@/lib/services";
 
 interface ConsultationPreferences {
   acceptOnDemandVisits: boolean;
@@ -177,3 +177,5 @@ export default function ConsultationContent() {
     </>
   );
 }
+
+

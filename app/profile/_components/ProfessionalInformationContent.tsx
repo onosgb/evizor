@@ -1,11 +1,11 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
-import { useAuthStore } from "../stores/authStore";
-import { useSpecialtyStore } from "../stores/specialtyStore";
-import { useProfessionalProfileStore } from "../stores/professionalProfileStore";
+import { useAuthStore } from "@/stores/authStore";
+import { useSpecialtyStore } from "@/stores/specialtyStore";
+import { useProfessionalProfileStore } from "@/stores/professionalProfileStore";
 import ProfileSidebar from "./ProfileSidebar";
-import { ProfessionalProfile } from "../models";
+import { ProfessionalProfile } from "@/models";
 
 import { useSearchParams } from "next/navigation";
 
@@ -274,3 +274,5 @@ export default function ProfessionalInformationContent() {
     </>
   );
 }
+
+

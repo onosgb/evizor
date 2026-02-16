@@ -2,7 +2,7 @@ import DashboardLayout from "../components/DashboardLayout";
 import Link from "next/link";
 import PatientSidebar from "../components/PatientSidebar";
 import ActionButtons from "../components/ActionButtons";
-import HistoryAccordion from "../components/HistoryAccordion";
+import HistoryAccordion from "./_components/HistoryAccordion";
 
 export default function PatientHistoryPage() {
   const historyItems = [

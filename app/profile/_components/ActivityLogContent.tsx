@@ -1,10 +1,10 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
-import { useAuthStore } from "../stores/authStore";
+import { useAuthStore } from "@/stores/authStore";
 import ProfileSidebar from "./ProfileSidebar";
 import { useSearchParams } from "next/navigation";
-import { authService, adminService } from "../lib/services";
+import { authService, adminService } from "@/lib/services";
 
 interface ActivityLog {
   timestamp: string;
@@ -89,3 +89,5 @@ export default function ActivityLogContent() {
     </>
   );
 }
+
+

@@ -1,10 +1,10 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
-import { useAuthStore } from "../stores/authStore";
+import { useAuthStore } from "@/stores/authStore";
 import ProfileSidebar from "./ProfileSidebar";
 import { useSearchParams } from "next/navigation";
-import { authService, adminService } from "../lib/services";
+import { authService, adminService } from "@/lib/services";
 
 interface PerformanceData {
   date: string;
@@ -24,42 +24,42 @@ export default function PerformanceContent() {
       date: "Mon, 12 May",
       consultationsToday: 15,
       avgConsultationTime: "12 mins",
-      patientRating: "★★★★☆ (4.6)",
+      patientRating: "â˜…â˜…â˜…â˜…â˜† (4.6)",
       completionRate: "98%",
     },
     {
       date: "Tue, 13 May",
       consultationsToday: 18,
       avgConsultationTime: "14 mins",
-      patientRating: "★★★★★ (4.8)",
+      patientRating: "â˜…â˜…â˜…â˜…â˜… (4.8)",
       completionRate: "100%",
     },
     {
       date: "Wed, 14 May",
       consultationsToday: 12,
       avgConsultationTime: "11 mins",
-      patientRating: "★★★★☆ (4.5)",
+      patientRating: "â˜…â˜…â˜…â˜…â˜† (4.5)",
       completionRate: "95%",
     },
     {
       date: "Thu, 15 May",
       consultationsToday: 20,
       avgConsultationTime: "13 mins",
-      patientRating: "★★★★★ (4.9)",
+      patientRating: "â˜…â˜…â˜…â˜…â˜… (4.9)",
       completionRate: "100%",
     },
     {
       date: "Fri, 16 May",
       consultationsToday: 16,
       avgConsultationTime: "12 mins",
-      patientRating: "★★★★☆ (4.7)",
+      patientRating: "â˜…â˜…â˜…â˜…â˜† (4.7)",
       completionRate: "98%",
     },
     {
       date: "Sat, 17 May",
       consultationsToday: 10,
       avgConsultationTime: "15 mins",
-      patientRating: "★★★★☆ (4.6)",
+      patientRating: "â˜…â˜…â˜…â˜…â˜† (4.6)",
       completionRate: "90%",
     },
   ]);
@@ -155,3 +155,5 @@ export default function PerformanceContent() {
     </>
   );
 }
+
+

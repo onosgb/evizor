@@ -3,7 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import PatientSidebar from "../components/PatientSidebar";
 import ActionButtons from "../components/ActionButtons";
-import ImageCarousel from "../components/ImageCarousel";
+import ImageCarousel from "./_components/ImageCarousel";
 
 export default function PatientUploadsPage() {
   const images = [

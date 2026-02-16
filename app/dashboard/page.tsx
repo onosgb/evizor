@@ -1,8 +1,8 @@
 "use client";
 
 import DashboardLayout from "../components/DashboardLayout";
-import AdminDashboard from "../components/AdminDashboard";
-import DoctorDashboard from "../components/DoctorDashboard";
+import AdminDashboard from "./_components/AdminDashboard";
+import DoctorDashboard from "./_components/DoctorDashboard";
 import { useAuthStore } from "../stores/authStore";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";

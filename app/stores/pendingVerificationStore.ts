@@ -37,10 +37,10 @@ export const usePendingVerificationStore = create<PendingVerificationStore>((set
 
   approveVerification: async (userId: string) => {
     try {
-      await adminService.approveVerification(userId);
+      await adminService.approveVerification(userId, true);
       // Remove the approved verification from the list
       set((state) => ({
-        pendingVerifications: state.pendingVerifications.filter((v) => v.userId !== userId),
+        pendingVerifications: (state.pendingVerifications || []).filter((v) => v.userId !== userId),
       }));
     } catch (error) {
       console.error("Failed to approve verification:", error);
@@ -53,10 +53,10 @@ export const usePendingVerificationStore = create<PendingVerificationStore>((set
 
   rejectVerification: async (userId: string, reason: string) => {
     try {
-      await adminService.rejectVerification(userId, reason);
+      await adminService.approveVerification(userId, false, reason);
       // Remove the rejected verification from the list
       set((state) => ({
-        pendingVerifications: state.pendingVerifications.filter((v) => v.userId !== userId),
+        pendingVerifications: (state.pendingVerifications || []).filter((v) => v.userId !== userId),
       }));
     } catch (error) {
       console.error("Failed to reject verification:", error);

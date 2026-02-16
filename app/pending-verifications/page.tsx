@@ -3,32 +3,38 @@
 import { useEffect, useState } from "react";
 import DashboardLayout from "@/app/components/DashboardLayout";
 import { usePendingVerificationStore } from "@/app/stores/pendingVerificationStore";
-import RejectionModal from "@/app/components/RejectionModal";
+import VerificationModal from "./_components/VerificationModal";
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
 }
 
 export default function PendingVerificationsPage() {
-  const { pendingVerifications, isLoading, error, fetchPendingVerifications, rejectVerification } = usePendingVerificationStore();
-  const [rejectionModalOpen, setRejectionModalOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<{ id: string; name: string } | null>(null);
+  const { pendingVerifications, isLoading, error, fetchPendingVerifications, approveVerification, rejectVerification } = usePendingVerificationStore();
+  const [verificationModal, setVerificationModal] = useState<{
+    isOpen: boolean;
+    type: "approve" | "reject";
+    userId: string;
+    userName: string;
+  } | null>(null);
 
   useEffect(() => {
     fetchPendingVerifications();
   }, [fetchPendingVerifications]);
 
-  const handleRejectClick = (userId: string, userName: string) => {
-    setSelectedUser({ id: userId, name: userName });
-    setRejectionModalOpen(true);
+  const handleOpenModal = (userId: string, userName: string, type: "approve" | "reject") => {
+    setVerificationModal({ isOpen: true, type, userId, userName });
   };
 
-  const handleConfirmRejection = async (reason: string) => {
-    if (selectedUser) {
-      await rejectVerification(selectedUser.id, reason);
-      setRejectionModalOpen(false);
-      setSelectedUser(null);
+  const handleConfirmVerification = async (comment: string) => {
+    if (!verificationModal) return;
+
+    if (verificationModal.type === "approve") {
+      await approveVerification(verificationModal.userId);
+    } else {
+      await rejectVerification(verificationModal.userId, comment);
     }
+    setVerificationModal(null);
   };
 
   return (
@@ -54,16 +60,10 @@ export default function PendingVerificationsPage() {
                   DOCTOR NAME
                 </th>
                 <th className="whitespace-nowrap bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">
-                  EMAIL
-                </th>
-                <th className="whitespace-nowrap bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">
                   SPECIALTY
                 </th>
                 <th className="whitespace-nowrap bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">
-                  LICENSE NO
-                </th>
-                <th className="whitespace-nowrap bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">
-                  SUBMITTED AT
+                  LICENSE / AUTHORITY
                 </th>
                 <th className="whitespace-nowrap rounded-tr-lg bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">
                   ACTIONS
@@ -73,7 +73,7 @@ export default function PendingVerificationsPage() {
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center">
+                  <td colSpan={4} className="px-4 py-8 text-center">
                     <div className="flex items-center justify-center">
                       <div className="h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent"></div>
                       <span className="ml-3 text-slate-600 dark:text-navy-300">Loading...</span>
@@ -82,7 +82,7 @@ export default function PendingVerificationsPage() {
                 </tr>
               ) : pendingVerifications.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-slate-500 dark:text-navy-300">
+                  <td colSpan={4} className="px-4 py-8 text-center text-slate-500 dark:text-navy-300">
                     No pending verifications found.
                   </td>
                 </tr>
@@ -96,32 +96,23 @@ export default function PendingVerificationsPage() {
                       {item.doctorName}
                     </td>
                     <td className="whitespace-nowrap px-4 py-3 sm:px-5">
-                      {item.email}
+                      {item.specialty || "N/A"}
                     </td>
                     <td className="whitespace-nowrap px-4 py-3 sm:px-5">
-                      {item.specialty?.name || "N/A"}
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-3 sm:px-5">
-                      {item.licenseNumber}
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-3 sm:px-5">
-                      {new Date(item.profileSubmittedAt).toLocaleString()}
+                      <div className="font-medium">{item.licenseNumber}</div>
+                      <div className="text-xs opacity-75">{item.issuingAuthority}</div>
+                      <div className="text-xs opacity-75">Exp: {item.licenseExpiryDate}</div>
                     </td>
                     <td className="whitespace-nowrap px-4 py-3 sm:px-5">
                       <div className="flex space-x-2">
                         <button
-                          onClick={() => {
-                            if (window.confirm("Are you sure you want to approve this verification?")) {
-                              const { approveVerification } = usePendingVerificationStore.getState();
-                              approveVerification(item.userId);
-                            }
-                          }}
+                          onClick={() => handleOpenModal(item.userId, item.doctorName, "approve")}
                           className="btn h-8 rounded bg-primary px-3 text-xs font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
                         >
                           Approve
                         </button>
                         <button
-                          onClick={() => handleRejectClick(item.userId, item.doctorName)}
+                          onClick={() => handleOpenModal(item.userId, item.doctorName, "reject")}
                           className="btn h-8 rounded bg-error px-3 text-xs font-medium text-white hover:bg-error-focus focus:bg-error-focus active:bg-error-focus/90"
                         >
                           Reject
@@ -136,11 +127,12 @@ export default function PendingVerificationsPage() {
         </div>
       </div>
 
-      <RejectionModal
-        isOpen={rejectionModalOpen}
-        onClose={() => setRejectionModalOpen(false)}
-        onConfirm={handleConfirmRejection}
-        userName={selectedUser?.name || ""}
+      <VerificationModal
+        isOpen={!!verificationModal?.isOpen}
+        onClose={() => setVerificationModal(null)}
+        onConfirm={handleConfirmVerification}
+        userName={verificationModal?.userName || ""}
+        type={verificationModal?.type}
       />
     </DashboardLayout>
   );

@@ -1,10 +1,10 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import ProfileSidebar from "./ProfileSidebar";
-import { useAuthStore } from "../stores/authStore";
+import { useAuthStore } from "@/stores/authStore";
 import { useSearchParams } from "next/navigation";
-import { authService, adminService } from "../lib/services";
+import { authService, adminService } from "@/lib/services";
 
 interface ActiveSession {
   date: string;
@@ -29,17 +29,17 @@ export default function SecurityContent() {
   const [activeSessions] = useState<ActiveSession[]>([
     {
       date: "Friday 25 January, 2026",
-      device: "Chrome (Lagos) – Active",
+      device: "Chrome (Lagos) â€“ Active",
       status: "Active",
     },
     {
       date: "Friday 25 January, 2026",
-      device: "Chrome (Lagos) – Active",
+      device: "Chrome (Lagos) â€“ Active",
       status: "Active",
     },
     {
       date: "Friday 25 January, 2026",
-      device: "Chrome (Lagos) – Active",
+      device: "Chrome (Lagos) â€“ Active",
       status: "Active",
     },
   ]);
@@ -245,3 +245,5 @@ export default function SecurityContent() {
     </>
   );
 }
+
+

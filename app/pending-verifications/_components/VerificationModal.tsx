@@ -1,27 +1,37 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { createPortal } from "react-dom";
 
-interface RejectionModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onConfirm: (reason: string) => Promise<void>;
-  userName: string;
-}
 
-export default function RejectionModal({
+
+export default function VerificationModal({
   isOpen,
   onClose,
   onConfirm,
   userName,
-}: RejectionModalProps) {
-  const [reason, setReason] = useState("");
+  type = "reject",
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: (comment: string) => Promise<void>;
+  userName: string;
+  type?: "approve" | "reject";
+}) {
+  const [comment, setComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const isApprove = type === "approve";
+  const title = isApprove ? "Approve Verification" : "Reject Verification";
+  const buttonText = isApprove ? "Approve Verification" : "Reject Verification";
+  const buttonClass = isApprove
+    ? "bg-success hover:bg-success-focus focus:bg-success-focus active:bg-success-focus/90"
+    : "bg-error hover:bg-error-focus focus:bg-error-focus active:bg-error-focus/90";
+  const loadingText = isApprove ? "Approving..." : "Rejecting...";
+
   const handleSubmit = async () => {
-    if (!reason.trim()) {
+    if (!isApprove && !comment.trim()) {
       setError("Please provide a reason for rejection.");
       return;
     }
@@ -30,12 +40,12 @@ export default function RejectionModal({
     setError(null);
 
     try {
-      await onConfirm(reason);
+      await onConfirm(comment);
       onClose();
-      setReason(""); // Reset reason on success
+      setComment(""); // Reset comment on success
     } catch (err) {
-      console.error("Failed to reject:", err);
-      setError("Failed to reject verification. Please try again.");
+      console.error("Failed to verify:", err);
+      setError("Failed to process verification. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -56,7 +66,7 @@ export default function RejectionModal({
       <div className="relative w-full max-w-md transform rounded-lg bg-white shadow-lg transition-all dark:bg-navy-700">
         <div className="flex items-center justify-between rounded-t-lg bg-slate-100 px-4 py-3 dark:bg-navy-800">
           <h3 className="text-base font-medium text-slate-700 dark:text-navy-100">
-            Reject Verification
+            {title}
           </h3>
           <button
             onClick={onClose}
@@ -81,26 +91,28 @@ export default function RejectionModal({
 
         <div className="p-4 sm:p-5">
           <p className="mb-4 text-sm text-slate-500 dark:text-navy-300">
-            Are you sure you want to reject the profile verification for{" "}
+            Are you sure you want to {isApprove ? "approve" : "reject"} the profile verification for{" "}
             <span className="font-semibold text-slate-700 dark:text-navy-100">
               {userName}
             </span>
-            ? Please provide a reason below.
+            ? {isApprove ? "" : "Please provide a reason below."}
           </p>
 
           <div className="space-y-3">
-             <label className="block">
-              <span className="text-sm font-medium text-slate-600 dark:text-navy-100">
-                Reason for Rejection
-              </span>
-              <textarea
-                rows={4}
-                value={reason}
-                onChange={(e) => setReason(e.target.value)}
-                placeholder="e.g., Incomplete documentation, Invalid license number..."
-                className="form-textarea mt-1.5 w-full resize-none rounded-lg border border-slate-300 bg-transparent p-2.5 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
-              />
-            </label>
+             {!isApprove && (
+               <label className="block">
+                <span className="text-sm font-medium text-slate-600 dark:text-navy-100">
+                  Reason for Rejection
+                </span>
+                <textarea
+                  rows={4}
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  placeholder="e.g., Incomplete documentation, Invalid license number..."
+                  className="form-textarea mt-1.5 w-full resize-none rounded-lg border border-slate-300 bg-transparent p-2.5 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
+                />
+              </label>
+             )}
             {error && <span className="text-xs text-error">{error}</span>}
           </div>
 
@@ -115,15 +127,15 @@ export default function RejectionModal({
             <button
               onClick={handleSubmit}
               disabled={isSubmitting}
-              className="btn rounded-lg bg-error font-medium text-white hover:bg-error-focus focus:bg-error-focus active:bg-error-focus/90"
+              className={`btn rounded-lg font-medium text-white ${buttonClass}`}
             >
               {isSubmitting ? (
                 <div className="flex items-center space-x-1">
                   <div className="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-                  <span>Rejecting...</span>
+                  <span>{loadingText}</span>
                 </div>
               ) : (
-                "Reject Verification"
+                buttonText
               )}
             </button>
           </div>
@@ -133,3 +145,4 @@ export default function RejectionModal({
     document.body
   );
 }
+

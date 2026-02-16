@@ -1,7 +1,7 @@
-"use client";
+﻿"use client";
 import { useState, useEffect } from "react";
-import { CreateStaffRequest } from "../models";
-import { useTenantStore } from "../stores";
+import { CreateStaffRequest } from "@/models";
+import { useTenantStore } from "@/stores";
 
 // Helper function to check if status is active
 const isActiveStatus = (status: string | null | undefined): boolean => {
@@ -269,3 +269,5 @@ export default function CreateStaffForm({
     </div>
   );
 }
+
+

@@ -1,8 +1,8 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { authService, adminService } from "../lib/services";
+import { authService, adminService } from "@/lib/services";
 
 interface Schedule {
   id: string;
@@ -90,7 +90,7 @@ export default function ScheduleManagementModal({
       // Format data for API
       const payload = {
         dateScheduled: newSchedule.date, // You might need to format this string
-        timeSlot: `${newSchedule.startTime} – ${newSchedule.endTime}`,
+        timeSlot: `${newSchedule.startTime} â€“ ${newSchedule.endTime}`,
         consultations: Number(newSchedule.maxConsultations),
         status: "available",
       };
@@ -288,3 +288,5 @@ export default function ScheduleManagementModal({
     document.body
   );
 }
+
+
