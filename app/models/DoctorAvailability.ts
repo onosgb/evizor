@@ -4,5 +4,4 @@ export interface DoctorAvailability {
   startTime: string;
   endTime: string;
   isAvailable: boolean;
-  doctorId: string;
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import DashboardLayout from "../components/DashboardLayout";
@@ -9,17 +9,10 @@ import { useAppointmentStore } from "../stores/appointmentStore";
 import { useAuthStore } from "../stores/authStore";
 import { getTheme } from "../lib/roles";
 
-export default function PatientPreviewLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+function PatientPreviewContent({ children }: { children: React.ReactNode }) {
   const searchParams = useSearchParams();
   const appointmentId = searchParams.get("appointmentId");
   const patientId = searchParams.get("patientId");
-
-  const user = useAuthStore((state) => state.user);
-  const theme = getTheme(user);
 
   const {
     selectedAppointment,
@@ -28,15 +21,15 @@ export default function PatientPreviewLayout({
     fetchPatientDetails,
   } = useAppointmentStore();
 
-  // Load appointment from URL
+  const user = useAuthStore((state) => state.user);
+  const theme = getTheme(user);
+
   useEffect(() => {
     if (appointmentId) {
       selectAppointment(appointmentId);
     }
   }, [appointmentId, selectAppointment]);
 
-  // Load patient: use patientId from URL when available,
-  // otherwise fall back to patientId derived from the loaded appointment
   useEffect(() => {
     const id = patientId ?? selectedAppointment?.patientId;
     if (id) {
@@ -93,9 +86,20 @@ export default function PatientPreviewLayout({
             theme={theme}
           />
         </div>
-
         <div className="col-span-12 lg:col-span-8">{children}</div>
       </div>
     </DashboardLayout>
+  );
+}
+
+export default function PatientPreviewLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <Suspense>
+      <PatientPreviewContent>{children}</PatientPreviewContent>
+    </Suspense>
   );
 }

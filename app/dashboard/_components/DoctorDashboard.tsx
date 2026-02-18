@@ -6,7 +6,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
 import { User } from "@/app/models";
-import TableActionMenu from "@/app/components/TableActionMenu";
 import { useAppointmentStore } from "@/app/stores/appointmentStore";
 
 const getGreeting = () => {
@@ -19,11 +18,7 @@ const getGreeting = () => {
 export default function DoctorDashboard({ user }: { user: User | null }) {
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [openRowMenu, setOpenRowMenu] = useState<number | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
-  const rowMenuRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
 
   const { liveQueue, isLoading: queueLoading, fetchLiveQueue } = useAppointmentStore();
 
@@ -33,29 +28,18 @@ export default function DoctorDashboard({ user }: { user: User | null }) {
 
   const waitingPatients = liveQueue.slice(0, 6);
 
+  const filteredCases = liveQueue.filter(
+    (item) =>
+      item.patientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.scheduledAt.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   useEffect(() => {
     if (isSearchActive && searchInputRef.current) {
       searchInputRef.current.focus();
     }
   }, [isSearchActive]);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setIsMenuOpen(false);
-      }
-
-      if (openRowMenu !== null) {
-        const rowMenuRef = rowMenuRefs.current[openRowMenu];
-        if (rowMenuRef && !rowMenuRef.contains(event.target as Node)) {
-          setOpenRowMenu(null);
-        }
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [openRowMenu]);
 
   return (
     <div className="mt-4 grid grid-cols-12 gap-4 sm:mt-5 sm:gap-5 lg:mt-6 lg:gap-6">
@@ -183,71 +167,6 @@ export default function DoctorDashboard({ user }: { user: User | null }) {
                   </svg>
                 </button>
               </div>
-              <div className="inline-flex relative" ref={menuRef}>
-                <button
-                  onClick={() => setIsMenuOpen(!isMenuOpen)}
-                  className="btn size-8 rounded-full p-0 hover:bg-slate-300/20 focus:bg-slate-300/20 active:bg-slate-300/25 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25"
-                  aria-label="Menu"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="size-4.5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
-                    />
-                  </svg>
-                </button>
-                {isMenuOpen && (
-                  <div className="popper-root show absolute right-0 top-full mt-1 z-50">
-                    <div className="popper-box w-auto min-w-fit rounded-md border border-slate-150 bg-white py-1.5 font-inter dark:border-navy-500 dark:bg-navy-700">
-                      <ul>
-                        <li>
-                          <a
-                            href="#"
-                            className="flex h-8 items-center whitespace-nowrap px-3 pr-8 font-medium tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
-                          >
-                            Action
-                          </a>
-                        </li>
-                        <li>
-                          <a
-                            href="#"
-                            className="flex h-8 items-center whitespace-nowrap px-3 pr-8 font-medium tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
-                          >
-                            Another Action
-                          </a>
-                        </li>
-                        <li>
-                          <a
-                            href="#"
-                            className="flex h-8 items-center whitespace-nowrap px-3 pr-8 font-medium tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
-                          >
-                            Something else
-                          </a>
-                        </li>
-                      </ul>
-                      <div className="my-1 h-px bg-slate-150 dark:bg-navy-500"></div>
-                      <ul>
-                        <li>
-                          <a
-                            href="#"
-                            className="flex h-8 items-center whitespace-nowrap px-3 pr-8 font-medium tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
-                          >
-                            Separated Link
-                          </a>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                )}
-              </div>
             </div>
           </div>
           <div className="card mt-3">
@@ -271,137 +190,77 @@ export default function DoctorDashboard({ user }: { user: User | null }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredCases.map((caseItem, index) => (
-                    <tr
-                      key={caseItem.id}
-                      className={`border-y border-transparent ${
-                        index === filteredCases.length - 1
-                          ? ""
-                          : "border-b-slate-200 dark:border-b-navy-500"
-                      }`}
-                    >
-                      <td
-                        className={`whitespace-nowrap px-4 py-3 sm:px-5 ${
-                          index === filteredCases.length - 1
-                            ? "rounded-bl-lg"
-                            : ""
-                        }`}
-                      >
-                        <div className="flex items-center space-x-4">
-                          <div className="avatar size-9">
-                            <Image
-                              className="rounded-full"
-                              src="/images/200x200.png"
-                              alt={caseItem.name}
-                              width={36}
-                              height={36}
-                            />
+                  {queueLoading ? (
+                    Array.from({ length: 5 }).map((_, i) => (
+                      <tr key={i} className="border-y border-transparent border-b-slate-200 dark:border-b-navy-500 animate-pulse">
+                        <td className="px-4 py-3 sm:px-5">
+                          <div className="flex items-center space-x-3">
+                            <div className="size-9 rounded-full bg-slate-200 dark:bg-navy-500" />
+                            <div className="h-4 w-28 rounded bg-slate-200 dark:bg-navy-500" />
                           </div>
-                          <span className="font-medium text-slate-700 dark:text-navy-100">
-                            {caseItem.name}
-                          </span>
-                        </div>
+                        </td>
+                        <td className="px-4 py-3 sm:px-5"><div className="h-4 w-32 rounded bg-slate-200 dark:bg-navy-500" /></td>
+                        <td className="px-4 py-3 sm:px-5"><div className="h-4 w-20 rounded bg-slate-200 dark:bg-navy-500" /></td>
+                        <td className="px-4 py-3 sm:px-5"><div className="h-4 w-16 rounded bg-slate-200 dark:bg-navy-500" /></td>
+                        <td className="px-4 py-3 sm:px-5"><div className="h-8 w-8 rounded-full bg-slate-200 dark:bg-navy-500" /></td>
+                      </tr>
+                    ))
+                  ) : filteredCases.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="px-4 py-8 text-center text-slate-500 dark:text-navy-300">
+                        {searchQuery ? `No cases found matching "${searchQuery}"` : "No cases in the queue."}
                       </td>
-                      <td className="whitespace-nowrap px-4 py-3 sm:px-5">
-                        <a
-                          href="#"
-                          className="hover:underline focus:underline"
-                        >
-                          {caseItem.location}
-                        </a>
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-3 font-medium text-slate-600 dark:text-navy-100 sm:px-5">
-                        {caseItem.datetime}
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-3 sm:px-5">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className={`ml-4 size-5 ${
-                            caseItem.status === "cancelled" ? "text-error" : ""
-                          }`}
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          {caseItem.status === "cancelled" ? (
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth="1.5"
-                              d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-                            />
-                          ) : (
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth="1.5"
-                              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                            />
-                          )}
-                        </svg>
-                      </td>
-                      <td
-                        className={`whitespace-nowrap px-4 py-3 sm:px-5 ${
+                    </tr>
+                  ) : (
+                    filteredCases.map((caseItem, index) => (
+                      <tr
+                        key={caseItem.id}
+                        className={`border-y border-transparent ${
                           index === filteredCases.length - 1
-                            ? "rounded-br-lg"
-                            : ""
+                            ? ""
+                            : "border-b-slate-200 dark:border-b-navy-500"
                         }`}
                       >
-                        <div className="flex justify-end">
-                          <TableActionMenu>
-                            <div className="w-48">
-                              <ul>
-                                <li>
-                                  <a
-                                    href="#"
-                                    className="flex h-8 items-center whitespace-nowrap px-3 pr-8 font-medium tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
-                                  >
-                                    Action
-                                  </a>
-                                </li>
-                                <li>
-                                  <a
-                                    href="#"
-                                    className="flex h-8 items-center whitespace-nowrap px-3 pr-8 font-medium tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
-                                  >
-                                    Another Action
-                                  </a>
-                                </li>
-                                <li>
-                                  <a
-                                    href="#"
-                                    className="flex h-8 items-center whitespace-nowrap px-3 pr-8 font-medium tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
-                                  >
-                                    Something else
-                                  </a>
-                                </li>
-                              </ul>
-                              <div className="my-1 h-px bg-slate-150 dark:bg-navy-500"></div>
-                              <ul>
-                                <li>
-                                  <a
-                                    href="#"
-                                    className="flex h-8 items-center whitespace-nowrap px-3 pr-8 font-medium tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
-                                  >
-                                    Separated Link
-                                  </a>
-                                </li>
-                              </ul>
+                        <td className={`whitespace-nowrap px-4 py-3 sm:px-5 ${index === filteredCases.length - 1 ? "rounded-bl-lg" : ""}`}>
+                          <div className="flex items-center space-x-4">
+                            <div className="avatar size-9">
+                              <Image className="rounded-full" src="/images/200x200.png" alt={caseItem.patientName} width={36} height={36} />
                             </div>
-                          </TableActionMenu>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                  {filteredCases.length === 0 && (
-                    <tr>
-                      <td
-                        colSpan={5}
-                        className="px-4 py-8 text-center text-slate-500 dark:text-navy-300"
-                      >
-                        No cases found matching "{searchQuery}"
-                      </td>
-                    </tr>
+                            <span className="font-medium text-slate-700 dark:text-navy-100">
+                              {caseItem.patientName}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="whitespace-nowrap px-4 py-3 sm:px-5 text-slate-600 dark:text-navy-100">
+                          {caseItem.description || "—"}
+                        </td>
+                        <td className="whitespace-nowrap px-4 py-3 font-medium text-slate-600 dark:text-navy-100 sm:px-5">
+                          {caseItem.scheduledAt}
+                        </td>
+                        <td className="whitespace-nowrap px-4 py-3 sm:px-5">
+                          <div className={`flex items-center space-x-2 ${
+                            caseItem.status === "cancelled" ? "text-error" :
+                            caseItem.status === "completed" ? "text-success" : "text-warning"
+                          }`}>
+                            <div className="size-2 rounded-full bg-current" />
+                            <span className="capitalize">{caseItem.status}</span>
+                          </div>
+                        </td>
+                        <td className={`whitespace-nowrap px-4 py-3 sm:px-5 ${index === filteredCases.length - 1 ? "rounded-br-lg" : ""}`}>
+                          <div className="flex justify-end">
+                            <Link
+                              href={`/patient-preview?appointmentId=${caseItem.id}&patientId=${caseItem.patientId}`}
+                              className="flex size-8 items-center justify-center rounded-full bg-slate-150 text-slate-600 transition-colors hover:bg-slate-200 active:bg-slate-200/80 dark:bg-navy-500 dark:text-navy-200 dark:hover:bg-navy-450"
+                              title="View patient"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M7 17L17 7M17 7H7M17 7v10" />
+                              </svg>
+                            </Link>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
                   )}
                 </tbody>
               </table>
