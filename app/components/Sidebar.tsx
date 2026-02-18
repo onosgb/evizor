@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useRef, useEffect, useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useAuthStore } from "../stores/authStore";
+import { isAdmin as checkIsAdmin, isDoctor as checkIsDoctor } from "@/app/lib/roles";
 import * as Tooltip from "@radix-ui/react-tooltip";
 import { createPortal } from "react-dom";
 
@@ -28,8 +29,8 @@ export default function Sidebar({
   const profileButtonRef = useRef<HTMLButtonElement>(null);
   const profilePopperRef = useRef<HTMLDivElement>(null);
   const user = useAuthStore((state) => state.user);
-  const isAdmin = user?.role === "ADMIN";
-  const isDoctor = user?.role === "DOCTOR" || !isAdmin; // Default to doctor if role is not ADMIN
+  const isAdmin = checkIsAdmin(user);
+  const isDoctor = checkIsDoctor(user);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   // Safely get logout function from auth context

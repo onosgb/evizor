@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Image from "next/image";
 import { useState } from "react";
@@ -43,7 +43,6 @@ export default function ImageCarousel({ images }: ImageCarouselProps) {
         ))}
       </div>
 
-      {/* Pagination */}
       <div className="swiper-pagination flex justify-center mt-4 space-x-2">
         {images.map((_, index) => (
           <button
@@ -59,7 +58,6 @@ export default function ImageCarousel({ images }: ImageCarouselProps) {
         ))}
       </div>
 
-      {/* Navigation Buttons */}
       <div
         onClick={goToPrev}
         className="swiper-button-prev absolute left-4 top-1/2 -translate-y-1/2 z-10 cursor-pointer"
@@ -74,5 +72,3 @@ export default function ImageCarousel({ images }: ImageCarouselProps) {
     </div>
   );
 }
-
-

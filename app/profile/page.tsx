@@ -3,6 +3,7 @@
 import DashboardLayout from "../components/DashboardLayout";
 import ProfileContent from "./_components/ProfileContent";
 import { useAuthStore } from "../stores/authStore";
+import { getTheme } from "@/app/lib/roles";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
@@ -37,7 +38,7 @@ export default function ProfilePage() {
   }
 
   // Determine theme based on user role
-  const theme = user?.role === "ADMIN" ? "admin" : "doctor";
+  const theme = getTheme(user);
 
   return (
     <DashboardLayout theme={theme}>

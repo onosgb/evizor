@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useAuthStore } from "@/app/stores/authStore";
+import { getTheme, isAdmin, isDoctor } from "@/app/lib/roles";
 import { adminService } from "@/app/lib/services";
 import { User } from "@/app/models";
 
@@ -49,7 +50,7 @@ export default function ProfileSidebar({ theme }: ProfileSidebarProps) {
   };
   
   // Determine theme from user role if not provided (use logged-in user role for theme)
-  const currentTheme = theme || (user?.role === "ADMIN" ? "admin" : "doctor");
+  const currentTheme = theme || (getTheme(user));
 
   const isActive = (path: string) => pathname === path;
   

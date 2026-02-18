@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import ProfileSidebar from "./ProfileSidebar";
 import { useAuthStore } from "@/app/stores/authStore";
+import { getTheme, isAdmin, isDoctor } from "@/app/lib/roles";
 import { useSearchParams } from "next/navigation";
 import { authService, adminService } from "@/app/lib/services";
 
@@ -20,7 +21,7 @@ export default function ConsultationContent() {
   const userId = searchParams.get("userId");
   const isReadOnly = !!userId;
   
-  const theme = user?.role === "ADMIN" ? "admin" : "doctor";
+  const theme = getTheme(user);
   
   // Theme-based switch styling
   const getSwitchClasses = () => {

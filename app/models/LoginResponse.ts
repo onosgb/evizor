@@ -2,8 +2,8 @@ import { User } from "./User";
 import { ApiResponse } from "./ApiResponse";
 
 export interface LoginData {
-  accessToken: string;
-  refreshToken: string;
+  accessToken?: string;
+  refreshToken?: string;
   user: User;
   profileCompleted: boolean;
   profileVerified: boolean;

@@ -4,7 +4,7 @@ export interface User {
   lastName: string;
   fullName: string;
   email: string;
-  role: string;
+  role: "DOCTOR" | "ADMIN" | "SUPERADMIN";
   isActive: boolean;
   isTwoFAEnabled:boolean;
   phoneNumber: string;

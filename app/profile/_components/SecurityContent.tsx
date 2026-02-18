@@ -3,6 +3,7 @@
 import { useState } from "react";
 import ProfileSidebar from "./ProfileSidebar";
 import { useAuthStore } from "@/app/stores/authStore";
+import { getTheme, isAdmin, isDoctor } from "@/app/lib/roles";
 import { useSearchParams } from "next/navigation";
 
 interface ActiveSession {
@@ -27,7 +28,7 @@ export default function SecurityContent() {
     );
   }
 
-  const theme = user?.role === "ADMIN" ? "admin" : "doctor";
+  const theme = getTheme(user);
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -37,8 +38,10 @@ export default function SecurityContent() {
   const [formData, setFormData] = useState({
     currentPassword: "",
     newPassword: "",
-    twoFactorAuth: false,
   });
+
+  const [twoFactorAuth, setTwoFactorAuth] = useState(user?.isTwoFAEnabled || false);
+  const [isToggling2FA, setIsToggling2FA] = useState(false);
 
   const [activeSessions] = useState<ActiveSession[]>([
     {
@@ -115,12 +118,48 @@ export default function SecurityContent() {
     }
   };
 
+  const handle2FAToggle = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.checked;
+    
+    // 1. Optimistic update
+    setTwoFactorAuth(newValue);
+    setIsToggling2FA(true);
+    
+    // Clear previous messages
+    setError(null);
+    setSuccess(null);
+
+    try {
+        // 2. Call API
+        const { authService } = await import("@/app/lib/services/auth.service");
+        await authService.toggle2FA(newValue);
+
+        // 3. Update store (if successful)
+        const updatedUser = { ...user!, isTwoFAEnabled: newValue };
+        useAuthStore.getState().login(
+            useAuthStore.getState().accessToken!,
+            useAuthStore.getState().refreshToken!,
+            updatedUser,
+            useAuthStore.getState().profileCompleted
+        );
+
+        setSuccess(newValue ? "2FA enabled successfully" : "2FA disabled successfully");
+    } catch (err: any) {
+        // Revert optimistic update on error
+        setTwoFactorAuth(!newValue);
+        setError(err.message || "Failed to update 2FA settings");
+    } finally {
+        setIsToggling2FA(false);
+    }
+  };
+
   const handleCancel = () => {
     setFormData({
       currentPassword: "",
       newPassword: "",
-      twoFactorAuth: false,
     });
+    // Reset 2FA toggle to current user state
+    setTwoFactorAuth(user?.isTwoFAEnabled || false);
     setError(null);
     setSuccess(null);
   };
@@ -266,8 +305,9 @@ export default function SecurityContent() {
                     <span>Enable 2-Factor Authentication</span>
                     <input
                       name="twoFactorAuth"
-                      checked={formData.twoFactorAuth}
-                      onChange={handleInputChange}
+                      checked={twoFactorAuth}
+                      onChange={handle2FAToggle}
+                      disabled={isToggling2FA}
                       className={getSwitchClasses()}
                       type="checkbox"
                     />

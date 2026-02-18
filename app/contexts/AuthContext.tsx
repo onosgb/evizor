@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, ReactNode } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuthStore } from "../stores/authStore";
+import { isAdmin } from "@/app/lib/roles";
 import { authService } from "../lib/services";
 
 interface AuthContextType {
@@ -54,7 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // If authenticated
       if (isAuthenticated) {
         // Enforce profile completion (skip for ADMIN)
-        if (!profileCompleted && !isProfileRoute && user?.role !== "ADMIN") {
+        if (!profileCompleted && !isProfileRoute && !isAdmin(user)) {
           router.push("/profile");
           return;
         }

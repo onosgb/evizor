@@ -1,55 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import DashboardLayout from "../components/DashboardLayout";
 import PatientCard from "../components/PatientCard";
-import PatientCardWithMenu from "./_components/PatientCardWithMenu";
-import { Appointment } from "../models";
-import { appointmentService } from "../lib/services";
+import { useAppointmentStore } from "../stores/appointmentStore";
 
 export default function LiveQueuePage() {
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { liveQueue: appointments, isLoading: loading, error, fetchLiveQueue } = useAppointmentStore();
 
   useEffect(() => {
-    const fetchLiveQueue = async () => {
-      try {
-        setLoading(true);
-        const response = await appointmentService.getLiveQueue();
-        if (response.data && response.data.appointments) {
-          setAppointments(response.data.appointments);
-        }
-      } catch (err: any) {
-        setError(err.message || "Failed to fetch live queue");
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchLiveQueue();
   }, []);
-
-  const getTimeAgo = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-    const diffInMinutes = Math.floor(diffInSeconds / 60);
-    const diffInHours = Math.floor(diffInMinutes / 60);
-    const diffInDays = Math.floor(diffInHours / 24);
-
-    if (diffInDays > 0) {
-      return `${diffInDays} day${diffInDays > 1 ? "s" : ""} ago`;
-    }
-    if (diffInHours > 0) {
-      return `${diffInHours} hour${diffInHours > 1 ? "s" : ""} ago`;
-    }
-    if (diffInMinutes > 0) {
-      return `${diffInMinutes} min${diffInMinutes > 1 ? "s" : ""} ago`;
-    }
-    return "Just now";
-  };
 
   return (
     <DashboardLayout>
@@ -95,82 +56,16 @@ export default function LiveQueuePage() {
 
       {!loading && !error && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 lg:gap-6 xl:grid-cols-4">
-          {appointments.slice(0, 11).map((appointment) => (
+          {appointments.map((appointment) => (
             <PatientCard 
               key={appointment.id} 
               id={appointment.id}
+              patientId={appointment.patientId}
               name={appointment.patientName}
-              timeAgo={getTimeAgo(appointment.scheduledAt)}
+              scheduledAt={appointment.scheduledAt}
               symptom={appointment.description}
             />
           ))}
-          {/* Example of PatientCardWithMenu for the last item or specific logic */}
-          {appointments.length > 11 && (
-             <PatientCardWithMenu 
-               id={appointments[11].id}
-               name={appointments[11].patientName}
-               timeAgo={getTimeAgo(appointments[11].scheduledAt)}
-               symptom={appointments[11].description}
-             />
-          )}
-        </div>
-      )}
-      
-      {!loading && !error && appointments.length > 0 && (
-        <div className="mt-10">
-            {/* Pagination Logic placeholder */}
-           <ol className="pagination space-x-1.5">
-          <li>
-            <a
-              href="#"
-              className="flex size-8 items-center justify-center rounded-lg bg-slate-150 text-slate-500 transition-colors hover:bg-slate-300 focus:bg-slate-300 active:bg-slate-300/80 dark:bg-navy-500 dark:text-navy-200 dark:hover:bg-navy-450 dark:focus:bg-navy-450 dark:active:bg-navy-450/90"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="size-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M15 19l-7-7 7-7"
-                />
-              </svg>
-            </a>
-          </li>
-          <li>
-            <a
-              href="#"
-              className="flex h-8 min-w-8 items-center justify-center rounded-lg bg-primary px-3 leading-tight text-white transition-colors hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
-            >
-              1
-            </a>
-          </li>
-          <li>
-            <a
-              href="#"
-              className="flex size-8 items-center justify-center rounded-lg bg-slate-150 text-slate-500 transition-colors hover:bg-slate-300 focus:bg-slate-300 active:bg-slate-300/80 dark:bg-navy-500 dark:text-navy-200 dark:hover:bg-navy-450 dark:focus:bg-navy-450 dark:active:bg-navy-450/90"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="size-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M9 5l7 7-7 7"
-                ></path>
-              </svg>
-            </a>
-          </li>
-        </ol>
         </div>
       )}
     </DashboardLayout>

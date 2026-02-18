@@ -150,7 +150,7 @@ export default function CreateStaffForm({
               >
                 <option value="">Select role</option>
                 <option value="DOCTOR">Doctor</option>
-                <option value="ADMIN">Admin</option>
+                <option value="SUPERADMIN">Admin</option>
               </select>
             </label>
             <label className="block">

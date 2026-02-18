@@ -1,6 +1,13 @@
 import apiClient from "../api-client";
-import { LoginResponse, ApiResponse, UpdateUser, User, ProfessionalProfile, Qualification } from "../../models";
+import {
+  LoginResponse,
+  ApiResponse,
+  UpdateUser,
+  User,
+  ProfessionalProfile,
+} from "../../models";
 import { useAuthStore } from "../../stores/authStore";
+import { isValidPortalUser } from "../roles";
 
 /**
  * Authentication service
@@ -20,23 +27,76 @@ class AuthService {
         },
         {
           skipAuth: true,
-        }
+        },
       );
-      const { accessToken, refreshToken: newRefreshToken, user, profileCompleted } = response.data.data;
+      const {
+        accessToken,
+        refreshToken: newRefreshToken,
+        user,
+        profileCompleted,
+      } = response.data.data;
 
       // Check if user has allowed role
-      if (user.role !== "DOCTOR" && user.role !== "ADMIN" && user.role !== "STAFF") {
-        // If not allowed, logout (clears state) and throw error
+      if (!isValidPortalUser(user)) {
         await this.logout();
-        throw new Error("Unauthorized: Only Doctors, Admins and Staff can access this portal");
+        throw new Error(
+          "Unauthorized: Only Doctors and Admins can access this portal",
+        );
       }
 
-      useAuthStore.getState().login(accessToken, newRefreshToken, user, profileCompleted);
+      // Only login to store if we have tokens (i.e. not waiting for 2FA)
+      if (accessToken && newRefreshToken) {
+        useAuthStore
+          .getState()
+          .login(accessToken, newRefreshToken, user, profileCompleted);
+      }
+
       return response.data;
     } catch (error) {
       console.error("Login error:", error);
       throw error;
     }
+  }
+
+  /**
+   * Verify 2FA OTP
+   */
+  async verify2FA(email: string, token: string): Promise<LoginResponse> {
+    const response = await apiClient.post<LoginResponse>(
+      "/auth/verify-2fa",
+      { email, token },
+      { skipAuth: true },
+    );
+
+    const {
+      accessToken,
+      refreshToken: newRefreshToken,
+      user,
+      profileCompleted,
+    } = response.data.data;
+
+    // Check if user has allowed role (double check)
+    if (!isValidPortalUser(user)) {
+      await this.logout();
+      throw new Error(
+        "Unauthorized: Only Doctors and Admins can access this portal",
+      );
+    }
+
+    if (accessToken && newRefreshToken) {
+      useAuthStore
+        .getState()
+        .login(accessToken, newRefreshToken, user, profileCompleted);
+    }
+
+    return response.data;
+  }
+
+  /**
+   * Resend 2FA OTP
+   */
+  async resend2FA(email: string): Promise<void> {
+    await apiClient.post("/auth/resend-2fa", { email }, { skipAuth: true });
   }
 
   /**
@@ -48,17 +108,28 @@ class AuthService {
       { refreshToken },
       {
         skipAuth: true,
-      }
+      },
     );
-    const { accessToken, refreshToken: newRefreshToken, user, profileCompleted } = response.data.data;
+    const {
+      accessToken,
+      refreshToken: newRefreshToken,
+      user,
+      profileCompleted,
+    } = response.data.data;
 
     // Check if user has allowed role
-    if (user.role !== "DOCTOR" && user.role !== "ADMIN" && user.role !== "STAFF") {
+    if (!isValidPortalUser(user)) {
       await this.logout();
-      throw new Error("Unauthorized: Only Doctors, Admins and Staff can access this portal");
+      throw new Error(
+        "Unauthorized: Only Doctors and Admins can access this portal",
+      );
     }
 
-    useAuthStore.getState().login(accessToken, newRefreshToken, user, profileCompleted);
+    if (accessToken && newRefreshToken) {
+      useAuthStore
+        .getState()
+        .login(accessToken, newRefreshToken, user, profileCompleted);
+    }
     // Note: We might want to keep rememberMe preference, but here we just update tokens and user
     return response.data;
   }
@@ -78,11 +149,15 @@ class AuthService {
       if (accessToken) {
         // 3. Send logout to server with the captured token
         // We manually set the Authorization header since store is empty
-        await apiClient.post("/auth/logout", {}, {
+        await apiClient.post(
+          "/auth/logout",
+          {},
+          {
             headers: {
-                Authorization: `Bearer ${accessToken}`
-            }
-        });
+              Authorization: `Bearer ${accessToken}`,
+            },
+          },
+        );
       }
     } catch (error) {
       // Server-side logout failed, but local session is already cleared so we are good
@@ -98,15 +173,13 @@ class AuthService {
     return response.data;
   }
 
-
-
   /**
    * Update user profile
    */
   async updateProfile(data: UpdateUser): Promise<ApiResponse<User>> {
     const response = await apiClient.put<ApiResponse<User>>(
       "/users/update-profile",
-      data
+      data,
     );
     return response.data;
   }
@@ -116,7 +189,7 @@ class AuthService {
    */
   async getProfessionalProfile(): Promise<ApiResponse<ProfessionalProfile>> {
     const response = await apiClient.get<ApiResponse<ProfessionalProfile>>(
-      "/profile/professional"
+      "/profile/professional",
     );
     return response.data;
   }
@@ -125,11 +198,11 @@ class AuthService {
    * Update professional profile
    */
   async updateProfessionalProfile(
-    data: ProfessionalProfile
+    data: ProfessionalProfile,
   ): Promise<ApiResponse<ProfessionalProfile>> {
     const response = await apiClient.put<ApiResponse<ProfessionalProfile>>(
       "/profile/professional",
-      data
+      data,
     );
     return response.data;
   }
@@ -137,7 +210,9 @@ class AuthService {
   /**
    * Upload profile picture
    */
-  async uploadProfilePicture(data: FormData): Promise<ApiResponse<{ url: string }>> {
+  async uploadProfilePicture(
+    data: FormData,
+  ): Promise<ApiResponse<{ url: string }>> {
     const response = await apiClient.post<ApiResponse<{ url: string }>>(
       "/users/upload-picture",
       data,
@@ -145,11 +220,10 @@ class AuthService {
         headers: {
           "Content-Type": "multipart/form-data",
         },
-      }
+      },
     );
     return response.data;
   }
-
 
   /**
    * Request password reset OTP
@@ -158,7 +232,7 @@ class AuthService {
     const response = await apiClient.post<ApiResponse<void>>(
       "/auth/forgot-password",
       { email },
-      { skipAuth: true }
+      { skipAuth: true },
     );
     return response.data;
   }
@@ -166,11 +240,15 @@ class AuthService {
   /**
    * Reset password with OTP token
    */
-  async resetPassword(email: string, token: string, newPassword: string): Promise<ApiResponse<void>> {
+  async resetPassword(
+    email: string,
+    token: string,
+    newPassword: string,
+  ): Promise<ApiResponse<void>> {
     const response = await apiClient.post<ApiResponse<void>>(
       "/auth/reset-password",
       { email, token, newPassword },
-      { skipAuth: true }
+      { skipAuth: true },
     );
     return response.data;
   }
@@ -182,17 +260,31 @@ class AuthService {
     const response = await apiClient.post<ApiResponse<void>>(
       "/auth/resend-password-reset",
       { email },
-      { skipAuth: true }
+      { skipAuth: true },
     );
     return response.data;
   }
   /**
    * Change password
    */
-  async changePassword(oldPassword: string, newPassword: string): Promise<ApiResponse<void>> {
+  async changePassword(
+    oldPassword: string,
+    newPassword: string,
+  ): Promise<ApiResponse<void>> {
     const response = await apiClient.post<ApiResponse<void>>(
       "/auth/change-password",
-      { oldPassword, newPassword }
+      { oldPassword, newPassword },
+    );
+    return response.data;
+  }
+
+  /**
+   * Toggle 2FA
+   */
+  async toggle2FA(enable: boolean): Promise<ApiResponse<void>> {
+    const response = await apiClient.put<ApiResponse<void>>(
+      "/users/enable-2fa",
+      { enabled: enable },
     );
     return response.data;
   }

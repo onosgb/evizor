@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAuthStore } from "@/app/stores/authStore";
+import { getTheme, isAdmin, isDoctor } from "@/app/lib/roles";
 import { createPortal } from "react-dom";
 import ProfileSidebar from "./ProfileSidebar";
 import { useQualificationStore } from "@/app/stores/qualificationStore";
@@ -21,7 +22,7 @@ export default function QualificationsContent() {
   // The actual userId to fetch data for (either from params or current user)
   const userId = paramUserId;
   
-  const theme = user?.role === "ADMIN" ? "admin" : "doctor";
+  const theme = getTheme(user);
   const [showModal, setShowModal] = useState(false);
   const [showViewerModal, setShowViewerModal] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState<Qualification | null>(null);

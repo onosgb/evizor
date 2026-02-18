@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAuthStore } from "@/app/stores/authStore";
+import { getTheme, isAdmin } from "@/app/lib/roles";
 import { useTenantStore } from "@/app/stores/tenantStore";
 import { authService, adminService } from "@/app/lib/services";
 import ProfileSidebar from "./ProfileSidebar";
@@ -39,7 +40,7 @@ export default function ProfileContent() {
   const [viewedUser, setViewedUser] = useState(user);
   
   const isReadOnly = !!userId; // Readonly if viewing another user
-  const theme = user?.role === "ADMIN" ? "admin" : "doctor";
+  const theme = getTheme(user);
   const getTenantById = useTenantStore((state) => state.getTenantById);
   
   // Get user's tenant/location
@@ -237,7 +238,7 @@ export default function ProfileContent() {
                     onClick={handleSave}
                     disabled={isSubmitting}
                     className={`btn min-w-28 rounded-full font-medium text-white disabled:opacity-50 disabled:cursor-not-allowed ${
-                      user?.role === "ADMIN"
+                      isAdmin(user)
                         ? "bg-success hover:bg-success-focus focus:bg-success-focus active:bg-success-focus/90 dark:bg-success dark:hover:bg-success-focus dark:focus:bg-success-focus dark:active:bg-success/90"
                         : "bg-primary hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
                     }`}

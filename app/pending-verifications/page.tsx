@@ -5,10 +5,6 @@ import DashboardLayout from "@/app/components/DashboardLayout";
 import { usePendingVerificationStore } from "@/app/stores/pendingVerificationStore";
 import VerificationModal from "./_components/VerificationModal";
 
-function classNames(...classes: string[]) {
-  return classes.filter(Boolean).join(" ");
-}
-
 export default function PendingVerificationsPage() {
   const { pendingVerifications, isLoading, error, fetchPendingVerifications, approveVerification, rejectVerification } = usePendingVerificationStore();
   const [verificationModal, setVerificationModal] = useState<{
@@ -63,7 +59,13 @@ export default function PendingVerificationsPage() {
                   SPECIALTY
                 </th>
                 <th className="whitespace-nowrap bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">
-                  LICENSE / AUTHORITY
+                  LICENSE NUMBER
+                </th>
+                <th className="whitespace-nowrap bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">
+                  ISSUING AUTHORITY
+                </th>
+                <th className="whitespace-nowrap bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">
+                  EXPIRY DATE
                 </th>
                 <th className="whitespace-nowrap rounded-tr-lg bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">
                   ACTIONS
@@ -73,7 +75,7 @@ export default function PendingVerificationsPage() {
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td colSpan={4} className="px-4 py-8 text-center">
+                  <td colSpan={6} className="px-4 py-8 text-center">
                     <div className="flex items-center justify-center">
                       <div className="h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent"></div>
                       <span className="ml-3 text-slate-600 dark:text-navy-300">Loading...</span>
@@ -82,7 +84,7 @@ export default function PendingVerificationsPage() {
                 </tr>
               ) : pendingVerifications.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-4 py-8 text-center text-slate-500 dark:text-navy-300">
+                  <td colSpan={6} className="px-4 py-8 text-center text-slate-500 dark:text-navy-300">
                     No pending verifications found.
                   </td>
                 </tr>
@@ -99,9 +101,13 @@ export default function PendingVerificationsPage() {
                       {item.specialty || "N/A"}
                     </td>
                     <td className="whitespace-nowrap px-4 py-3 sm:px-5">
-                      <div className="font-medium">{item.licenseNumber}</div>
-                      <div className="text-xs opacity-75">{item.issuingAuthority}</div>
-                      <div className="text-xs opacity-75">Exp: {item.licenseExpiryDate}</div>
+                      {item.licenseNumber}
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-3 sm:px-5">
+                      {item.issuingAuthority}
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-3 sm:px-5">
+                      {item.licenseExpiryDate}
                     </td>
                     <td className="whitespace-nowrap px-4 py-3 sm:px-5">
                       <div className="flex space-x-2">

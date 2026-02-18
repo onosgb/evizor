@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { useAuthStore } from "@/app/stores/authStore";
+import { getTheme, isAdmin, isDoctor } from "@/app/lib/roles";
 import { createPortal } from "react-dom";
 import { useSearchParams } from "next/navigation";
-import { authService, adminService } from "@/app/lib/services";
+import { adminService } from "@/app/lib/services";
 import ProfileSidebar from "./ProfileSidebar";
 
 interface Schedule {
@@ -21,7 +22,7 @@ export default function AvailabilityContent() {
   const userId = searchParams.get("userId");
   const isReadOnly = !!userId;
   
-  const theme = user?.role === "ADMIN" ? "admin" : "doctor";
+  const theme = getTheme(user);
   const [showModal, setShowModal] = useState(false);
   const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null);
   const [schedules, setSchedules] = useState<Schedule[]>([

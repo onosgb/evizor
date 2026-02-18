@@ -1,7 +1,8 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import { useAuthStore } from "@/app/stores/authStore";
+import { getTheme, isAdmin } from "@/app/lib/roles";
 import { useSpecialtyStore } from "@/app/stores/specialtyStore";
 import { useProfessionalProfileStore } from "@/app/stores/professionalProfileStore";
 import ProfileSidebar from "./ProfileSidebar";
@@ -26,10 +27,10 @@ export default function ProfessionalInformationContent() {
     clearMessages,
     approveProfile,
   } = useProfessionalProfileStore();
-  const theme = user?.role === "ADMIN" ? "admin" : "doctor";
+  const theme = getTheme(user);
   
   const isReadOnly = !!userId; // Readonly if viewing another user
-  const showApproveButton = !!userId && user?.role === "ADMIN";
+  const showApproveButton = !!userId && (isAdmin(user));
 
   const [formData, setFormData] = useState({
     specialtyId: "",

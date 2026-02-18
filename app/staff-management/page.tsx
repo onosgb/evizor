@@ -10,6 +10,7 @@ import { Staff, CreateStaffRequest } from "../models";
 import { staffService } from "../lib/services";
 import { ApiError } from "../models";
 import TableActionMenu from "../components/TableActionMenu";
+import { Pagination } from "../components/Pagination";
 
 // Helper function to get role badge color
 const getRoleBadgeColor = (role: string | null | undefined): string => {
@@ -17,7 +18,7 @@ const getRoleBadgeColor = (role: string | null | undefined): string => {
   switch (role.toUpperCase()) {
     case "DOCTOR":
       return "bg-primary";
-    case "ADMIN":
+    case "SUPERADMIN":
       return "bg-success";
     default:
       return "bg-slate-400";
@@ -445,96 +446,16 @@ export default function StaffManagementPage() {
           )}
 
           {/* Pagination */}
-          <div className="flex flex-col justify-between space-y-4 px-4 py-4 sm:flex-row sm:items-center sm:space-y-0 sm:px-5">
-            <div className="flex items-center space-x-2 text-xs-plus">
-              <span>Show</span>
-              <label className="block">
-                <select
-                  className="form-select rounded-full border border-slate-300 bg-white px-2 py-1 pr-6 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:bg-navy-700 dark:hover:border-navy-400 dark:focus:border-accent"
-                  value={entriesPerPage}
-                  onChange={(e) => {
-                    setEntriesPerPage(Number(e.target.value));
-                    setCurrentPage(1);
-                  }}
-                >
-                  <option value={10}>10</option>
-                  <option value={30}>30</option>
-                  <option value={50}>50</option>
-                </select>
-              </label>
-              <span>entries</span>
-            </div>
-
-            <ol className="pagination flex items-center space-x-1">
-              <li className="rounded-l-lg bg-slate-150 dark:bg-navy-500">
-                <button
-                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                  disabled={currentPage === 1}
-                  className="flex size-8 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-300 focus:bg-slate-300 active:bg-slate-300/80 disabled:opacity-50 disabled:cursor-not-allowed dark:text-navy-200 dark:hover:bg-navy-450 dark:focus:bg-navy-450 dark:active:bg-navy-450/90"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="size-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M15 19l-7-7 7-7"
-                    />
-                  </svg>
-                </button>
-              </li>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                (page) => (
-                  <li key={page} className="bg-slate-150 dark:bg-navy-500">
-                    <button
-                      onClick={() => setCurrentPage(page)}
-                      className={`flex h-8 min-w-8 items-center justify-center rounded-lg px-3 leading-tight transition-colors ${
-                        page === currentPage
-                          ? "bg-success text-white hover:bg-success-focus focus:bg-success-focus active:bg-success-focus/90 dark:bg-success dark:hover:bg-success-focus dark:focus:bg-success-focus dark:active:bg-success/90"
-                          : "text-slate-500 hover:bg-slate-300 focus:bg-slate-300 active:bg-slate-300/80 dark:text-navy-200 dark:hover:bg-navy-450 dark:focus:bg-navy-450 dark:active:bg-navy-450/90"
-                      }`}
-                    >
-                      {page}
-                    </button>
-                  </li>
-                )
-              )}
-              <li className="rounded-r-lg bg-slate-150 dark:bg-navy-500">
-                <button
-                  onClick={() =>
-                    setCurrentPage(Math.min(totalPages, currentPage + 1))
-                  }
-                  disabled={currentPage === totalPages}
-                  className="flex size-8 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-300 focus:bg-slate-300 active:bg-slate-300/80 disabled:opacity-50 disabled:cursor-not-allowed dark:text-navy-200 dark:hover:bg-navy-450 dark:focus:bg-navy-450 dark:active:bg-navy-450/90"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="size-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
-                </button>
-              </li>
-            </ol>
-
-            <div className="text-xs-plus">
-              {startIndex + 1} - {Math.min(endIndex, filteredData.length)} of{" "}
-              {filteredData.length} entries
-            </div>
-          </div>
+          <Pagination
+            currentPage={currentPage}
+            totalEntries={filteredData.length}
+            entriesPerPage={entriesPerPage}
+            onPageChange={setCurrentPage}
+            onEntriesPerPageChange={(entries) => {
+              setEntriesPerPage(entries);
+              setCurrentPage(1);
+            }}
+          />
         </div>
       </div>
       

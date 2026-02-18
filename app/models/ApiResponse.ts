@@ -24,6 +24,10 @@ export interface ApiResponse<T = any> {
   status: boolean;
   error?: string;
   message: string;
+  total?: number;
+  page?: number;
+  limit?: number;
+  totalPages?: number;
   data: T;
 }
 

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 
@@ -74,7 +74,7 @@ export default function HistoryAccordion({ items }: HistoryAccordionProps) {
               <p>{item.description}</p>
               {item.details && (
                 <div className="mt-4">
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-1">
+                  <div className="grid grid-cols-1 gap-4">
                     {item.details.primaryComplaint && (
                       <label className="block">
                         <span>Primary Complaint</span>
@@ -125,5 +125,3 @@ export default function HistoryAccordion({ items }: HistoryAccordionProps) {
     </div>
   );
 }
-
-

@@ -3,82 +3,37 @@
 import { useState, useEffect, useRef } from "react";
 import DashboardLayout from "../components/DashboardLayout";
 import Image from "next/image";
+import Link from "next/link";
 import TableActionMenu from "../components/TableActionMenu";
-
-interface QueueItem {
-  id: number;
-  patientName: string;
-  assignedDoctor: string;
-  datetime: string;
-  status: "waiting" | "completed" | "cancelled";
-}
-
-const queueData: QueueItem[] = [
-  {
-    id: 1,
-    patientName: "Anthony Jensen",
-    assignedDoctor: "London, Kliniken Clinic",
-    datetime: "Mon, 12 May - 09:00",
-    status: "waiting",
-  },
-  {
-    id: 2,
-    patientName: "Konnor Guzman",
-    assignedDoctor: "Manchester, PLC Home Health",
-    datetime: "Tue, 17 June - 14:30",
-    status: "cancelled",
-  },
-  {
-    id: 3,
-    patientName: "Derrick Simmons",
-    assignedDoctor: "Liverpool, Life flash Clinic",
-    datetime: "Wed, 29 May - 13:30",
-    status: "cancelled",
-  },
-  {
-    id: 4,
-    patientName: "Henry Curtis",
-    assignedDoctor: "London, Kliniken Clinic",
-    datetime: "Mon, 22 June - 15:00",
-    status: "waiting",
-  },
-  {
-    id: 5,
-    patientName: "Benjamin West",
-    assignedDoctor: "Manchester, PLC Home Health",
-    datetime: "Tue, 17 June - 14:30",
-    status: "cancelled",
-  },
-  {
-    id: 6,
-    patientName: "Travis Fuller",
-    assignedDoctor: "Liverpool, Life flash Clinic",
-    datetime: "Wed, 19 May - 11:30",
-    status: "waiting",
-  },
-];
+import { AppointmentStatus } from "@/app/models";
+import { useQueueMonitorStore } from "@/app/stores/queueMonitorStore";
+import { Pagination } from "../components/Pagination";
 
 export default function QueueMonitorPage() {
+  const {
+    appointments,
+    total,
+    page,
+    limit,
+    status,
+    isLoading,
+    setPage,
+    setLimit,
+    setStatus,
+    fetchAppointments
+  } = useQueueMonitorStore();
+
   const [searchQuery, setSearchQuery] = useState("");
-  const [entriesPerPage, setEntriesPerPage] = useState(10);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [openMenuId, setOpenMenuId] = useState<number | null>(null);
-  const menuRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const menuRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
-  const filteredData = queueData.filter(
-    (item) =>
-      item.patientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.assignedDoctor.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const totalPages = Math.ceil(filteredData.length / entriesPerPage);
-  const startIndex = (currentPage - 1) * entriesPerPage;
-  const endIndex = startIndex + entriesPerPage;
-  const paginatedData = filteredData.slice(startIndex, endIndex);
+  useEffect(() => {
+    fetchAppointments();
+  }, [page, limit, status]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    setCurrentPage(1);
+    // For now, client-side filter on the current page
   };
 
   // Close menu when clicking outside
@@ -101,47 +56,51 @@ export default function QueueMonitorPage() {
     };
   }, [openMenuId]);
 
-  const toggleMenu = (itemId: number) => {
+  const toggleMenu = (itemId: string) => {
     setOpenMenuId(openMenuId === itemId ? null : itemId);
   };
 
-  const getStatusIcon = (status: string) => {
-    if (status === "waiting") {
-      return (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="ml-4 size-5"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="1.5"
-            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-          />
-        </svg>
-      );
-    } else if (status === "cancelled") {
-      return (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="ml-4 size-5 text-error"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="1.5"
-            d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-          />
-        </svg>
-      );
+  const filteredData = (appointments || []).filter(
+    (item) =>
+      item.patientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.doctorName.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const totalPages = Math.ceil(total / limit);
+
+  // Helper for status colors
+  const getStatusIcon = (status: AppointmentStatus) => {
+    switch (status) {
+      case AppointmentStatus.SCHEDULED:
+      case AppointmentStatus.PROGRESS: // Grouping 'waiting' logic if needed, or separate
+        return (
+          <div className="flex items-center space-x-2 text-warning">
+             <div className="size-2 rounded-full bg-current"></div>
+             <span>Waiting</span>
+          </div>
+        );
+      case AppointmentStatus.COMPLETED:
+        return (
+          <div className="flex items-center space-x-2 text-success">
+             <div className="size-2 rounded-full bg-current"></div>
+             <span>Completed</span>
+          </div>
+        );
+      case AppointmentStatus.CANCELLED:
+        return (
+          <div className="flex items-center space-x-2 text-error">
+             <div className="size-2 rounded-full bg-current"></div>
+             <span>Cancelled</span>
+          </div>
+        );
+      default:
+        return (
+          <div className="flex items-center space-x-2 text-slate-400">
+             <div className="size-2 rounded-full bg-current"></div>
+             <span>{status}</span>
+          </div>
+        );
     }
-    return null;
   };
 
   return (
@@ -151,6 +110,21 @@ export default function QueueMonitorPage() {
           <h2 className="text-xl font-medium text-slate-700 line-clamp-1 dark:text-navy-50">
             Live Queue Monitor
           </h2>
+        </div>
+        <div className="flex items-center space-x-2">
+            <select
+                className="form-select rounded-full border border-slate-300 bg-white px-3 py-2 pr-9 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:bg-navy-700 dark:hover:border-navy-400 dark:focus:border-accent"
+                value={status}
+                onChange={(e) => {
+                    setStatus(e.target.value as AppointmentStatus | "");
+                }}
+            >
+                <option value="">All Status</option>
+                <option value={AppointmentStatus.SCHEDULED}>Scheduled</option>
+                <option value={AppointmentStatus.PROGRESS}>In Progress</option>
+                <option value={AppointmentStatus.COMPLETED}>Completed</option>
+                <option value={AppointmentStatus.CANCELLED}>Cancelled</option>
+            </select>
         </div>
       </div>
 
@@ -166,7 +140,7 @@ export default function QueueMonitorPage() {
             <div className="relative flex -space-x-px">
               <input
                 className="form-input peer w-full rounded-l-lg border border-slate-300 bg-transparent px-3 py-2 pl-9 placeholder:text-slate-400/70 hover:z-10 hover:border-slate-400 focus:z-10 focus:border-navy dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
-                placeholder="Search..."
+                placeholder="Search by patient or doctor..."
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -217,220 +191,114 @@ export default function QueueMonitorPage() {
                 </tr>
               </thead>
               <tbody>
-                {paginatedData.map((item, index) => (
-                  <tr
-                    key={item.id}
-                    className={`border-y border-transparent ${
-                      index === paginatedData.length - 1
-                        ? ""
-                        : "border-b-slate-200 dark:border-b-navy-500"
-                    }`}
-                  >
-                    <td
-                      className={`whitespace-nowrap px-4 py-3 sm:px-5 ${
-                        index === paginatedData.length - 1
-                          ? "rounded-bl-lg"
-                          : ""
-                      }`}
+                {isLoading ? (
+                    <tr>
+                        <td colSpan={5} className="px-4 py-8 text-center text-slate-500">
+                            Loading appointments...
+                        </td>
+                    </tr>
+                ) : filteredData.length === 0 ? (
+                    <tr>
+                        <td colSpan={5} className="px-4 py-8 text-center text-slate-500">
+                            No appointments found.
+                        </td>
+                    </tr>
+                ) : (
+                    filteredData.map((item, index) => (
+                    <tr
+                        key={item.id}
+                        className={`border-y border-transparent ${
+                        index === filteredData.length - 1
+                            ? ""
+                            : "border-b-slate-200 dark:border-b-navy-500"
+                        }`}
                     >
-                      <div className="flex items-center space-x-4">
-                        <div className="avatar size-9">
-                          <Image
-                            className="rounded-full"
-                            src="/images/200x200.png"
-                            alt="avatar"
-                            width={36}
-                            height={36}
-                          />
-                        </div>
-                        <span className="font-medium text-slate-700 dark:text-navy-100">
-                          {item.patientName}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-3 sm:px-5">
-                      <a
-                        href="#"
-                        className="hover:underline focus:underline"
-                      >
-                        {item.assignedDoctor}
-                      </a>
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-3 font-medium text-slate-600 dark:text-navy-100 sm:px-5">
-                      {item.datetime}
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-3 sm:px-5">
-                      {getStatusIcon(item.status)}
-                    </td>
-                    <td
-                      className={`whitespace-nowrap px-4 py-3 sm:px-5 ${
-                        index === paginatedData.length - 1
-                          ? "rounded-br-lg"
-                          : ""
-                      }`}
-                    >
-                      <div className="flex justify-end">
-                        <TableActionMenu>
-                            <div className="w-48">
-                              <ul>
-                                <li>
-                                  <a
-                                    href="#"
-                                    className="flex h-8 items-center whitespace-nowrap px-3 pr-8 font-medium tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
-                                    onClick={(e) => {
-                                      e.preventDefault();
-                                      // Handle view action
-                                    }}
-                                  >
-                                    View Details
-                                  </a>
-                                </li>
-                                <li>
-                                  <a
-                                    href="#"
-                                    className="flex h-8 items-center whitespace-nowrap px-3 pr-8 font-medium tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
-                                    onClick={(e) => {
-                                      e.preventDefault();
-                                      // Handle assign action
-                                    }}
-                                  >
-                                    Assign Doctor
-                                  </a>
-                                </li>
-                                <li>
-                                  <a
-                                    href="#"
-                                    className="flex h-8 items-center whitespace-nowrap px-3 pr-8 font-medium tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
-                                    onClick={(e) => {
-                                      e.preventDefault();
-                                      // Handle cancel action
-                                    }}
-                                  >
-                                    Cancel Appointment
-                                  </a>
-                                </li>
-                              </ul>
-                              <div className="my-1 h-px bg-slate-150 dark:bg-navy-500"></div>
-                              <ul>
-                                <li>
-                                  <a
-                                    href="#"
-                                    className="flex h-8 items-center whitespace-nowrap px-3 pr-8 font-medium tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
-                                    onClick={(e) => {
-                                      e.preventDefault();
-                                      // Handle delete action
-                                    }}
-                                  >
-                                    Remove from Queue
-                                  </a>
-                                </li>
-                              </ul>
+                        <td
+                        className={`whitespace-nowrap px-4 py-3 sm:px-5 ${
+                            index === filteredData.length - 1
+                            ? "rounded-bl-lg"
+                            : ""
+                        }`}
+                        >
+                        <div className="flex items-center space-x-4">
+                            <div className="avatar size-9">
+                            <Image
+                                className="rounded-full"
+                                src="/images/200x200.png"
+                                alt="avatar"
+                                width={36}
+                                height={36}
+                            />
                             </div>
-                        </TableActionMenu>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                            <span className="font-medium text-slate-700 dark:text-navy-100">
+                            {item.patientName}
+                            </span>
+                        </div>
+                        </td>
+                        <td className="whitespace-nowrap px-4 py-3 sm:px-5">
+                        <a
+                            href="#"
+                            className="hover:underline focus:underline"
+                        >
+                            {item.doctorName}
+                        </a>
+                        </td>
+                        <td className="whitespace-nowrap px-4 py-3 font-medium text-slate-600 dark:text-navy-100 sm:px-5">
+                        {item.scheduledAt}
+                        </td>
+                        <td className="whitespace-nowrap px-4 py-3 sm:px-5">
+                        {getStatusIcon(item.status)}
+                        </td>
+                        <td
+                        className={`whitespace-nowrap px-4 py-3 sm:px-5 ${
+                            index === filteredData.length - 1
+                            ? "rounded-br-lg"
+                            : ""
+                        }`}
+                        >
+                        <div className="flex items-center justify-end gap-2">
+                            <Link
+                              href={`/patient-preview?appointmentId=${item.id}&patientId=${item.patientId}`}
+                              className="flex size-8 items-center justify-center rounded-full bg-slate-150 text-slate-600 transition-colors hover:bg-slate-200 active:bg-slate-200/80 dark:bg-navy-500 dark:text-navy-200 dark:hover:bg-navy-450"
+                              title="View patient"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M7 17L17 7M17 7H7M17 7v10" />
+                              </svg>
+                            </Link>
+                            <TableActionMenu>
+                                <div className="w-48">
+                                <ul>
+                                    <li>
+                                    <Link
+                                        href={`/patient-preview?appointmentId=${item.id}&patientId=${item.patientId}`}
+                                        className="flex h-8 items-center whitespace-nowrap px-3 pr-8 font-medium tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
+                                    >
+                                        View Details
+                                    </Link>
+                                    </li>
+                                </ul>
+                                </div>
+                            </TableActionMenu>
+                        </div>
+                        </td>
+                    </tr>
+                    ))
+                )}
               </tbody>
             </table>
           </div>
-
-          {/* Pagination */}
-          <div className="flex flex-col justify-between space-y-4 px-4 py-4 sm:flex-row sm:items-center sm:space-y-0 sm:px-5">
-            <div className="flex items-center space-x-2 text-xs-plus">
-              <span>Show</span>
-              <label className="block">
-                <select
-                  className="form-select rounded-full border border-slate-300 bg-white px-2 py-1 pr-6 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:bg-navy-700 dark:hover:border-navy-400 dark:focus:border-accent"
-                  value={entriesPerPage}
-                  onChange={(e) => {
-                    setEntriesPerPage(Number(e.target.value));
-                    setCurrentPage(1);
-                  }}
-                >
-                  <option value={10}>10</option>
-                  <option value={30}>30</option>
-                  <option value={50}>50</option>
-                </select>
-              </label>
-              <span>entries</span>
-            </div>
-
-            <ol className="pagination flex items-center space-x-1">
-              <li className="rounded-l-lg bg-slate-150 dark:bg-navy-500">
-                <button
-                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                  disabled={currentPage === 1}
-                  className="flex size-8 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-300 focus:bg-slate-300 active:bg-slate-300/80 disabled:opacity-50 disabled:cursor-not-allowed dark:text-navy-200 dark:hover:bg-navy-450 dark:focus:bg-navy-450 dark:active:bg-navy-450/90"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="size-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M15 19l-7-7 7-7"
-                    />
-                  </svg>
-                </button>
-              </li>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                (page) => (
-                  <li
-                    key={page}
-                    className="bg-slate-150 dark:bg-navy-500"
-                  >
-                    <button
-                      onClick={() => setCurrentPage(page)}
-                      className={`flex h-8 min-w-8 items-center justify-center rounded-lg px-3 leading-tight transition-colors ${
-                        page === currentPage
-                          ? "bg-success text-white hover:bg-success-focus focus:bg-success-focus active:bg-success-focus/90 dark:bg-success dark:hover:bg-success-focus dark:focus:bg-success-focus dark:active:bg-success/90"
-                          : "text-slate-500 hover:bg-slate-300 focus:bg-slate-300 active:bg-slate-300/80 dark:text-navy-200 dark:hover:bg-navy-450 dark:focus:bg-navy-450 dark:active:bg-navy-450/90"
-                      }`}
-                    >
-                      {page}
-                    </button>
-                  </li>
-                )
-              )}
-              <li className="rounded-r-lg bg-slate-150 dark:bg-navy-500">
-                <button
-                  onClick={() =>
-                    setCurrentPage(Math.min(totalPages, currentPage + 1))
-                  }
-                  disabled={currentPage === totalPages}
-                  className="flex size-8 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-300 focus:bg-slate-300 active:bg-slate-300/80 disabled:opacity-50 disabled:cursor-not-allowed dark:text-navy-200 dark:hover:bg-navy-450 dark:focus:bg-navy-450 dark:active:bg-navy-450/90"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="size-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
-                </button>
-              </li>
-            </ol>
-
-            <div className="text-xs-plus">
-              {startIndex + 1} - {Math.min(endIndex, filteredData.length)} of{" "}
-              {filteredData.length} entries
-            </div>
-          </div>
         </div>
       </div>
+
+      {/* Pagination */}
+      <Pagination
+        currentPage={page}
+        totalEntries={total}
+        entriesPerPage={limit}
+        onPageChange={setPage}
+        onEntriesPerPageChange={setLimit}
+      />
     </DashboardLayout>
   );
 }

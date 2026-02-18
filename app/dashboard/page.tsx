@@ -4,6 +4,7 @@ import DashboardLayout from "../components/DashboardLayout";
 import AdminDashboard from "./_components/AdminDashboard";
 import DoctorDashboard from "./_components/DoctorDashboard";
 import { useAuthStore } from "../stores/authStore";
+import { getTheme } from "@/app/lib/roles";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
@@ -38,7 +39,7 @@ export default function DashboardPage() {
   }
 
   // Determine theme based on user role
-  const theme = user?.role === "ADMIN" ? "admin" : "doctor";
+  const theme = getTheme(user);
 
   return (
     <DashboardLayout theme={theme}>

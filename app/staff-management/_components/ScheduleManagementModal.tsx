@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { authService, adminService } from "@/app/lib/services";
+import { adminService } from "@/app/lib/services";
+import { CreateScheduleRequest } from "@/app/models";
 
 interface Schedule {
   id: string;
@@ -17,7 +18,6 @@ interface ScheduleManagementModalProps {
   onClose: () => void;
   userId: string;
   userName: string;
-  theme?: "light" | "dark" | "admin";
 }
 
 export default function ScheduleManagementModal({
@@ -25,7 +25,6 @@ export default function ScheduleManagementModal({
   onClose,
   userId,
   userName,
-  theme = "light",
 }: ScheduleManagementModalProps) {
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -88,14 +87,14 @@ export default function ScheduleManagementModal({
 
     try {
       // Format data for API
-      const payload = {
-        dateScheduled: newSchedule.date, // You might need to format this string
-        timeSlot: `${newSchedule.startTime} â€“ ${newSchedule.endTime}`,
-        consultations: Number(newSchedule.maxConsultations),
-        status: "available",
+      const payload: CreateScheduleRequest = {
+        date: newSchedule.date,
+        doctorId: userId,
+        startTime: newSchedule.startTime,
+        endTime: newSchedule.endTime,
       };
 
-      const response = await adminService.scheduleUserAvailability(userId, payload);
+      const response = await adminService.scheduleUserAvailability(payload);
       
       if (response.status) {
         // Refresh list or append locally

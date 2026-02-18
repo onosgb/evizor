@@ -1,5 +1,5 @@
 import apiClient from "../api-client";
-import { ApiResponse, LiveQueueResponse } from "../../models";
+import { ApiResponse, LiveQueueResponse, Appointment } from "../../models";
 
 /**
  * Appointment service
@@ -9,11 +9,32 @@ class AppointmentService {
   /**
    * Get live queue appointments
    */
-  async getLiveQueue(): Promise<ApiResponse<LiveQueueResponse>> {
-    const response = await apiClient.get<ApiResponse<LiveQueueResponse>>(
-      "/appointments"
+  async getLiveQueue(): Promise<ApiResponse<Appointment[]>> {
+    const response = await apiClient.get<ApiResponse<Appointment[]>>(
+      "/appointments/queue",
     );
     return response.data;
+  }
+  /**
+   * Get patient appointment history
+   */
+  async getPatientHistory(
+    patientId: string,
+  ): Promise<ApiResponse<Appointment[]>> {
+    const response = await apiClient.get<ApiResponse<Appointment[]>>(
+      `/appointments/patient/${patientId}/history`,
+    );
+    return response.data;
+  }
+
+  /**
+   * Get single appointment by ID
+   */
+  async getAppointmentById(appointmentId: string): Promise<Appointment> {
+    const response = await apiClient.get<ApiResponse<Appointment>>(
+      `/appointments/${appointmentId}`,
+    );
+    return response.data.data;
   }
 }
 
