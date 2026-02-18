@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import WaitingPatientCard from "@/app/components/WaitingPatientCard";
 import ClinicalAlertCard from "./ClinicalAlertCard";
@@ -7,14 +7,7 @@ import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
 import { User } from "@/app/models";
 import TableActionMenu from "@/app/components/TableActionMenu";
-
-interface Case {
-  id: number;
-  name: string;
-  location: string;
-  datetime: string;
-  status: "pending" | "cancelled";
-}
+import { useAppointmentStore } from "@/app/stores/appointmentStore";
 
 const getGreeting = () => {
   const hour = new Date().getHours();
@@ -32,57 +25,13 @@ export default function DoctorDashboard({ user }: { user: User | null }) {
   const menuRef = useRef<HTMLDivElement>(null);
   const rowMenuRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
 
-  const cases: Case[] = [
-    {
-      id: 1,
-      name: "Anthony Jensen",
-      location: "London, Kliniken Clinic",
-      datetime: "Mon, 12 May - 09:00",
-      status: "pending",
-    },
-    {
-      id: 2,
-      name: "Konnor Guzman",
-      location: "Manchester, PLC Home Health",
-      datetime: "Tue, 17 June - 14:30",
-      status: "cancelled",
-    },
-    {
-      id: 3,
-      name: "Derrick Simmons",
-      location: "Liverpool, Life flash Clinic",
-      datetime: "Wed, 29 May - 13:30",
-      status: "cancelled",
-    },
-    {
-      id: 4,
-      name: "Henry Curtis",
-      location: "London, Kliniken Clinic",
-      datetime: "Mon, 22 June - 15:00",
-      status: "pending",
-    },
-    {
-      id: 5,
-      name: "Katrina West",
-      location: "Manchester, PLC Home Health",
-      datetime: "Tue, 17 June - 14:30",
-      status: "cancelled",
-    },
-    {
-      id: 6,
-      name: "Travis Fuller",
-      location: "Liverpool, Life flash Clinic",
-      datetime: "Wed, 19 May - 11:30",
-      status: "pending",
-    },
-  ];
+  const { liveQueue, isLoading: queueLoading, fetchLiveQueue } = useAppointmentStore();
 
-  const filteredCases = cases.filter(
-    (caseItem) =>
-      caseItem.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      caseItem.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      caseItem.datetime.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  useEffect(() => {
+    fetchLiveQueue();
+  }, []);
+
+  const waitingPatients = liveQueue.slice(0, 6);
 
   useEffect(() => {
     if (isSearchActive && searchInputRef.current) {
@@ -96,7 +45,6 @@ export default function DoctorDashboard({ user }: { user: User | null }) {
         setIsMenuOpen(false);
       }
 
-      // Handle row menu clicks outside
       if (openRowMenu !== null) {
         const rowMenuRef = rowMenuRefs.current[openRowMenu];
         if (rowMenuRef && !rowMenuRef.contains(event.target as Node)) {
@@ -135,9 +83,9 @@ export default function DoctorDashboard({ user }: { user: User | null }) {
             <p className="mt-2 leading-relaxed">
               Have a great day at work. Your progress is excellent.
             </p>
-            <button className="btn mt-6 border border-white/10 bg-white/20 text-white hover:bg-white/30 focus:bg-white/30">
+            <Link href="/profile/availability" className="btn mt-6 border border-white/10 bg-white/20 text-white hover:bg-white/30 focus:bg-white/30">
               View Schedule
-            </button>
+            </Link>
           </div>
         </div>
 
@@ -155,33 +103,42 @@ export default function DoctorDashboard({ user }: { user: User | null }) {
             </Link>
           </div>
           <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-5">
-            <WaitingPatientCard
-              name="Travis Fuller"
-              procedure="Scaling"
-              date="Thu, 26 March"
-              time="08:00"
-              onAccept={() => console.log("Accept Travis")}
-              onReject={() => console.log("Reject Travis")}
-              viewLink="/patient-preview"
-            />
-            <WaitingPatientCard
-              name="Alfredo Elliott"
-              procedure="Checkup"
-              date="Mon, 15 March"
-              time="06:00"
-              onAccept={() => console.log("Accept Alfredo")}
-              onReject={() => console.log("Reject Alfredo")}
-              viewLink="/patient-preview"
-            />
-            <WaitingPatientCard
-              name="Derrick Simmons"
-              procedure="Checkup"
-              date="Wed, 14 March"
-              time="11:00"
-              onAccept={() => console.log("Accept Derrick")}
-              onReject={() => console.log("Reject Derrick")}
-              viewLink="/patient-preview"
-            />
+            {queueLoading ? (
+              Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="card animate-pulse space-y-4 p-5">
+                  <div className="flex items-center space-x-3">
+                    <div className="size-12 rounded-full bg-slate-200 dark:bg-navy-500 shrink-0" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-4 w-28 rounded bg-slate-200 dark:bg-navy-500" />
+                      <div className="h-3 w-20 rounded bg-slate-200 dark:bg-navy-500" />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="h-3 w-24 rounded bg-slate-200 dark:bg-navy-500" />
+                    <div className="h-5 w-16 rounded bg-slate-200 dark:bg-navy-500" />
+                  </div>
+                  <div className="flex space-x-2">
+                    <div className="size-7 rounded-full bg-slate-200 dark:bg-navy-500" />
+                    <div className="size-7 rounded-full bg-slate-200 dark:bg-navy-500" />
+                  </div>
+                </div>
+              ))
+            ) : waitingPatients.length === 0 ? (
+              <p className="col-span-3 py-6 text-center text-sm text-slate-400 dark:text-navy-300">
+                No patients in the queue.
+              </p>
+            ) : (
+              waitingPatients.map((appointment) => (
+                <WaitingPatientCard
+                  key={appointment.id}
+                  name={appointment.patientName}
+                  procedure={appointment.description || "—"}
+                  date={appointment.scheduledAt}
+                  time=""
+                  viewLink={`/patient-preview?appointmentId=${appointment.id}&patientId=${appointment.patientId}`}
+                />
+              ))
+            )}
           </div>
         </div>
 

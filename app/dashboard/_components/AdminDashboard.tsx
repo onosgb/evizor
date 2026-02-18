@@ -1,62 +1,10 @@
-﻿"use client";
+"use client";
 
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
-import { User } from "@/app/models";
-import TableActionMenu from "@/app/components/TableActionMenu";
-
-interface QueueItem {
-  id: number;
-  name: string;
-  location: string;
-  datetime: string;
-  status: "waiting" | "cancelled";
-}
-
-const queueData: QueueItem[] = [
-  {
-    id: 1,
-    name: "Anthony Jensen",
-    location: "London, Kliniken Clinic",
-    datetime: "Mon, 12 May - 09:00",
-    status: "waiting",
-  },
-  {
-    id: 2,
-    name: "Konnor Guzman",
-    location: "Manchester, PLC Home Health",
-    datetime: "Tue, 17 June - 14:30",
-    status: "cancelled",
-  },
-  {
-    id: 3,
-    name: "Derrick Simmons",
-    location: "Liverpool, Life flash Clinic",
-    datetime: "Wed, 29 May - 13:30",
-    status: "cancelled",
-  },
-  {
-    id: 4,
-    name: "Henry Curtis",
-    location: "London, Kliniken Clinic",
-    datetime: "Mon, 22 June - 15:00",
-    status: "waiting",
-  },
-  {
-    id: 5,
-    name: "Benjamin West",
-    location: "Manchester, PLC Home Health",
-    datetime: "Tue, 17 June - 14:30",
-    status: "cancelled",
-  },
-  {
-    id: 6,
-    name: "Travis Fuller",
-    location: "Liverpool, Life flash Clinic",
-    datetime: "Wed, 19 May - 11:30",
-    status: "waiting",
-  },
-];
+import Link from "next/link";
+import { User, AppointmentStatus } from "@/app/models";
+import { useQueueMonitorStore } from "@/app/stores/queueMonitorStore";
 
 const getGreeting = () => {
   const hour = new Date().getHours();
@@ -68,18 +16,15 @@ const getGreeting = () => {
 export default function AdminDashboard({ user }: { user: User | null }) {
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [openRowMenu, setOpenRowMenu] = useState<number | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
-  const rowMenuRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
 
-  const filteredData = queueData.filter(
-    (item) =>
-      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.datetime.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const { appointments, isLoading, setLimit, fetchAppointments } =
+    useQueueMonitorStore();
+
+  useEffect(() => {
+    setLimit(6);
+    fetchAppointments();
+  }, []);
 
   useEffect(() => {
     if (isSearchActive && searchInputRef.current) {
@@ -87,61 +32,45 @@ export default function AdminDashboard({ user }: { user: User | null }) {
     }
   }, [isSearchActive]);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setIsMenuOpen(false);
-      }
+  const filteredData = (appointments || []).filter(
+    (item) =>
+      item.patientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.doctorName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.scheduledAt.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
 
-      if (openRowMenu !== null) {
-        const rowMenuRef = rowMenuRefs.current[openRowMenu];
-        if (rowMenuRef && !rowMenuRef.contains(event.target as Node)) {
-          setOpenRowMenu(null);
-        }
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [openRowMenu]);
-
-  const getStatusIcon = (status: string) => {
-    if (status === "waiting") {
-      return (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="ml-4 size-5"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="1.5"
-            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-          />
-        </svg>
-      );
-    } else if (status === "cancelled") {
-      return (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="ml-4 size-5 text-error"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="1.5"
-            d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-          />
-        </svg>
-      );
+  const getStatusBadge = (status: AppointmentStatus) => {
+    switch (status) {
+      case AppointmentStatus.SCHEDULED:
+      case AppointmentStatus.PROGRESS:
+        return (
+          <div className="flex items-center space-x-2 text-warning">
+            <div className="size-2 rounded-full bg-current" />
+            <span>Waiting</span>
+          </div>
+        );
+      case AppointmentStatus.COMPLETED:
+        return (
+          <div className="flex items-center space-x-2 text-success">
+            <div className="size-2 rounded-full bg-current" />
+            <span>Completed</span>
+          </div>
+        );
+      case AppointmentStatus.CANCELLED:
+        return (
+          <div className="flex items-center space-x-2 text-error">
+            <div className="size-2 rounded-full bg-current" />
+            <span>Cancelled</span>
+          </div>
+        );
+      default:
+        return (
+          <div className="flex items-center space-x-2 text-slate-400">
+            <div className="size-2 rounded-full bg-current" />
+            <span>{status}</span>
+          </div>
+        );
     }
-    return null;
   };
 
   return (
@@ -166,14 +95,17 @@ export default function AdminDashboard({ user }: { user: User | null }) {
               <p className="text-white pb-2">System Administrator</p>
               <hr />
               <h3 className="text-xl mt-4">
-                {getGreeting()}, <span className="font-semibold">{user?.firstName || "Admin"}</span>
+                {getGreeting()},{" "}
+                <span className="font-semibold">
+                  {user?.firstName || "Admin"}
+                </span>
               </h3>
               <p className="mt-2 leading-relaxed">
                 Have a great day at work. Your progress is excellent.
               </p>
-              <button className="btn mt-6 border border-white/10 bg-white/20 text-white hover:bg-white/30 focus:bg-white/30">
+              <Link href="/profile" className="btn mt-6 border border-white/10 bg-white/20 text-white hover:bg-white/30 focus:bg-white/30">
                 View Profile
-              </button>
+              </Link>
             </div>
           </div>
         </div>
@@ -364,7 +296,7 @@ export default function AdminDashboard({ user }: { user: User | null }) {
           <h2 className="text-base font-medium tracking-wide text-slate-700 line-clamp-1 dark:text-navy-100">
             Queue Monitor
           </h2>
-          <div className="flex">
+          <div className="flex items-center space-x-2">
             <div className="flex items-center">
               <label className="block">
                 <input
@@ -398,70 +330,12 @@ export default function AdminDashboard({ user }: { user: User | null }) {
                 </svg>
               </button>
             </div>
-            <div className="inline-flex relative" ref={menuRef}>
-              <button
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="btn size-8 rounded-full p-0 hover:bg-slate-300/20 focus:bg-slate-300/20 active:bg-slate-300/25 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="size-4.5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
-                  />
-                </svg>
-              </button>
-              {isMenuOpen && (
-                <div className="popper-root show absolute right-0 top-full mt-1 z-50">
-                  <div className="popper-box w-auto min-w-fit rounded-md border border-slate-150 bg-white py-1.5 font-inter dark:border-navy-500 dark:bg-navy-700">
-                    <ul>
-                      <li>
-                        <a
-                          href="#"
-                          className="flex h-8 items-center whitespace-nowrap px-3 pr-8 font-medium tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
-                        >
-                          Action
-                        </a>
-                      </li>
-                      <li>
-                        <a
-                          href="#"
-                          className="flex h-8 items-center whitespace-nowrap px-3 pr-8 font-medium tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
-                        >
-                          Another Action
-                        </a>
-                      </li>
-                      <li>
-                        <a
-                          href="#"
-                          className="flex h-8 items-center whitespace-nowrap px-3 pr-8 font-medium tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
-                        >
-                          Something else
-                        </a>
-                      </li>
-                    </ul>
-                    <div className="my-1 h-px bg-slate-150 dark:bg-navy-500"></div>
-                    <ul>
-                      <li>
-                        <a
-                          href="#"
-                          className="flex h-8 items-center whitespace-nowrap px-3 pr-8 font-medium tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
-                        >
-                          Separated Link
-                        </a>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-              )}
-            </div>
+            <Link
+              href="/queue-monitor"
+              className="border-b border-dotted border-current pb-0.5 text-xs-plus font-medium text-primary outline-hidden transition-colors duration-300 hover:text-primary/70 focus:text-primary/70 dark:text-accent-light dark:hover:text-accent-light/70 dark:focus:text-accent-light/70"
+            >
+              View All
+            </Link>
           </div>
         </div>
         <div className="card mt-3">
@@ -470,10 +344,10 @@ export default function AdminDashboard({ user }: { user: User | null }) {
               <thead>
                 <tr>
                   <th className="whitespace-nowrap rounded-tl-lg bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">
-                    NAME
+                    PATIENT
                   </th>
                   <th className="whitespace-nowrap bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">
-                    LOCATION
+                    ASSIGNED DOCTOR
                   </th>
                   <th className="whitespace-nowrap bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">
                     DATETIME
@@ -485,97 +359,115 @@ export default function AdminDashboard({ user }: { user: User | null }) {
                 </tr>
               </thead>
               <tbody>
-                {filteredData.map((item, index) => (
-                  <tr
-                    key={item.id}
-                    className={`border-y border-transparent ${
-                      index === filteredData.length - 1
-                        ? ""
-                        : "border-b-slate-200 dark:border-b-navy-500"
-                    }`}
-                  >
-                    <td
-                      className={`whitespace-nowrap px-4 py-3 sm:px-5 ${
-                        index === filteredData.length - 1 ? "rounded-bl-lg" : ""
-                      }`}
+                {isLoading ? (
+                  Array.from({ length: 6 }).map((_, i) => (
+                    <tr
+                      key={i}
+                      className="border-y border-transparent border-b-slate-200 dark:border-b-navy-500 animate-pulse"
                     >
-                      <div className="flex items-center space-x-4">
-                        <div className="avatar size-9">
-                          <Image
-                            className="rounded-full"
-                            src="/images/200x200.png"
-                            alt="avatar"
-                            width={36}
-                            height={36}
-                          />
+                      <td className="px-4 py-3 sm:px-5">
+                        <div className="flex items-center space-x-3">
+                          <div className="size-9 rounded-full bg-slate-200 dark:bg-navy-500" />
+                          <div className="h-4 w-28 rounded bg-slate-200 dark:bg-navy-500" />
                         </div>
-                        <span className="font-medium text-slate-700 dark:text-navy-100">
-                          {item.name}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-3 sm:px-5">
-                      <a href="#" className="hover:underline focus:underline">
-                        {item.location}
-                      </a>
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-3 font-medium text-slate-600 dark:text-navy-100 sm:px-5">
-                      {item.datetime}
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-3 sm:px-5">
-                      {getStatusIcon(item.status)}
-                    </td>
+                      </td>
+                      <td className="px-4 py-3 sm:px-5">
+                        <div className="h-4 w-24 rounded bg-slate-200 dark:bg-navy-500" />
+                      </td>
+                      <td className="px-4 py-3 sm:px-5">
+                        <div className="h-4 w-32 rounded bg-slate-200 dark:bg-navy-500" />
+                      </td>
+                      <td className="px-4 py-3 sm:px-5">
+                        <div className="h-4 w-20 rounded bg-slate-200 dark:bg-navy-500" />
+                      </td>
+                      <td className="px-4 py-3 sm:px-5">
+                        <div className="h-8 w-8 rounded-full bg-slate-200 dark:bg-navy-500" />
+                      </td>
+                    </tr>
+                  ))
+                ) : filteredData.length === 0 ? (
+                  <tr>
                     <td
-                      className={`whitespace-nowrap px-4 py-3 sm:px-5 ${
-                        index === filteredData.length - 1 ? "rounded-br-lg" : ""
-                      }`}
+                      colSpan={5}
+                      className="px-4 py-8 text-center text-slate-500 dark:text-navy-300"
                     >
-                      <div className="flex justify-end">
-                        <TableActionMenu>
-                            <div className="w-48">
-                              <ul>
-                                <li>
-                                  <a
-                                    href="#"
-                                    className="flex h-8 items-center px-3 pr-8 font-medium tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
-                                  >
-                                    Action
-                                  </a>
-                                </li>
-                                <li>
-                                  <a
-                                    href="#"
-                                    className="flex h-8 items-center px-3 pr-8 font-medium tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
-                                  >
-                                    Another Action
-                                  </a>
-                                </li>
-                                <li>
-                                  <a
-                                    href="#"
-                                    className="flex h-8 items-center px-3 pr-8 font-medium tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
-                                  >
-                                    Something else
-                                  </a>
-                                </li>
-                              </ul>
-                              <div className="my-1 h-px bg-slate-150 dark:bg-navy-500"></div>
-                              <ul>
-                                <li>
-                                  <a
-                                    href="#"
-                                    className="flex h-8 items-center px-3 pr-8 font-medium tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
-                                  >
-                                    Separated Link
-                                  </a>
-                                </li>
-                              </ul>
-                            </div>
-                        </TableActionMenu>
-                      </div>
+                      No appointments found.
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  filteredData.map((item, index) => (
+                    <tr
+                      key={item.id}
+                      className={`border-y border-transparent ${
+                        index === filteredData.length - 1
+                          ? ""
+                          : "border-b-slate-200 dark:border-b-navy-500"
+                      }`}
+                    >
+                      <td
+                        className={`whitespace-nowrap px-4 py-3 sm:px-5 ${
+                          index === filteredData.length - 1
+                            ? "rounded-bl-lg"
+                            : ""
+                        }`}
+                      >
+                        <div className="flex items-center space-x-4">
+                          <div className="avatar size-9">
+                            <Image
+                              className="rounded-full"
+                              src="/images/200x200.png"
+                              alt="avatar"
+                              width={36}
+                              height={36}
+                            />
+                          </div>
+                          <span className="font-medium text-slate-700 dark:text-navy-100">
+                            {item.patientName}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-3 sm:px-5">
+                        {item.doctorName}
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-3 font-medium text-slate-600 dark:text-navy-100 sm:px-5">
+                        {item.scheduledAt}
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-3 sm:px-5">
+                        {getStatusBadge(item.status)}
+                      </td>
+                      <td
+                        className={`whitespace-nowrap px-4 py-3 sm:px-5 ${
+                          index === filteredData.length - 1
+                            ? "rounded-br-lg"
+                            : ""
+                        }`}
+                      >
+                        <div className="flex justify-end">
+                          <Link
+                            href={`/patient-preview?appointmentId=${item.id}&patientId=${item.patientId}`}
+                            className="flex size-8 items-center justify-center rounded-full bg-slate-150 text-slate-600 transition-colors hover:bg-slate-200 active:bg-slate-200/80 dark:bg-navy-500 dark:text-navy-200 dark:hover:bg-navy-450"
+                            title="View patient"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="size-4"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M7 17L17 7M17 7H7M17 7v10"
+                              />
+                            </svg>
+                          </Link>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -584,5 +476,3 @@ export default function AdminDashboard({ user }: { user: User | null }) {
     </>
   );
 }
-
-
