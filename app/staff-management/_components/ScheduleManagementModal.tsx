@@ -37,7 +37,6 @@ export default function ScheduleManagementModal({
     date: "",
     startTime: "",
     endTime: "",
-    maxConsultations: 20,
   });
 
   useEffect(() => {
@@ -108,7 +107,6 @@ export default function ScheduleManagementModal({
           date: "",
           startTime: "",
           endTime: "",
-          maxConsultations: 20,
         });
       } else {
         setError(response.message || "Failed to add schedule.");

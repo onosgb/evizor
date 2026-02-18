@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import DashboardLayout from "../components/DashboardLayout";
 import CreateStaffForm from "./_components/CreateStaffForm";
@@ -9,8 +9,8 @@ import Image from "next/image";
 import { Staff, CreateStaffRequest } from "../models";
 import { staffService } from "../lib/services";
 import { ApiError } from "../models";
-import TableActionMenu from "../components/TableActionMenu";
 import { Pagination } from "../components/Pagination";
+import TableActionMenu from "../components/TableActionMenu";
 
 // Helper function to get role badge color
 const getRoleBadgeColor = (role: string | null | undefined): string => {
@@ -36,17 +36,18 @@ export default function StaffManagementPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
-  const [selectedStaffForSchedule, setSelectedStaffForSchedule] = useState<{id: string, name: string} | null>(null);
+  const [selectedStaffForSchedule, setSelectedStaffForSchedule] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
   const [staff, setStaff] = useState<Staff[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [entriesPerPage, setEntriesPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
 
-
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
-
 
   // Fetch staff on component mount
   useEffect(() => {
@@ -78,10 +79,10 @@ export default function StaffManagementPage() {
   const filteredData = staff.filter(
     (item) =>
       (item.fullName?.toLowerCase() || "").includes(
-        searchQuery.toLowerCase()
+        searchQuery.toLowerCase(),
       ) ||
       (item.email?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
-      (item.phoneNumber || "").includes(searchQuery)
+      (item.phoneNumber || "").includes(searchQuery),
   );
 
   const totalPages = Math.ceil(filteredData.length / entriesPerPage);
@@ -100,7 +101,7 @@ export default function StaffManagementPage() {
       const response = await staffService.toggleStaffStatus(id, newStatus);
       if (response.status && response.data) {
         setStaff(
-          staff.map((member) => (member.id === id ? response.data : member))
+          staff.map((member) => (member.id === id ? response.data : member)),
         );
       } else {
         setError(response.message || "Failed to update staff status");
@@ -140,36 +141,10 @@ export default function StaffManagementPage() {
     }
   };
 
-  const handleDeleteStaff = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this staff member?")) {
-      return;
-    }
-
-    try {
-      const response = await staffService.deleteStaff(id);
-      if (response.status) {
-        setStaff(staff.filter((member) => member.id !== id));
-      } else {
-        setError(response.message || "Failed to delete staff");
-      }
-    } catch (err) {
-      if (err instanceof ApiError) {
-        setError(err.message || "Failed to delete staff");
-      } else {
-        setError("An unexpected error occurred");
-      }
-      console.error("Error deleting staff:", err);
-    }
-  };
-
   const handleOpenSchedule = (staffId: string, staffName: string) => {
     setSelectedStaffForSchedule({ id: staffId, name: staffName });
     setShowScheduleModal(true);
   };
-
-
-
-
 
   return (
     <DashboardLayout theme="admin">
@@ -310,139 +285,132 @@ export default function StaffManagementPage() {
                   <tbody>
                     {isLoading
                       ? Array.from({ length: 6 }).map((_, i) => (
-                          <tr key={i} className="border-y border-transparent border-b-slate-200 dark:border-b-navy-500 animate-pulse">
-                            <td className="px-4 py-3 sm:px-5"><div className="h-4 w-5 rounded bg-slate-200 dark:bg-navy-500" /></td>
-                            <td className="px-4 py-3 sm:px-5"><div className="size-9 rounded-full bg-slate-200 dark:bg-navy-500" /></td>
-                            <td className="px-4 py-3 sm:px-5"><div className="h-4 w-32 rounded bg-slate-200 dark:bg-navy-500" /></td>
-                            <td className="px-4 py-3 sm:px-5"><div className="h-4 w-40 rounded bg-slate-200 dark:bg-navy-500" /></td>
-                            <td className="px-4 py-3 sm:px-5"><div className="h-4 w-28 rounded bg-slate-200 dark:bg-navy-500" /></td>
-                            <td className="px-4 py-3 sm:px-5"><div className="h-5 w-16 rounded-full bg-slate-200 dark:bg-navy-500" /></td>
-                            <td className="px-4 py-3 sm:px-5"><div className="h-5 w-14 rounded-full bg-slate-200 dark:bg-navy-500" /></td>
-                            <td className="px-4 py-3 sm:px-5"><div className="h-8 w-8 rounded-full bg-slate-200 dark:bg-navy-500" /></td>
+                          <tr
+                            key={i}
+                            className="border-y border-transparent border-b-slate-200 dark:border-b-navy-500 animate-pulse"
+                          >
+                            <td className="px-4 py-3 sm:px-5">
+                              <div className="h-4 w-5 rounded bg-slate-200 dark:bg-navy-500" />
+                            </td>
+                            <td className="px-4 py-3 sm:px-5">
+                              <div className="size-9 rounded-full bg-slate-200 dark:bg-navy-500" />
+                            </td>
+                            <td className="px-4 py-3 sm:px-5">
+                              <div className="h-4 w-32 rounded bg-slate-200 dark:bg-navy-500" />
+                            </td>
+                            <td className="px-4 py-3 sm:px-5">
+                              <div className="h-4 w-40 rounded bg-slate-200 dark:bg-navy-500" />
+                            </td>
+                            <td className="px-4 py-3 sm:px-5">
+                              <div className="h-4 w-28 rounded bg-slate-200 dark:bg-navy-500" />
+                            </td>
+                            <td className="px-4 py-3 sm:px-5">
+                              <div className="h-5 w-16 rounded-full bg-slate-200 dark:bg-navy-500" />
+                            </td>
+                            <td className="px-4 py-3 sm:px-5">
+                              <div className="h-5 w-14 rounded-full bg-slate-200 dark:bg-navy-500" />
+                            </td>
+                            <td className="px-4 py-3 sm:px-5">
+                              <div className="h-8 w-8 rounded-full bg-slate-200 dark:bg-navy-500" />
+                            </td>
                           </tr>
                         ))
                       : paginatedData.map((member, index) => (
-                      <tr
-                        key={member.id}
-                        className={`border-y border-transparent ${
-                          index === paginatedData.length - 1
-                            ? ""
-                            : "border-b-slate-200 dark:border-b-navy-500"
-                        }`}
-                      >
-                        <td className="whitespace-nowrap px-4 py-3 sm:px-5">
-                          {index + startIndex + 1}
-                        </td>
-                        <td className="whitespace-nowrap px-4 py-3 sm:px-5">
-                          <div className="avatar flex size-10">
-                            <Image
-                              className="mask is-squircle"
-                              src="/images/200x200.png"
-                              alt="avatar"
-                              width={40}
-                              height={40}
-                            />
-                          </div>
-                        </td>
-                        <td className="whitespace-nowrap px-3 py-3 font-medium text-slate-700 dark:text-navy-100 lg:px-5">
-                          {member.fullName}
-                        </td>
-                        <td className="whitespace-nowrap px-4 py-3 sm:px-5">
-                          {member.email}
-                        </td>
-                        <td className="whitespace-nowrap px-4 py-3 sm:px-5">
-                          {member.phoneNumber}
-                        </td>
-                        <td className="whitespace-nowrap px-4 py-3 sm:px-5">
-                          <div
-                            className={`badge rounded-full ${getRoleBadgeColor(
-                              member.role
-                            )} text-white`}
+                          <tr
+                            key={member.id}
+                            className={`border-y border-transparent ${
+                              index === paginatedData.length - 1
+                                ? ""
+                                : "border-b-slate-200 dark:border-b-navy-500"
+                            }`}
                           >
-                            {member.role}
-                          </div>
-                        </td>
-                        <td className="whitespace-nowrap px-4 py-3 sm:px-5">
-                          <label className="inline-flex items-center">
-                            <input
-                              checked={isActiveStatus(member.status)}
-                              onChange={() =>
-                                toggleStaffStatus(member.id, member.status)
-                              }
-                              className="form-switch h-5 w-10 rounded-full bg-slate-300 before:rounded-full before:bg-slate-50 checked:bg-primary checked:before:bg-white dark:bg-navy-900 dark:before:bg-navy-300 dark:checked:bg-accent dark:checked:before:bg-white"
-                              type="checkbox"
-                            />
-                          </label>
-                        </td>
-                        <td className="whitespace-nowrap px-4 py-3 sm:px-5">
-                          <div className="flex justify-end">
-                            <TableActionMenu>
-                              <div className="w-48">
-                                <ul>
-                                  <li>
-                                    <a
-                                      href="#"
-                                      onClick={(e) => {
-                                        e.preventDefault();
-                                        console.log("Edit", member.fullName);
-                                      }}
-                                      className="flex h-8 items-center whitespace-nowrap px-3 pr-8 font-medium tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
-                                    >
-                                      Edit
-                                    </a>
-                                  </li>
-                                  <li>
-                                    <a
-                                      href="#"
-                                      onClick={(e) => {
-                                        e.preventDefault();
-                                        router.push(`/profile?userId=${member.id}`);
-                                      }}
-                                      className="flex h-8 items-center whitespace-nowrap px-3 pr-8 font-medium tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
-                                    >
-                                      View Details
-                                    </a>
-                                  </li>
-                                </ul>
-                                <div className="my-1 h-px bg-slate-150 dark:bg-navy-500"></div>
-                                <ul>
-                                  <li>
-                                    <a
-                                      href="#"
-                                      onClick={(e) => {
-                                        e.preventDefault();
-                                        handleOpenSchedule(
-                                          member.id,
-                                          member.fullName
-                                        );
-                                      }}
-                                      className="flex h-8 items-center whitespace-nowrap px-3 pr-8 font-medium tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
-                                    >
-                                      Schedule
-                                    </a>
-                                  </li>
-                                </ul>
-                                <div className="my-1 h-px bg-slate-150 dark:bg-navy-500"></div>
-                                <ul>
-                                  <li>
-                                    <a
-                                      href="#"
-                                      onClick={(e) => {
-                                        e.preventDefault();
-                                        handleDeleteStaff(member.id);
-                                      }}
-                                      className="flex h-8 items-center whitespace-nowrap px-3 pr-8 font-medium tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
-                                    >
-                                      Delete
-                                    </a>
-                                  </li>
-                                </ul>
+                            <td className="whitespace-nowrap px-4 py-3 sm:px-5">
+                              {index + startIndex + 1}
+                            </td>
+                            <td className="whitespace-nowrap px-4 py-3 sm:px-5">
+                              <div className="avatar flex size-10">
+                                <Image
+                                  className="mask is-squircle"
+                                  src="/images/200x200.png"
+                                  alt="avatar"
+                                  width={40}
+                                  height={40}
+                                />
                               </div>
-                            </TableActionMenu>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
+                            </td>
+                            <td className="whitespace-nowrap px-3 py-3 font-medium text-slate-700 dark:text-navy-100 lg:px-5">
+                              {member.fullName}
+                            </td>
+                            <td className="whitespace-nowrap px-4 py-3 sm:px-5">
+                              {member.email}
+                            </td>
+                            <td className="whitespace-nowrap px-4 py-3 sm:px-5">
+                              {member.phoneNumber}
+                            </td>
+                            <td className="whitespace-nowrap px-4 py-3 sm:px-5">
+                              <div
+                                className={`badge rounded-full ${getRoleBadgeColor(
+                                  member.role,
+                                )} text-white`}
+                              >
+                                {member.role}
+                              </div>
+                            </td>
+                            <td className="whitespace-nowrap px-4 py-3 sm:px-5">
+                              <label className="inline-flex items-center">
+                                <input
+                                  checked={isActiveStatus(member.status)}
+                                  onChange={() =>
+                                    toggleStaffStatus(member.id, member.status)
+                                  }
+                                  className="form-switch h-5 w-10 rounded-full bg-slate-300 before:rounded-full before:bg-slate-50 checked:bg-primary checked:before:bg-white dark:bg-navy-900 dark:before:bg-navy-300 dark:checked:bg-accent dark:checked:before:bg-white"
+                                  type="checkbox"
+                                />
+                              </label>
+                            </td>
+                            <td className="whitespace-nowrap px-4 py-3 sm:px-5">
+                              <div className="flex justify-end">
+                                <TableActionMenu>
+                                  <div className="w-48">
+                                    <ul>
+                                      <li>
+                                        <a
+                                          href="#"
+                                          onClick={(e) => {
+                                            e.preventDefault();
+                                            router.push(`/profile?userId=${member.id}`);
+                                          }}
+                                          className="flex h-8 items-center whitespace-nowrap px-3 pr-8 font-medium tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
+                                        >
+                                          View Details
+                                        </a>
+                                      </li>
+                                    </ul>
+                                    {member.role?.toUpperCase() === "DOCTOR" && (
+                                      <>
+                                        <div className="my-1 h-px bg-slate-150 dark:bg-navy-500"></div>
+                                        <ul>
+                                          <li>
+                                            <a
+                                              href="#"
+                                              onClick={(e) => {
+                                                e.preventDefault();
+                                                handleOpenSchedule(member.id, member.fullName);
+                                              }}
+                                              className="flex h-8 items-center whitespace-nowrap px-3 pr-8 font-medium tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
+                                            >
+                                              Schedule
+                                            </a>
+                                          </li>
+                                        </ul>
+                                      </>
+                                    )}
+                                  </div>
+                                </TableActionMenu>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
                   </tbody>
                 </table>
               </div>
@@ -462,8 +430,6 @@ export default function StaffManagementPage() {
           />
         </div>
       </div>
-      
-
     </DashboardLayout>
   );
 }

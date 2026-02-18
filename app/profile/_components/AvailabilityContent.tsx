@@ -5,7 +5,7 @@ import { useAuthStore } from "@/app/stores/authStore";
 import { getTheme, isAdmin, isDoctor } from "@/app/lib/roles";
 import { createPortal } from "react-dom";
 import { useSearchParams } from "next/navigation";
-import { adminService } from "@/app/lib/services";
+import { adminService, appointmentService } from "@/app/lib/services";
 import ProfileSidebar from "./ProfileSidebar";
 
 interface Schedule {
@@ -23,43 +23,47 @@ export default function AvailabilityContent() {
   const isReadOnly = !!userId;
   
   const theme = getTheme(user);
-  const [isLoadingAvailability, setIsLoadingAvailability] = useState(!!(userId));
+  const [isLoadingAvailability, setIsLoadingAvailability] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null);
-  const [schedules, setSchedules] = useState<Schedule[]>([
-    {
-      id: "1",
-      dateScheduled: "Monday Feb 9, 2026",
-      timeSlot: "09:00 â€“ 13:00",
-      consultations: 20,
-      status: "available",
-    },
-    {
-      id: "2",
-      dateScheduled: "Wednesday Feb 11, 2026",
-      timeSlot: "16:00 â€“ 20:00",
-      consultations: 20,
-      status: "offline",
-    },
-  ]);
+  const [schedules, setSchedules] = useState<Schedule[]>([]);
 
   useEffect(() => {
-    if (userId) {
-      const fetchAvailability = async () => {
-        setIsLoadingAvailability(true);
-        try {
+    const fetchAvailability = async () => {
+      setIsLoadingAvailability(true);
+      try {
+        if (userId) {
           const response = await adminService.getUserAvailability(userId);
           if (response.status && response.data) {
-            // setSchedules(response.data);
+            const mapped: Schedule[] = (response.data as any[]).map((item) => ({
+              id: item.id,
+              dateScheduled: item.date,
+              timeSlot: `${item.startTime} – ${item.endTime}`,
+              consultations: 0,
+              status: item.isAvailable ? "available" : "offline",
+            }));
+            setSchedules(mapped);
           }
-        } catch (error) {
-          console.error("Failed to fetch availability:", error);
-        } finally {
-          setIsLoadingAvailability(false);
+        } else {
+          const response = await appointmentService.getMyAvailabilities();
+          if (response.status && response.data) {
+            const mapped: Schedule[] = response.data.map((item) => ({
+              id: item.id,
+              dateScheduled: item.date,
+              timeSlot: `${item.startTime} – ${item.endTime}`,
+              consultations: 0,
+              status: item.isAvailable ? "available" : "offline",
+            }));
+            setSchedules(mapped);
+          }
         }
-      };
-      fetchAvailability();
-    }
+      } catch (error) {
+        console.error('Failed to fetch availability:', error);
+      } finally {
+        setIsLoadingAvailability(false);
+      }
+    };
+    fetchAvailability();
   }, [userId]);
 
   const [modalData, setModalData] = useState({

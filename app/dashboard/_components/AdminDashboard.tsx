@@ -103,7 +103,10 @@ export default function AdminDashboard({ user }: { user: User | null }) {
               <p className="mt-2 leading-relaxed">
                 Have a great day at work. Your progress is excellent.
               </p>
-              <Link href="/profile" className="btn mt-6 border border-white/10 bg-white/20 text-white hover:bg-white/30 focus:bg-white/30">
+              <Link
+                href="/profile"
+                className="btn mt-6 border border-white/10 bg-white/20 text-white hover:bg-white/30 focus:bg-white/30"
+              >
                 View Profile
               </Link>
             </div>

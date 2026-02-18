@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useAuthStore } from "@/app/stores/authStore";
-import { getTheme, isAdmin, isDoctor } from "@/app/lib/roles";
+import { getTheme, isAdmin, isDoctor, isSuperAdmin } from "@/app/lib/roles";
 import { adminService } from "@/app/lib/services";
 import { User } from "@/app/models";
 
@@ -191,6 +191,7 @@ export default function ProfileSidebar({ theme }: ProfileSidebarProps) {
               <span>Qualifications & Documents</span>
             </Link>
           </li>
+          {(userId || isDoctor(user)) && (
           <li>
             <Link
               className={`flex items-center space-x-2 rounded-lg px-4 py-2.5 tracking-wide outline-hidden transition-all ${getActiveClasses(isActive("/profile/availability"))}`}
@@ -211,9 +212,10 @@ export default function ProfileSidebar({ theme }: ProfileSidebarProps) {
                   d="M28 6a2 2 0 0 0-2-2h-4V2h-2v2h-8V2h-2v2H6a2 2 0 0 0-2 2v20a2 2 0 0 0 2 2h4v-2H6V6h4v2h2V6h8v2h2V6h4v6h2Z"
                 />
               </svg>
-              <span> Availability & Schedule </span>
+              <span>Availability & Schedule</span>
             </Link>
           </li>
+          )}
 
           <li>
             <Link

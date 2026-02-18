@@ -1,5 +1,5 @@
 import apiClient from "../api-client";
-import { ApiResponse, Appointment } from "../../models";
+import { ApiResponse, Appointment, DoctorAvailability } from "../../models";
 
 /**
  * Appointment service
@@ -23,6 +23,16 @@ class AppointmentService {
   ): Promise<ApiResponse<Appointment[]>> {
     const response = await apiClient.get<ApiResponse<Appointment[]>>(
       `/appointments/patient/${patientId}/history`,
+    );
+    return response.data;
+  }
+
+  /**
+   * Get the authenticated doctor's availabilities
+   */
+  async getMyAvailabilities(): Promise<ApiResponse<DoctorAvailability[]>> {
+    const response = await apiClient.get<ApiResponse<DoctorAvailability[]>>(
+      "/doctor-availability/my-availabilities",
     );
     return response.data;
   }

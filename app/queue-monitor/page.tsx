@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import DashboardLayout from "../components/DashboardLayout";
 import Image from "next/image";
 import Link from "next/link";
-import TableActionMenu from "../components/TableActionMenu";
 import { AppointmentStatus } from "@/app/models";
 import { useQueueMonitorStore } from "@/app/stores/queueMonitorStore";
 import { Pagination } from "../components/Pagination";
@@ -24,8 +23,6 @@ export default function QueueMonitorPage() {
   } = useQueueMonitorStore();
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
-  const menuRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
   useEffect(() => {
     fetchAppointments();
@@ -33,31 +30,6 @@ export default function QueueMonitorPage() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    // For now, client-side filter on the current page
-  };
-
-  // Close menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (openMenuId !== null) {
-        const menuRef = menuRefs.current[openMenuId];
-        if (menuRef && !menuRef.contains(event.target as Node)) {
-          setOpenMenuId(null);
-        }
-      }
-    };
-
-    if (openMenuId !== null) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [openMenuId]);
-
-  const toggleMenu = (itemId: string) => {
-    setOpenMenuId(openMenuId === itemId ? null : itemId);
   };
 
   const filteredData = (appointments || []).filter(
@@ -261,7 +233,7 @@ export default function QueueMonitorPage() {
                             : ""
                         }`}
                         >
-                        <div className="flex items-center justify-end gap-2">
+                        <div className="flex items-center justify-end">
                             <Link
                               href={`/patient-preview?appointmentId=${item.id}&patientId=${item.patientId}`}
                               className="flex size-8 items-center justify-center rounded-full bg-slate-150 text-slate-600 transition-colors hover:bg-slate-200 active:bg-slate-200/80 dark:bg-navy-500 dark:text-navy-200 dark:hover:bg-navy-450"
@@ -271,20 +243,6 @@ export default function QueueMonitorPage() {
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M7 17L17 7M17 7H7M17 7v10" />
                               </svg>
                             </Link>
-                            <TableActionMenu>
-                                <div className="w-48">
-                                <ul>
-                                    <li>
-                                    <Link
-                                        href={`/patient-preview?appointmentId=${item.id}&patientId=${item.patientId}`}
-                                        className="flex h-8 items-center whitespace-nowrap px-3 pr-8 font-medium tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
-                                    >
-                                        View Details
-                                    </Link>
-                                    </li>
-                                </ul>
-                                </div>
-                            </TableActionMenu>
                         </div>
                         </td>
                     </tr>
