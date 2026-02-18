@@ -8,16 +8,12 @@ export default function ActionButtons() {
   const user = useAuthStore((state) => state.user);
   const theme = getTheme(user);
   const [acceptModalOpen, setAcceptModalOpen] = useState(false);
-  const [reassignModalOpen, setReassignModalOpen] = useState(false);
-  const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
   const [clinicalAlertModalOpen, setClinicalAlertModalOpen] = useState(false);
 
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setAcceptModalOpen(false);
-        setReassignModalOpen(false);
-        setScheduleModalOpen(false);
         setClinicalAlertModalOpen(false);
       }
     };
@@ -116,8 +112,6 @@ export default function ActionButtons() {
           <button
             onClick={() => {
               setAcceptModalOpen(false);
-              setReassignModalOpen(false);
-              setScheduleModalOpen(false);
               setClinicalAlertModalOpen(false);
             }}
             className="btn min-w-28 rounded-full border border-slate-300 font-medium text-slate-800 hover:bg-slate-150 focus:bg-slate-150 active:bg-slate-150/80 dark:border-navy-450 dark:text-navy-50 dark:hover:bg-navy-500 dark:focus:bg-navy-500 dark:active:bg-navy-500/90"
@@ -127,8 +121,6 @@ export default function ActionButtons() {
           <button
             onClick={() => {
               setAcceptModalOpen(false);
-              setReassignModalOpen(false);
-              setScheduleModalOpen(false);
               setClinicalAlertModalOpen(false);
             }}
             className={applyBtnClass}
@@ -167,38 +159,6 @@ export default function ActionButtons() {
           </svg>
         </button>
 
-        {/* Reassign Button */}
-        <button
-          onClick={() => setReassignModalOpen(true)}
-          className={btnClass}
-          title="Reassign"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 16 16">
-            <path
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="1.5"
-              d="M4.75 10.75h-3m12.5-2c0 3-2.798 5.5-6.25 5.5c-3.75 0-6.25-3.5-6.25-3.5v3.5m9.5-9h3m-12.5 2c0-3 2.798-5.5 6.25-5.5c3.75 0 6.25 3.5 6.25 3.5v-3.5"
-            />
-          </svg>
-        </button>
-
-        {/* Schedule Button */}
-        <button
-          onClick={() => setScheduleModalOpen(true)}
-          className={btnClass}
-          title="Schedule"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-            <path
-              fill="currentColor"
-              d="M12 14a1 1 0 1 0-1-1a1 1 0 0 0 1 1m5 0a1 1 0 1 0-1-1a1 1 0 0 0 1 1m-5 4a1 1 0 1 0-1-1a1 1 0 0 0 1 1m5 0a1 1 0 1 0-1-1a1 1 0 0 0 1 1M7 14a1 1 0 1 0-1-1a1 1 0 0 0 1 1M19 4h-1V3a1 1 0 0 0-2 0v1H8V3a1 1 0 0 0-2 0v1H5a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3h14a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3m1 15a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-9h16Zm0-11H4V7a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1ZM7 18a1 1 0 1 0-1-1a1 1 0 0 0 1 1"
-            />
-          </svg>
-        </button>
-
         {/* Clinical Alert Button */}
         <button
           onClick={() => setClinicalAlertModalOpen(true)}
@@ -221,73 +181,6 @@ export default function ActionButtons() {
         onClose={() => setAcceptModalOpen(false)}
       >
         <FormFields />
-      </ModalContent>
-
-      <ModalContent
-        title="Reassign Patient"
-        isOpen={reassignModalOpen}
-        onClose={() => setReassignModalOpen(false)}
-      >
-        <FormFields />
-      </ModalContent>
-
-      <ModalContent
-        title="Schedule Patient"
-        isOpen={scheduleModalOpen}
-        onClose={() => setScheduleModalOpen(false)}
-      >
-        <>
-          <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Assumenda incidunt</p>
-          <div className="mt-4 space-y-4">
-            <label className="block">
-              <span>Choose category :</span>
-              <select className="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:bg-navy-700 dark:hover:border-navy-400 dark:focus:border-accent">
-                <option>Laravel</option>
-                <option>Node JS</option>
-                <option>Django</option>
-                <option>Other</option>
-              </select>
-            </label>
-            <label className="block">
-              <span>Description:</span>
-              <textarea
-                rows={4}
-                placeholder=" Enter Text"
-                className="form-textarea mt-1.5 w-full resize-none rounded-lg border border-slate-300 bg-transparent p-2.5 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
-              ></textarea>
-            </label>
-            <label className="block">
-              <span>Date</span>
-              <input
-                className="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
-                placeholder="URL Address"
-                type="datetime-local"
-              />
-            </label>
-            <label className="block">
-              <span>Website Address:</span>
-              <input
-                className="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
-                placeholder="URL Address"
-                type="text"
-              />
-            </label>
-            <div className="space-x-2 text-right">
-              <button
-                onClick={() => setScheduleModalOpen(false)}
-                className="btn min-w-28 rounded-full border border-slate-300 font-medium text-slate-800 hover:bg-slate-150 focus:bg-slate-150 active:bg-slate-150/80 dark:border-navy-450 dark:text-navy-50 dark:hover:bg-navy-500 dark:focus:bg-navy-500 dark:active:bg-navy-500/90"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => setScheduleModalOpen(false)}
-                className={applyBtnClass}
-              >
-                Apply
-              </button>
-            </div>
-          </div>
-        </>
       </ModalContent>
 
       <ModalContent
