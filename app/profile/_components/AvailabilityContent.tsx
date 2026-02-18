@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import { useAuthStore } from "@/app/stores/authStore";
@@ -23,6 +23,7 @@ export default function AvailabilityContent() {
   const isReadOnly = !!userId;
   
   const theme = getTheme(user);
+  const [isLoadingAvailability, setIsLoadingAvailability] = useState(!!(userId));
   const [showModal, setShowModal] = useState(false);
   const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null);
   const [schedules, setSchedules] = useState<Schedule[]>([
@@ -42,19 +43,19 @@ export default function AvailabilityContent() {
     },
   ]);
 
-  // Fetch availability if userId is present
   useEffect(() => {
     if (userId) {
       const fetchAvailability = async () => {
+        setIsLoadingAvailability(true);
         try {
           const response = await adminService.getUserAvailability(userId);
           if (response.status && response.data) {
-            // Transform response data to match Schedule interface if needed
-            // For now assuming response matches or keeping mock data if empty
-            // setSchedules(response.data); 
+            // setSchedules(response.data);
           }
         } catch (error) {
           console.error("Failed to fetch availability:", error);
+        } finally {
+          setIsLoadingAvailability(false);
         }
       };
       fetchAvailability();
@@ -187,7 +188,17 @@ export default function AvailabilityContent() {
                     </tr>
                   </thead>
                   <tbody>
-                    {schedules.map((schedule, index) => (
+                    {isLoadingAvailability
+                      ? Array.from({ length: 4 }).map((_, i) => (
+                          <tr key={i} className="border-b border-slate-200 dark:border-navy-500 animate-pulse">
+                            <td className="px-4 py-4 sm:px-5"><div className="h-4 w-36 rounded bg-slate-200 dark:bg-navy-500" /></td>
+                            <td className="px-4 py-4 sm:px-5"><div className="h-4 w-24 rounded bg-slate-200 dark:bg-navy-500" /></td>
+                            <td className="px-4 py-4 sm:px-5"><div className="h-4 w-8 rounded bg-slate-200 dark:bg-navy-500" /></td>
+                            <td className="px-4 py-4 sm:px-5"><div className="h-4 w-16 rounded bg-slate-200 dark:bg-navy-500" /></td>
+                            <td className="px-4 py-4 sm:px-5"><div className="h-8 w-16 rounded-full bg-slate-200 dark:bg-navy-500" /></td>
+                          </tr>
+                        ))
+                      : schedules.map((schedule, index) => (
                       <tr
                         key={schedule.id}
                         className={`border-b border-slate-200 dark:border-navy-500 ${

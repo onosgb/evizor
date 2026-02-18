@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import { useAuthStore } from "@/app/stores/authStore";
@@ -39,8 +39,9 @@ export default function ProfileContent() {
   // Initialize with logged-in user if we are not viewing someone else, or if the data is already there
   const [viewedUser, setViewedUser] = useState(user);
   
-  const isReadOnly = !!userId; // Readonly if viewing another user
+  const isReadOnly = !!userId;
   const theme = getTheme(user);
+  const [isLoadingProfile, setIsLoadingProfile] = useState(!!(userId && userId !== user?.id));
   const getTenantById = useTenantStore((state) => state.getTenantById);
   
   // Get user's tenant/location
@@ -70,24 +71,23 @@ export default function ProfileContent() {
     const loadProfile = async () => {
       try {
         if (userId && userId !== user?.id) {
-          // Admin viewing another user's profile
+          setIsLoadingProfile(true);
           const response = await adminService.getUserProfile(userId);
           if (response.status && response.data) {
              setViewedUser(response.data);
           }
         } else {
-          // User viewing their own profile - defaulting to what's in store first
           setViewedUser(user);
-          
-          // Optionally refresh from API to get latest
           const response = await authService.getMyProfile();
           if (response.status && response.data) {
-            setUser(response.data); // Update global store since it's "me"
+            setUser(response.data);
             setViewedUser(response.data);
           }
         }
       } catch (error) {
         console.error("Failed to fetch profile:", error);
+      } finally {
+        setIsLoadingProfile(false);
       }
     };
     
@@ -249,6 +249,23 @@ export default function ProfileContent() {
               )}
           </div>
           <div className="p-4 sm:p-5">
+            {isLoadingProfile ? (
+              <div className="animate-pulse space-y-6">
+                <div className="flex items-center space-x-4">
+                  <div className="size-20 rounded-xl bg-slate-200 dark:bg-navy-500" />
+                </div>
+                <div className="h-px bg-slate-200 dark:bg-navy-500" />
+                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                  {Array.from({ length: 8 }).map((_, i) => (
+                    <div key={i} className="space-y-2">
+                      <div className="h-3 w-24 rounded bg-slate-200 dark:bg-navy-500" />
+                      <div className="h-9 w-full rounded-full bg-slate-200 dark:bg-navy-500" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+            <>
             {/* Avatar Section */}
             <div className="flex flex-col">
               <div className="avatar mt-1.5 size-20 relative">
@@ -560,6 +577,8 @@ export default function ProfileContent() {
               </label>
             </div>
             <div className="my-7 h-px bg-slate-200 dark:bg-navy-500"></div>
+            </>
+            )}
           </div>
         </div>
       </div>

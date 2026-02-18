@@ -1,7 +1,12 @@
+"use client";
+
 import ActionButtons from "../../components/ActionButtons";
 import ImageCarousel from "./_components/ImageCarousel";
+import { useAppointmentStore } from "../../stores/appointmentStore";
 
 export default function PatientUploadsPage() {
+  const { isLoading } = useAppointmentStore();
+
   const images = [
     { id: 1, src: "/images/800x600.png", alt: "Uploaded file 1" },
     { id: 2, src: "/images/800x600.png", alt: "Uploaded file 2" },
@@ -18,7 +23,18 @@ export default function PatientUploadsPage() {
         <ActionButtons />
       </div>
       <div className="p-4 sm:p-5">
-        <ImageCarousel images={images} />
+        {isLoading ? (
+          <div className="animate-pulse grid grid-cols-2 gap-4 sm:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div
+                key={i}
+                className="aspect-video w-full rounded-lg bg-slate-200 dark:bg-navy-500"
+              />
+            ))}
+          </div>
+        ) : (
+          <ImageCarousel images={images} />
+        )}
       </div>
     </div>
   );

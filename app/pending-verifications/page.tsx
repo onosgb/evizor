@@ -74,14 +74,21 @@ export default function PendingVerificationsPage() {
             </thead>
             <tbody>
               {isLoading ? (
-                <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center">
-                    <div className="flex items-center justify-center">
-                      <div className="h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent"></div>
-                      <span className="ml-3 text-slate-600 dark:text-navy-300">Loading...</span>
-                    </div>
-                  </td>
-                </tr>
+                Array.from({ length: 5 }).map((_, i) => (
+                  <tr key={i} className="border-y border-transparent border-b-slate-200 dark:border-b-navy-500 animate-pulse">
+                    <td className="px-4 py-3 sm:px-5"><div className="h-4 w-36 rounded bg-slate-200 dark:bg-navy-500" /></td>
+                    <td className="px-4 py-3 sm:px-5"><div className="h-4 w-28 rounded bg-slate-200 dark:bg-navy-500" /></td>
+                    <td className="px-4 py-3 sm:px-5"><div className="h-4 w-24 rounded bg-slate-200 dark:bg-navy-500" /></td>
+                    <td className="px-4 py-3 sm:px-5"><div className="h-4 w-32 rounded bg-slate-200 dark:bg-navy-500" /></td>
+                    <td className="px-4 py-3 sm:px-5"><div className="h-4 w-20 rounded bg-slate-200 dark:bg-navy-500" /></td>
+                    <td className="px-4 py-3 sm:px-5">
+                      <div className="flex space-x-2">
+                        <div className="h-8 w-16 rounded bg-slate-200 dark:bg-navy-500" />
+                        <div className="h-8 w-14 rounded bg-slate-200 dark:bg-navy-500" />
+                      </div>
+                    </td>
+                  </tr>
+                ))
               ) : pendingVerifications.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-4 py-8 text-center text-slate-500 dark:text-navy-300">

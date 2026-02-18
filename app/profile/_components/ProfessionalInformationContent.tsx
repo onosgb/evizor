@@ -166,8 +166,13 @@ export default function ProfessionalInformationContent() {
                 </div>
               )}
               {loadingProfile ? (
-                <div className="flex items-center justify-center py-10">
-                  <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent"></div>
+                <div className="animate-pulse grid grid-cols-1 gap-5 p-5 my-5 sm:grid-cols-2">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div key={i} className="space-y-2">
+                      <div className="h-3 w-28 rounded bg-slate-200 dark:bg-navy-500" />
+                      <div className="h-9 w-full rounded-full bg-slate-200 dark:bg-navy-500" />
+                    </div>
+                  ))}
                 </div>
               ) : (
                 <div className="grid grid-cols-1 gap-4 p-5 my-5 sm:grid-cols-2">

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import ProfileSidebar from "./ProfileSidebar";
@@ -29,6 +29,7 @@ export default function ConsultationContent() {
       ? "form-switch h-5 w-10 rounded-full bg-slate-300 before:rounded-full before:bg-slate-50 checked:bg-green-600 checked:before:bg-white dark:bg-navy-900 dark:before:bg-navy-300 dark:checked:bg-green-500 dark:checked:before:bg-white"
       : "form-switch h-5 w-10 rounded-full bg-slate-300 before:rounded-full before:bg-slate-50 checked:bg-primary checked:before:bg-white dark:bg-navy-900 dark:before:bg-navy-300 dark:checked:bg-accent dark:checked:before:bg-white";
   };
+  const [isLoadingPreferences, setIsLoadingPreferences] = useState(!!(userId));
   const [preferences, setPreferences] = useState<ConsultationPreferences>({
     acceptOnDemandVisits: true,
     acceptScheduledVisits: true,
@@ -37,10 +38,10 @@ export default function ConsultationContent() {
     preferredTypeSpecialist: false,
   });
 
-  // Fetch preferences if userId is present
   useEffect(() => {
     if (userId) {
       const fetchPreferences = async () => {
+        setIsLoadingPreferences(true);
         try {
           const response = await adminService.getUserConsultationPreferences(userId);
           if (response.status && response.data) {
@@ -48,6 +49,8 @@ export default function ConsultationContent() {
           }
         } catch (error) {
           console.error("Failed to fetch consultation preferences:", error);
+        } finally {
+          setIsLoadingPreferences(false);
         }
       };
       fetchPreferences();
@@ -86,6 +89,16 @@ export default function ConsultationContent() {
             </div>
             <div className="p-4 sm:p-5">
               <div className="is-scrollbar-hidden min-w-full overflow-x-auto p-5">
+                {isLoadingPreferences ? (
+                  <div className="animate-pulse space-y-2">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <div key={i} className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-navy-500">
+                        <div className={`h-4 rounded bg-slate-200 dark:bg-navy-500 ${i % 2 === 0 ? "w-52" : "w-40"}`} />
+                        <div className="h-5 w-10 rounded-full bg-slate-200 dark:bg-navy-500" />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
                 <table className="w-full text-left">
                   <tbody>
                     <tr className="border border-transparent border-b-slate-200 dark:border-b-navy-500">
@@ -170,6 +183,7 @@ export default function ConsultationContent() {
                     </tr>
                   </tbody>
                 </table>
+                )}
               </div>
             </div>
           </div>

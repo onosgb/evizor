@@ -269,16 +269,7 @@ export default function StaffManagementPage() {
       {/* Staff Table */}
       <div>
         <div className="card mt-3">
-          {isLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="text-center">
-                <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent"></div>
-                <p className="mt-4 text-slate-600 dark:text-navy-300">
-                  Loading staff...
-                </p>
-              </div>
-            </div>
-          ) : staff.length === 0 ? (
+          {staff.length === 0 && !isLoading ? (
             <div className="flex items-center justify-center py-12">
               <p className="text-slate-600 dark:text-navy-300">
                 No staff members found.
@@ -317,7 +308,20 @@ export default function StaffManagementPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {paginatedData.map((member, index) => (
+                    {isLoading
+                      ? Array.from({ length: 6 }).map((_, i) => (
+                          <tr key={i} className="border-y border-transparent border-b-slate-200 dark:border-b-navy-500 animate-pulse">
+                            <td className="px-4 py-3 sm:px-5"><div className="h-4 w-5 rounded bg-slate-200 dark:bg-navy-500" /></td>
+                            <td className="px-4 py-3 sm:px-5"><div className="size-9 rounded-full bg-slate-200 dark:bg-navy-500" /></td>
+                            <td className="px-4 py-3 sm:px-5"><div className="h-4 w-32 rounded bg-slate-200 dark:bg-navy-500" /></td>
+                            <td className="px-4 py-3 sm:px-5"><div className="h-4 w-40 rounded bg-slate-200 dark:bg-navy-500" /></td>
+                            <td className="px-4 py-3 sm:px-5"><div className="h-4 w-28 rounded bg-slate-200 dark:bg-navy-500" /></td>
+                            <td className="px-4 py-3 sm:px-5"><div className="h-5 w-16 rounded-full bg-slate-200 dark:bg-navy-500" /></td>
+                            <td className="px-4 py-3 sm:px-5"><div className="h-5 w-14 rounded-full bg-slate-200 dark:bg-navy-500" /></td>
+                            <td className="px-4 py-3 sm:px-5"><div className="h-8 w-8 rounded-full bg-slate-200 dark:bg-navy-500" /></td>
+                          </tr>
+                        ))
+                      : paginatedData.map((member, index) => (
                       <tr
                         key={member.id}
                         className={`border-y border-transparent ${

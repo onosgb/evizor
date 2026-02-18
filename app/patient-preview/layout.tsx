@@ -90,6 +90,7 @@ export default function PatientPreviewLayout({
             }
             location={selectedPatient?.address ?? undefined}
             avatarSrc={selectedPatient?.profilePictureUrl ?? undefined}
+            theme={theme}
           />
         </div>
 

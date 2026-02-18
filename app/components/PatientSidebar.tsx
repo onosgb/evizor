@@ -3,20 +3,29 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
+import { useAuthStore } from "../stores/authStore";
+import { useAppointmentStore } from "../stores/appointmentStore";
+import { getTheme } from "../lib/roles";
 
 interface PatientSidebarProps {
   patientName?: string;
   location?: string;
   avatarSrc?: string;
+  theme?: "admin" | "doctor";
 }
 
 export default function PatientSidebar({
   patientName = "Travis Fuller",
   location = "Otario, Canada",
   avatarSrc = "/images/200x200.png",
+  theme,
 }: PatientSidebarProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const user = useAuthStore((state) => state.user);
+  const isLoading = useAppointmentStore((state) => state.isLoading);
+
+  const currentTheme = theme ?? getTheme(user);
 
   const appointmentId = searchParams.get("appointmentId") ?? "";
   const patientId = searchParams.get("patientId") ?? "";
@@ -27,6 +36,15 @@ export default function PatientSidebar({
     if (patientId) params.set("patientId", patientId);
     const qs = params.toString();
     return qs ? `${base}?${qs}` : base;
+  };
+
+  const getActiveClasses = (isActive: boolean) => {
+    if (isActive) {
+      return currentTheme === "admin"
+        ? "bg-green-600 text-white dark:bg-green-500"
+        : "bg-primary text-white dark:bg-accent";
+    }
+    return "hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100";
   };
 
   const menuItems = [
@@ -108,6 +126,28 @@ export default function PatientSidebar({
     },
   ];
 
+  if (isLoading) {
+    return (
+      <div className="card p-4 sm:p-5 animate-pulse">
+        <div className="flex items-center space-x-4">
+          <div className="size-14 rounded-full bg-slate-200 dark:bg-navy-500" />
+          <div className="flex-1 space-y-2">
+            <div className="h-4 w-32 rounded bg-slate-200 dark:bg-navy-500" />
+            <div className="h-3 w-24 rounded bg-slate-200 dark:bg-navy-500" />
+          </div>
+        </div>
+        <ul className="mt-6 space-y-1.5">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <li key={i} className="flex items-center space-x-3 rounded-lg px-4 py-2.5">
+              <div className="size-5 rounded bg-slate-200 dark:bg-navy-500" />
+              <div className="h-4 w-28 rounded bg-slate-200 dark:bg-navy-500" />
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  }
+
   return (
     <div className="card p-4 sm:p-5">
       <div className="flex items-center space-x-4">
@@ -135,11 +175,7 @@ export default function PatientSidebar({
             <li key={item.href}>
               <Link
                 href={buildHref(item.href)}
-                className={`group flex space-x-2 rounded-lg px-4 py-2.5 tracking-wide outline-hidden transition-all ${
-                  isActive
-                    ? "bg-primary text-white dark:bg-accent"
-                    : "hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
-                }`}
+                className={`group flex space-x-2 rounded-lg px-4 py-2.5 tracking-wide outline-hidden transition-all ${getActiveClasses(isActive)}`}
               >
                 {item.icon}
                 <span>{item.label}</span>

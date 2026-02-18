@@ -42,23 +42,39 @@ export default function LiveQueuePage() {
         </div>
       </div>
 
-      {loading && (
-        <div className="flex justify-center p-10">
-          <div className="spinner is-elastic h-7 w-7 animate-spin rounded-full border-[3px] border-primary/30 border-r-primary dark:border-accent/30 dark:border-r-accent"></div>
-        </div>
-      )}
-
       {error && (
         <div className="alert flex rounded-lg bg-error/10 py-4 px-4 text-error dark:bg-error/15 sm:px-5">
-            {error}
+          {error}
         </div>
       )}
 
-      {!loading && !error && (
+      {loading ? (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 lg:gap-6 xl:grid-cols-4">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="card animate-pulse p-4">
+              <div className="flex items-center space-x-3">
+                <div className="size-12 rounded-full bg-slate-200 dark:bg-navy-500 shrink-0" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 w-32 rounded bg-slate-200 dark:bg-navy-500" />
+                  <div className="h-3 w-24 rounded bg-slate-200 dark:bg-navy-500" />
+                </div>
+              </div>
+              <div className="mt-4 space-y-2">
+                <div className="h-3 w-40 rounded bg-slate-200 dark:bg-navy-500" />
+                <div className="h-3 w-28 rounded bg-slate-200 dark:bg-navy-500" />
+              </div>
+              <div className="mt-4 flex space-x-2">
+                <div className="h-8 w-20 rounded-full bg-slate-200 dark:bg-navy-500" />
+                <div className="h-8 w-24 rounded-full bg-slate-200 dark:bg-navy-500" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : !error && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 lg:gap-6 xl:grid-cols-4">
           {appointments.map((appointment) => (
-            <PatientCard 
-              key={appointment.id} 
+            <PatientCard
+              key={appointment.id}
               id={appointment.id}
               patientId={appointment.patientId}
               name={appointment.patientName}

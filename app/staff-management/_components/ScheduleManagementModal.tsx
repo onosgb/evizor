@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
@@ -18,6 +18,7 @@ interface ScheduleManagementModalProps {
   onClose: () => void;
   userId: string;
   userName: string;
+  theme?: "admin" | "doctor";
 }
 
 export default function ScheduleManagementModal({

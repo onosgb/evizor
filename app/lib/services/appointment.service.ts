@@ -1,5 +1,5 @@
 import apiClient from "../api-client";
-import { ApiResponse, LiveQueueResponse, Appointment } from "../../models";
+import { ApiResponse, Appointment } from "../../models";
 
 /**
  * Appointment service

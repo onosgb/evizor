@@ -45,8 +45,19 @@ export default function PatientHistoryPage() {
       </div>
       <div className="p-4 sm:p-5">
         {isLoading ? (
-          <div className="flex items-center justify-center py-10">
-            <div className="h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-primary dark:border-navy-500 dark:border-t-accent"></div>
+          <div className="animate-pulse space-y-3">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div
+                key={i}
+                className="flex items-center justify-between rounded-lg border border-slate-200 p-4 dark:border-navy-500"
+              >
+                <div className="space-y-2">
+                  <div className="h-4 w-40 rounded bg-slate-200 dark:bg-navy-500" />
+                  <div className="h-3 w-24 rounded bg-slate-200 dark:bg-navy-500" />
+                </div>
+                <div className="size-5 rounded bg-slate-200 dark:bg-navy-500" />
+              </div>
+            ))}
           </div>
         ) : (
           <HistoryAccordion items={historyItems} />

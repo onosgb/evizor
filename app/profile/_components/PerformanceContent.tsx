@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import { useAuthStore } from "@/app/stores/authStore";
@@ -19,6 +19,7 @@ export default function PerformanceContent() {
   const searchParams = useSearchParams();
   const userId = searchParams.get("userId");
 
+  const [isLoadingPerformance, setIsLoadingPerformance] = useState(!!(userId));
   const [performanceData, setPerformanceData] = useState<PerformanceData[]>([
     {
       date: "Mon, 12 May",
@@ -64,10 +65,10 @@ export default function PerformanceContent() {
     },
   ]);
 
-  // Fetch performance data if userId is present
   useEffect(() => {
     if (userId) {
       const fetchPerformance = async () => {
+        setIsLoadingPerformance(true);
         try {
           const response = await adminService.getUserPerformance(userId);
           if (response.status && response.data) {
@@ -75,6 +76,8 @@ export default function PerformanceContent() {
           }
         } catch (error) {
           console.error("Failed to fetch performance data:", error);
+        } finally {
+          setIsLoadingPerformance(false);
         }
       };
       fetchPerformance();
@@ -123,7 +126,17 @@ export default function PerformanceContent() {
                     </tr>
                   </thead>
                   <tbody>
-                    {performanceData.map((data, index) => (
+                    {isLoadingPerformance
+                      ? Array.from({ length: 6 }).map((_, i) => (
+                          <tr key={i} className="border-y border-transparent border-b-slate-200 dark:border-b-navy-500 animate-pulse">
+                            <td className="px-4 py-3 sm:px-5"><div className="h-4 w-24 rounded bg-slate-200 dark:bg-navy-500" /></td>
+                            <td className="px-4 py-3 sm:px-5"><div className="h-4 w-8 rounded bg-slate-200 dark:bg-navy-500" /></td>
+                            <td className="px-4 py-3 sm:px-5"><div className="h-4 w-16 rounded bg-slate-200 dark:bg-navy-500" /></td>
+                            <td className="px-4 py-3 sm:px-5"><div className="h-4 w-28 rounded bg-slate-200 dark:bg-navy-500" /></td>
+                            <td className="px-4 py-3 sm:px-5"><div className="h-4 w-10 rounded bg-slate-200 dark:bg-navy-500" /></td>
+                          </tr>
+                        ))
+                      : performanceData.map((data, index) => (
                       <tr
                         key={index}
                         className="border-y border-transparent border-b-slate-200 dark:border-b-navy-500"

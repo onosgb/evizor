@@ -1,8 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useAuthStore } from "../stores/authStore";
+import { getTheme } from "../lib/roles";
 
 export default function ActionButtons() {
+  const user = useAuthStore((state) => state.user);
+  const theme = getTheme(user);
   const [acceptModalOpen, setAcceptModalOpen] = useState(false);
   const [reassignModalOpen, setReassignModalOpen] = useState(false);
   const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
@@ -127,7 +131,7 @@ export default function ActionButtons() {
               setScheduleModalOpen(false);
               setClinicalAlertModalOpen(false);
             }}
-            className="btn min-w-28 rounded-full bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
+            className={applyBtnClass}
           >
             Apply
           </button>
@@ -136,13 +140,23 @@ export default function ActionButtons() {
     </>
   );
 
+  const btnClass =
+    theme === "admin"
+      ? "btn size-9 border border-green-600 p-0 font-medium text-green-600 hover:bg-green-600 hover:text-white focus:bg-green-600 focus:text-white active:bg-green-600/90 dark:border-green-500 dark:text-green-400 dark:hover:bg-green-500 dark:hover:text-white dark:focus:bg-green-500 dark:focus:text-white dark:active:bg-green-500/90"
+      : "btn size-9 border border-primary p-0 font-medium text-primary hover:bg-primary hover:text-white focus:bg-primary focus:text-white active:bg-primary/90 dark:border-accent dark:text-accent-light dark:hover:bg-accent dark:hover:text-white dark:focus:bg-accent dark:focus:text-white dark:active:bg-accent/90";
+
+  const applyBtnClass =
+    theme === "admin"
+      ? "btn min-w-28 rounded-full bg-green-600 font-medium text-white hover:bg-green-700 focus:bg-green-700 active:bg-green-700/90 dark:bg-green-500 dark:hover:bg-green-600 dark:focus:bg-green-600 dark:active:bg-green-500/90"
+      : "btn min-w-28 rounded-full bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90";
+
   return (
     <>
       <div className="flex justify-center space-x-2">
         {/* Accept Button */}
         <button
           onClick={() => setAcceptModalOpen(true)}
-          className="btn size-9 border border-primary p-0 font-medium text-primary hover:bg-primary hover:text-white focus:bg-primary focus:text-white active:bg-primary/90 dark:border-accent dark:text-accent-light dark:hover:bg-accent dark:hover:text-white dark:focus:bg-accent dark:focus:text-white dark:active:bg-accent/90"
+          className={btnClass}
           title="Accept"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
@@ -156,7 +170,7 @@ export default function ActionButtons() {
         {/* Reassign Button */}
         <button
           onClick={() => setReassignModalOpen(true)}
-          className="btn size-9 border border-primary p-0 font-medium text-primary hover:bg-primary hover:text-white focus:bg-primary focus:text-white active:bg-primary/90 dark:border-accent dark:text-accent-light dark:hover:bg-accent dark:hover:text-white dark:focus:bg-accent dark:focus:text-white dark:active:bg-accent/90"
+          className={btnClass}
           title="Reassign"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 16 16">
@@ -174,7 +188,7 @@ export default function ActionButtons() {
         {/* Schedule Button */}
         <button
           onClick={() => setScheduleModalOpen(true)}
-          className="btn size-9 border border-primary p-0 font-medium text-primary hover:bg-primary hover:text-white focus:bg-primary focus:text-white active:bg-primary/90 dark:border-accent dark:text-accent-light dark:hover:bg-accent dark:hover:text-white dark:focus:bg-accent dark:focus:text-white dark:active:bg-accent/90"
+          className={btnClass}
           title="Schedule"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
@@ -188,7 +202,7 @@ export default function ActionButtons() {
         {/* Clinical Alert Button */}
         <button
           onClick={() => setClinicalAlertModalOpen(true)}
-          className="btn size-9 border border-primary p-0 font-medium text-primary hover:bg-primary hover:text-white focus:bg-primary focus:text-white active:bg-primary/90 dark:border-accent dark:text-accent-light dark:hover:bg-accent dark:hover:text-white dark:focus:bg-accent dark:focus:text-white dark:active:bg-accent/90"
+          className={btnClass}
           title="Clinical Alert"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 1024 1024">
@@ -267,7 +281,7 @@ export default function ActionButtons() {
               </button>
               <button
                 onClick={() => setScheduleModalOpen(false)}
-                className="btn min-w-28 rounded-full bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
+                className={applyBtnClass}
               >
                 Apply
               </button>
@@ -326,7 +340,7 @@ export default function ActionButtons() {
               </button>
               <button
                 onClick={() => setClinicalAlertModalOpen(false)}
-                className="btn min-w-28 rounded-full bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
+                className={applyBtnClass}
               >
                 Apply
               </button>

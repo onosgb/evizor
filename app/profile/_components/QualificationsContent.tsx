@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import { useAuthStore } from "@/app/stores/authStore";
@@ -167,8 +167,19 @@ export default function QualificationsContent() {
             </div>
             <div className="p-4 sm:p-5">
               {isLoading ? (
-                <div className="flex items-center justify-center py-10">
-                  <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent"></div>
+                <div className="animate-pulse space-y-3">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <div key={i} className="flex items-center justify-between rounded-lg border border-slate-200 p-4 dark:border-navy-500">
+                      <div className="flex items-center space-x-3">
+                        <div className="size-10 rounded-lg bg-slate-200 dark:bg-navy-500" />
+                        <div className="space-y-2">
+                          <div className="h-4 w-40 rounded bg-slate-200 dark:bg-navy-500" />
+                          <div className="h-3 w-28 rounded bg-slate-200 dark:bg-navy-500" />
+                        </div>
+                      </div>
+                      <div className="h-8 w-20 rounded-full bg-slate-200 dark:bg-navy-500" />
+                    </div>
+                  ))}
                 </div>
               ) : qualifications.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-10 text-slate-400 dark:text-navy-300">

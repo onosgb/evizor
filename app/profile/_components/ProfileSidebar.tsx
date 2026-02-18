@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
@@ -20,11 +20,15 @@ export default function ProfileSidebar({ theme }: ProfileSidebarProps) {
   const user = useAuthStore((state) => state.user);
   
   const [displayUser, setDisplayUser] = useState<User | null>(user);
+  const [isSidebarLoading, setIsSidebarLoading] = useState(
+    !!(userId && userId !== user?.id)
+  );
 
   // Effect to determine which user to display
   useEffect(() => {
     const fetchUser = async () => {
         if (userId && userId !== user?.id) {
+            setIsSidebarLoading(true);
             try {
                 const response = await adminService.getUserProfile(userId);
                 if (response.status && response.data) {
@@ -32,12 +36,13 @@ export default function ProfileSidebar({ theme }: ProfileSidebarProps) {
                 }
             } catch (error) {
                 console.error("Failed to fetch user profile for sidebar:", error);
-                // Fallback to current user or keep loading state if needed
                 setDisplayUser(user); 
+            } finally {
+                setIsSidebarLoading(false);
             }
         } else {
-            // Viewing own profile or no userId param
             setDisplayUser(user);
+            setIsSidebarLoading(false);
         }
     };
 
@@ -70,6 +75,30 @@ export default function ProfileSidebar({ theme }: ProfileSidebarProps) {
     }
     return "text-slate-400 group-hover:text-slate-500 group-focus:text-slate-500 dark:text-navy-300 dark:group-hover:text-navy-200 dark:group-focus:text-navy-200";
   };
+
+  if (isSidebarLoading) {
+    return (
+      <div className="col-span-12 lg:col-span-4">
+        <div className="card p-4 sm:p-5 animate-pulse">
+          <div className="flex items-center space-x-4">
+            <div className="size-14 rounded-full bg-slate-200 dark:bg-navy-500" />
+            <div className="flex-1 space-y-2">
+              <div className="h-4 w-32 rounded bg-slate-200 dark:bg-navy-500" />
+              <div className="h-3 w-24 rounded bg-slate-200 dark:bg-navy-500" />
+            </div>
+          </div>
+          <ul className="mt-6 space-y-1.5">
+            {Array.from({ length: 7 }).map((_, i) => (
+              <li key={i} className="flex items-center space-x-3 rounded-lg px-4 py-2.5">
+                <div className="size-5 rounded bg-slate-200 dark:bg-navy-500" />
+                <div className={`h-4 rounded bg-slate-200 dark:bg-navy-500 ${i % 2 === 0 ? "w-36" : "w-28"}`} />
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="col-span-12 lg:col-span-4">

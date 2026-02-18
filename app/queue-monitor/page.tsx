@@ -192,11 +192,16 @@ export default function QueueMonitorPage() {
               </thead>
               <tbody>
                 {isLoading ? (
-                    <tr>
-                        <td colSpan={5} className="px-4 py-8 text-center text-slate-500">
-                            Loading appointments...
-                        </td>
-                    </tr>
+                    Array.from({ length: 6 }).map((_, i) => (
+                      <tr key={i} className="border-y border-transparent border-b-slate-200 dark:border-b-navy-500 animate-pulse">
+                        <td className="px-4 py-3 sm:px-5"><div className="h-4 w-28 rounded bg-slate-200 dark:bg-navy-500" /></td>
+                        <td className="px-4 py-3 sm:px-5"><div className="h-4 w-24 rounded bg-slate-200 dark:bg-navy-500" /></td>
+                        <td className="px-4 py-3 sm:px-5"><div className="h-4 w-10 rounded bg-slate-200 dark:bg-navy-500" /></td>
+                        <td className="px-4 py-3 sm:px-5"><div className="h-4 w-32 rounded bg-slate-200 dark:bg-navy-500" /></td>
+                        <td className="px-4 py-3 sm:px-5"><div className="h-5 w-16 rounded-full bg-slate-200 dark:bg-navy-500" /></td>
+                        <td className="px-4 py-3 sm:px-5"><div className="h-8 w-8 rounded-full bg-slate-200 dark:bg-navy-500" /></td>
+                      </tr>
+                    ))
                 ) : filteredData.length === 0 ? (
                     <tr>
                         <td colSpan={5} className="px-4 py-8 text-center text-slate-500">
