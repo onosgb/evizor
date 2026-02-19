@@ -4,7 +4,7 @@ import WaitingPatientCard from "@/app/components/WaitingPatientCard";
 import ClinicalAlertCard from "./ClinicalAlertCard";
 import Image from "next/image";
 import Link from "next/link";
-import { useState, useRef, useEffect } from "react";
+import { useEffect } from "react";
 import { User } from "@/app/models";
 import { useAppointmentStore } from "@/app/stores/appointmentStore";
 
@@ -16,29 +16,19 @@ const getGreeting = () => {
 };
 
 export default function DoctorDashboard({ user }: { user: User | null }) {
-  const [isSearchActive, setIsSearchActive] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const searchInputRef = useRef<HTMLInputElement>(null);
-
-  const { liveQueue, isLoading: queueLoading, fetchLiveQueue } = useAppointmentStore();
+  const { liveQueue, assignedCases, isLoading: queueLoading, fetchLiveQueue, fetchAssignedCases } = useAppointmentStore();
 
   useEffect(() => {
     fetchLiveQueue();
+    fetchAssignedCases({ page: 1, limit: 5 });
   }, []);
 
   const waitingPatients = liveQueue.slice(0, 6);
 
-  const filteredCases = liveQueue.filter(
-    (item) =>
-      item.patientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.scheduledAt.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  useEffect(() => {
-    if (isSearchActive && searchInputRef.current) {
-      searchInputRef.current.focus();
-    }
-  }, [isSearchActive]);
+  const recentCompletedCases = assignedCases
+    .filter((item) => item.status === "completed")
+    .sort((a, b) => new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime())
+    .slice(0, 5);
 
 
   return (
@@ -126,48 +116,18 @@ export default function DoctorDashboard({ user }: { user: User | null }) {
           </div>
         </div>
 
-        {/* Today's Cases */}
+        {/* Recent Completed Cases */}
         <div className="mt-4 sm:mt-5 lg:mt-6">
-          <div className="flex items-center justify-between">
+          <div className="flex h-8 items-center justify-between">
             <h2 className="text-base font-medium tracking-wide text-slate-700 line-clamp-1 dark:text-navy-100">
-              Today's Cases
+              Recent Completed Cases
             </h2>
-            <div className="flex">
-              <div className="flex items-center">
-                <label className="block">
-                  <input
-                    ref={searchInputRef}
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className={`form-input bg-transparent px-1 text-right transition-all duration-100 placeholder:text-slate-500 dark:placeholder:text-navy-200 ${
-                      isSearchActive ? "w-32 lg:w-48" : "w-0"
-                    }`}
-                    placeholder="Search here..."
-                    type="text"
-                  />
-                </label>
-                <button
-                  onClick={() => setIsSearchActive(!isSearchActive)}
-                  className="btn size-8 rounded-full p-0 hover:bg-slate-300/20 focus:bg-slate-300/20 active:bg-slate-300/25 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25"
-                  aria-label="Toggle search"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="size-4.5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="1.5"
-                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                    />
-                  </svg>
-                </button>
-              </div>
-            </div>
+            <Link
+              href="/assigned-cases"
+              className="border-b border-dotted border-current pb-0.5 text-xs-plus font-medium text-primary outline-hidden transition-colors duration-300 hover:text-primary/70 focus:text-primary/70 dark:text-accent-light dark:hover:text-accent-light/70 dark:focus:text-accent-light/70"
+            >
+              View All
+            </Link>
           </div>
           <div className="card mt-3">
             <div className="is-scrollbar-hidden min-w-full overflow-x-auto">
@@ -178,13 +138,10 @@ export default function DoctorDashboard({ user }: { user: User | null }) {
                       NAME
                     </th>
                     <th className="whitespace-nowrap bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">
-                      LOCATION
+                      DESCRIPTION
                     </th>
                     <th className="whitespace-nowrap bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">
                       DATETIME
-                    </th>
-                    <th className="whitespace-nowrap bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">
-                      STATUS
                     </th>
                     <th className="whitespace-nowrap rounded-tr-lg bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5"></th>
                   </tr>
@@ -199,29 +156,28 @@ export default function DoctorDashboard({ user }: { user: User | null }) {
                             <div className="h-4 w-28 rounded bg-slate-200 dark:bg-navy-500" />
                           </div>
                         </td>
-                        <td className="px-4 py-3 sm:px-5"><div className="h-4 w-32 rounded bg-slate-200 dark:bg-navy-500" /></td>
-                        <td className="px-4 py-3 sm:px-5"><div className="h-4 w-20 rounded bg-slate-200 dark:bg-navy-500" /></td>
-                        <td className="px-4 py-3 sm:px-5"><div className="h-4 w-16 rounded bg-slate-200 dark:bg-navy-500" /></td>
+                        <td className="px-4 py-3 sm:px-5"><div className="h-4 w-40 rounded bg-slate-200 dark:bg-navy-500" /></td>
+                        <td className="px-4 py-3 sm:px-5"><div className="h-4 w-28 rounded bg-slate-200 dark:bg-navy-500" /></td>
                         <td className="px-4 py-3 sm:px-5"><div className="h-8 w-8 rounded-full bg-slate-200 dark:bg-navy-500" /></td>
                       </tr>
                     ))
-                  ) : filteredCases.length === 0 ? (
+                  ) : recentCompletedCases.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="px-4 py-8 text-center text-slate-500 dark:text-navy-300">
-                        {searchQuery ? `No cases found matching "${searchQuery}"` : "No cases in the queue."}
+                      <td colSpan={4} className="px-4 py-8 text-center text-slate-500 dark:text-navy-300">
+                        No completed cases yet.
                       </td>
                     </tr>
                   ) : (
-                    filteredCases.map((caseItem, index) => (
+                    recentCompletedCases.map((caseItem, index) => (
                       <tr
                         key={caseItem.id}
                         className={`border-y border-transparent ${
-                          index === filteredCases.length - 1
+                          index === recentCompletedCases.length - 1
                             ? ""
                             : "border-b-slate-200 dark:border-b-navy-500"
                         }`}
                       >
-                        <td className={`whitespace-nowrap px-4 py-3 sm:px-5 ${index === filteredCases.length - 1 ? "rounded-bl-lg" : ""}`}>
+                        <td className={`whitespace-nowrap px-4 py-3 sm:px-5 ${index === recentCompletedCases.length - 1 ? "rounded-bl-lg" : ""}`}>
                           <div className="flex items-center space-x-4">
                             <div className="avatar size-9">
                               <Image className="rounded-full" src="/images/200x200.png" alt={caseItem.patientName} width={36} height={36} />
@@ -235,18 +191,9 @@ export default function DoctorDashboard({ user }: { user: User | null }) {
                           {caseItem.description || "—"}
                         </td>
                         <td className="whitespace-nowrap px-4 py-3 font-medium text-slate-600 dark:text-navy-100 sm:px-5">
-                          {caseItem.scheduledAt}
+                          {new Date(caseItem.scheduledAt).toLocaleString()}
                         </td>
-                        <td className="whitespace-nowrap px-4 py-3 sm:px-5">
-                          <div className={`flex items-center space-x-2 ${
-                            caseItem.status === "cancelled" ? "text-error" :
-                            caseItem.status === "completed" ? "text-success" : "text-warning"
-                          }`}>
-                            <div className="size-2 rounded-full bg-current" />
-                            <span className="capitalize">{caseItem.status}</span>
-                          </div>
-                        </td>
-                        <td className={`whitespace-nowrap px-4 py-3 sm:px-5 ${index === filteredCases.length - 1 ? "rounded-br-lg" : ""}`}>
+                        <td className={`whitespace-nowrap px-4 py-3 sm:px-5 ${index === recentCompletedCases.length - 1 ? "rounded-br-lg" : ""}`}>
                           <div className="flex justify-end">
                             <Link
                               href={`/patient-preview?appointmentId=${caseItem.id}&patientId=${caseItem.patientId}`}

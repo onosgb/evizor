@@ -1,5 +1,5 @@
 import apiClient from "../api-client";
-import { ApiResponse, Appointment, DoctorAvailability } from "../../models";
+import { ApiResponse, Appointment, AllAppointmentsResponse, DoctorAvailability } from "../../models";
 import type { ProposeAvailabilityRequest } from "../../models/DoctorAvailability";
 
 /**
@@ -49,6 +49,23 @@ class AppointmentService {
     const response = await apiClient.patch<ApiResponse<DoctorAvailability>>(
       `/doctor-availability/${id}/propose`,
       data,
+    );
+    return response.data;
+  }
+
+  /**
+   * Get all appointments assigned to the authenticated doctor.
+   * Supports server-side pagination and date range filtering.
+   */
+  async getAssignedCases(params?: {
+    page?: number;
+    limit?: number;
+    from?: string;
+    to?: string;
+  }): Promise<AllAppointmentsResponse> {
+    const response = await apiClient.get<AllAppointmentsResponse>(
+      "/appointments",
+      { params },
     );
     return response.data;
   }

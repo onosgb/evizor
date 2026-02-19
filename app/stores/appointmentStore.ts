@@ -4,6 +4,8 @@ import { appointmentService, adminService } from "../lib/services";
 
 interface AppointmentState {
   liveQueue: Appointment[];
+  assignedCases: Appointment[];
+  assignedTotal: number;
   history: Appointment[];
   selectedPatient: User | null;
   selectedAppointment: Appointment | null;
@@ -11,6 +13,12 @@ interface AppointmentState {
   error: string | null;
 
   fetchLiveQueue: () => Promise<void>;
+  fetchAssignedCases: (params?: {
+    page?: number;
+    limit?: number;
+    from?: string;
+    to?: string;
+  }) => Promise<void>;
   fetchHistory: (patientId: string) => Promise<void>;
   fetchPatientDetails: (patientId: string) => Promise<void>;
   selectAppointment: (appointmentId: string | null) => void;
@@ -18,6 +26,8 @@ interface AppointmentState {
 
 export const useAppointmentStore = create<AppointmentState>((set, get) => ({
   liveQueue: [],
+  assignedCases: [],
+  assignedTotal: 0,
   history: [],
   selectedPatient: null,
   selectedAppointment: null,
@@ -36,6 +46,18 @@ export const useAppointmentStore = create<AppointmentState>((set, get) => ({
       }
     } catch (error: any) {
       set({ error: error.message || "Failed to fetch live queue" });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  fetchAssignedCases: async (params) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await appointmentService.getAssignedCases(params);
+      set({ assignedCases: response.data || [], assignedTotal: response.total ?? 0 });
+    } catch (error: any) {
+      set({ error: error.message || "Failed to fetch assigned cases" });
     } finally {
       set({ isLoading: false });
     }
