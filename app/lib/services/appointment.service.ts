@@ -1,5 +1,6 @@
 import apiClient from "../api-client";
 import { ApiResponse, Appointment, DoctorAvailability } from "../../models";
+import type { ProposeAvailabilityRequest } from "../../models/DoctorAvailability";
 
 /**
  * Appointment service
@@ -33,6 +34,21 @@ class AppointmentService {
   async getMyAvailabilities(): Promise<ApiResponse<DoctorAvailability[]>> {
     const response = await apiClient.get<ApiResponse<DoctorAvailability[]>>(
       "/doctor-availability/my-availabilities",
+    );
+    return response.data;
+  }
+
+  /**
+   * Doctor accepts or rejects an assigned availability slot
+   * Endpoint: PATCH /doctor-availability/{id}/propose
+   */
+  async proposeAvailability(
+    id: string,
+    data: ProposeAvailabilityRequest,
+  ): Promise<ApiResponse<DoctorAvailability>> {
+    const response = await apiClient.patch<ApiResponse<DoctorAvailability>>(
+      `/doctor-availability/${id}/propose`,
+      data,
     );
     return response.data;
   }

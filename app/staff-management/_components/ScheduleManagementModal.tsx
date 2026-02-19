@@ -4,13 +4,14 @@ import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { adminService } from "@/app/lib/services";
 import { CreateScheduleRequest } from "@/app/models";
+import { AvailabilityStatus } from "@/app/models/DoctorAvailability";
 
 interface Schedule {
   id: string;
   dateScheduled: string;
   timeSlot: string;
   consultations: number;
-  status: "available" | "offline";
+  status: AvailabilityStatus;
 }
 
 interface ScheduleManagementModalProps {
@@ -51,10 +52,14 @@ export default function ScheduleManagementModal({
     try {
       const response = await adminService.getUserAvailability(userId);
       if (response.status && response.data) {
-        // Map response to Schedule interface if necessary, or use as is if it matches
-        // For now assuming the API returns data in a compatible format or we mock it if empty
-        // In a real scenario, we might need a mapper function
-        setSchedules(response.data.length > 0 ? response.data : []); 
+        const mapped: Schedule[] = response.data.map((item: any) => ({
+          id: item.id,
+          dateScheduled: item.date,
+          timeSlot: `${item.startTime} – ${item.endTime}`,
+          consultations: 0,
+          status: (item.status ?? "Pending") as AvailabilityStatus,
+        }));
+        setSchedules(mapped);
       } else {
         // Fallback or empty state
         setSchedules([]);
@@ -250,7 +255,13 @@ export default function ScheduleManagementModal({
                                         <td className="px-4 py-3 text-slate-700 dark:text-navy-100">{schedule.dateScheduled}</td>
                                         <td className="px-4 py-3 text-slate-700 dark:text-navy-100">{schedule.timeSlot}</td>
                                         <td className="px-4 py-3">
-                                            <span className={`badge rounded-full px-2 py-0.5 text-xs ${schedule.status === 'available' ? 'bg-success/10 text-success' : 'bg-error/10 text-error'}`}>
+                                            <span className={`badge rounded-full px-2 py-0.5 text-xs ${
+                                              schedule.status === "Online"
+                                                ? "bg-success/10 text-success"
+                                                : schedule.status === "Pending"
+                                                ? "bg-warning/10 text-warning"
+                                                : "bg-error/10 text-error"
+                                            }`}>
                                                 {schedule.status}
                                             </span>
                                         </td>
