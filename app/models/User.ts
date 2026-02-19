@@ -4,7 +4,7 @@ export interface User {
   lastName: string;
   fullName: string;
   email: string;
-  role: "DOCTOR" | "ADMIN" | "SUPERADMIN";
+  role: "DOCTOR" | "ADMIN" | "SUPERADMIN" | "PATIENT";
   isActive: boolean;
   isTwoFAEnabled: boolean;
   phoneNumber: string;
@@ -17,6 +17,7 @@ export interface User {
   gender?: string;
   profilePictureUrl?: string;
   address?: string;
+  healthCardNo?: string;
 }
 
 export interface ProfessionalProfile {
