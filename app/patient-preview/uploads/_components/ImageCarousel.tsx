@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface AttachmentsViewerProps {
   attachments: string[];
@@ -9,6 +9,11 @@ interface AttachmentsViewerProps {
 export default function AttachmentsViewer({ attachments }: AttachmentsViewerProps) {
   const [current, setCurrent] = useState(0);
   const [lightbox, setLightbox] = useState(false);
+
+  useEffect(() => {
+    document.body.style.overflow = lightbox ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [lightbox]);
 
   const prev = () => setCurrent((i) => (i - 1 + attachments.length) % attachments.length);
   const next = () => setCurrent((i) => (i + 1) % attachments.length);
@@ -24,7 +29,7 @@ export default function AttachmentsViewer({ attachments }: AttachmentsViewerProp
               key={i}
               src={url}
               alt={`Attachment ${i + 1}`}
-              className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-300 ${
+              className={`absolute inset-0 h-full w-full object-contain transition-opacity duration-300 ${
                 i === current ? "opacity-100" : "opacity-0"
               }`}
             />

@@ -6,7 +6,7 @@ export interface User {
   email: string;
   role: "DOCTOR" | "ADMIN" | "SUPERADMIN";
   isActive: boolean;
-  isTwoFAEnabled:boolean;
+  isTwoFAEnabled: boolean;
   phoneNumber: string;
   socialId: string;
   licenseNo: string;

@@ -35,7 +35,6 @@ export default function LoginPage() {
 
       if (response.status && response.data) {
         const { user, accessToken, refreshToken } = response.data;
-        console.log(user);
 
         // Check for 2FA
         if (user.isTwoFAEnabled && !accessToken) {
