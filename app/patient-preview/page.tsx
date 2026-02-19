@@ -56,7 +56,7 @@ export default function PatientPreviewPage() {
               <span>Patient ID</span>
               <span className="relative mt-1.5 flex">
                 <span className="text-base font-medium text-slate-600 dark:text-navy-100">
-                  {selectedPatient?.id ?? "—"}
+                  {selectedPatient?.healthCardNo ?? "—"}
                 </span>
               </span>
             </label>
