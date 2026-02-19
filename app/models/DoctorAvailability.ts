@@ -1,6 +1,14 @@
 export type AvailabilityStatus = "Pending" | "Accepted" | "Rejected";
+
+export interface CreateScheduleRequest {
+  date: string;
+  doctorId: string;
+  startTime: string;
+  endTime: string;
+}
 export interface DoctorAvailability {
   id: string;
+  doctorId: string;
   date: string;
   startTime: string;
   endTime: string;
@@ -13,5 +21,4 @@ export interface ProposeAvailabilityRequest {
   startTime: string;
   endTime: string;
   reason?: string;
-  status: "Accepted" | "Rejected";
 }

@@ -11,5 +11,4 @@ export type { Appointment, LiveQueueResponse, AllAppointmentsResponse } from "./
 export { AppointmentStatus } from "./Appointment";
 export type { Specialty } from "./Specialty";
 export type { Qualification } from "./Qualification";
-export type { CreateScheduleRequest } from "./CreateScheduleRequest";
-export type { DoctorAvailability } from "./DoctorAvailability";
+export type { DoctorAvailability, CreateScheduleRequest, ProposeAvailabilityRequest, AvailabilityStatus } from "./DoctorAvailability";

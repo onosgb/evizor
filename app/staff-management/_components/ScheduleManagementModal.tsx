@@ -256,7 +256,7 @@ export default function ScheduleManagementModal({
                                         <td className="px-4 py-3 text-slate-700 dark:text-navy-100">{schedule.timeSlot}</td>
                                         <td className="px-4 py-3">
                                             <span className={`badge rounded-full px-2 py-0.5 text-xs ${
-                                              schedule.status === "Online"
+                                              schedule.status === "Accepted"
                                                 ? "bg-success/10 text-success"
                                                 : schedule.status === "Pending"
                                                 ? "bg-warning/10 text-warning"

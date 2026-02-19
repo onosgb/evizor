@@ -99,7 +99,6 @@ export default function AvailabilityContent() {
         startTime: selectedSchedule.startTime,
         endTime: selectedSchedule.endTime,
         ...(modalAction === "Rejected" && { reason }),
-        status: modalAction,
       });
 
       setSchedules(
