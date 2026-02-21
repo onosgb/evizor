@@ -1,5 +1,10 @@
 import apiClient from "../api-client";
-import { ApiResponse, Appointment, AllAppointmentsResponse, DoctorAvailability } from "../../models";
+import {
+  ApiResponse,
+  Appointment,
+  AllAppointmentsResponse,
+  DoctorAvailability,
+} from "../../models";
 import type { ProposeAvailabilityRequest } from "../../models/DoctorAvailability";
 
 /**
@@ -46,7 +51,7 @@ class AppointmentService {
     id: string,
     data: ProposeAvailabilityRequest,
   ): Promise<ApiResponse<DoctorAvailability>> {
-    const response = await apiClient.patch<ApiResponse<DoctorAvailability>>(
+    const response = await apiClient.put<ApiResponse<DoctorAvailability>>(
       `/doctor-availability/${id}/propose`,
       data,
     );
