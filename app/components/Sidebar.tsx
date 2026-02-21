@@ -89,7 +89,7 @@ export default function Sidebar({
 
       const buttonRect = profileButtonRef.current.getBoundingClientRect();
       const popper = profilePopperRef.current;
-      const verticalOffset = -5;
+      const verticalOffset = -80;
       const horizontalOffset = 255; // Increased even more to prevent clipping
 
       // Get popper height - ensure it's rendered first
@@ -499,7 +499,7 @@ export default function Sidebar({
               {/* Settings */}
               <TooltipWrapper text="Settings">
                 <Link
-                  href="/settings"
+                  href="/profile/security"
                   onClick={handleLinkClick}
                   className="flex size-11 items-center justify-center text-white rounded-lg outline-hidden transition-colors duration-200 hover:bg-white/20 focus:bg-white/20 active:bg-white/25 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25"
                 >
@@ -573,7 +573,13 @@ export default function Sidebar({
                               onClick={() => setProfilePopperOpen(false)}
                               className="text-base font-medium text-slate-700 hover:text-primary focus:text-primary dark:text-navy-100 dark:hover:text-accent-light dark:focus:text-accent-light"
                             >
-                              {user?.email?.split("@")[0] || "User"}
+                              <span className="line-clamp-1">
+                                {user?.firstName && user?.lastName
+                                  ? `${user.firstName} ${user.lastName}`
+                                  : user?.firstName ||
+                                    user?.email?.split("@")[0] ||
+                                    "User"}
+                              </span>
                             </Link>
                             <p className="text-xs text-slate-400 dark:text-navy-300">
                               {user?.role || "User"}
@@ -641,36 +647,7 @@ export default function Sidebar({
                             </div>
                           </Link>
                           <Link
-                            href="#"
-                            className="group flex items-center space-x-3 py-2 px-4 tracking-wide outline-hidden transition-all hover:bg-slate-100 focus:bg-slate-100 dark:hover:bg-navy-600 dark:focus:bg-navy-600"
-                          >
-                            <div className="flex size-8 items-center justify-center rounded-lg bg-secondary text-white">
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="size-4.5"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                                />
-                              </svg>
-                            </div>
-                            <div>
-                              <h2 className="font-medium text-slate-700 transition-colors group-hover:text-primary group-focus:text-primary dark:text-navy-100 dark:group-hover:text-accent-light dark:group-focus:text-accent-light">
-                                Team
-                              </h2>
-                              <div className="text-xs text-slate-400 line-clamp-1 dark:text-navy-300">
-                                Your team activity
-                              </div>
-                            </div>
-                          </Link>
-                          <Link
-                            href="#"
+                            href="/profile/activity"
                             className="group flex items-center space-x-3 py-2 px-4 tracking-wide outline-hidden transition-all hover:bg-slate-100 focus:bg-slate-100 dark:hover:bg-navy-600 dark:focus:bg-navy-600"
                           >
                             <div className="flex size-8 items-center justify-center rounded-lg bg-error text-white">
@@ -699,7 +676,7 @@ export default function Sidebar({
                             </div>
                           </Link>
                           <Link
-                            href="#"
+                            href="/profile/security"
                             className="group flex items-center space-x-3 py-2 px-4 tracking-wide outline-hidden transition-all hover:bg-slate-100 focus:bg-slate-100 dark:hover:bg-navy-600 dark:focus:bg-navy-600"
                           >
                             <div className="flex size-8 items-center justify-center rounded-lg bg-success text-white">
