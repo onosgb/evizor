@@ -84,37 +84,36 @@ export default function PharmaciesPage() {
 
   return (
     <DashboardLayout theme="admin">
-      {/* Sticky header */}
-      <div className="sticky top-0 z-10 bg-slate-50 dark:bg-navy-900 -mx-4 px-4 sm:-mx-5 sm:px-5 lg:-mx-10 lg:px-10 pb-3 pt-1 mb-3 border-b border-slate-200 dark:border-navy-600">
-        <div className="flex flex-col items-center justify-between space-y-4 py-4 sm:flex-row sm:space-y-0">
-          <h2 className="text-xl font-medium text-slate-700 dark:text-navy-50">Pharmacies</h2>
-          <div className="flex items-center gap-3 flex-wrap">
-            {userIsSuperAdmin && (
-              <select
-                value={selectedTenantId}
-                onChange={(e) => { setSelectedTenantId(e.target.value); setPage(1); }}
-                className="form-select h-9 rounded-lg border border-slate-300 bg-transparent px-3 py-1.5 text-sm dark:border-navy-450 dark:text-navy-100"
-              >
-                <option value="">All Provinces</option>
-                {tenants.map((t) => <option key={t.id} value={t.id}>{t.province}</option>)}
-              </select>
-            )}
+      <div className="flex flex-col items-center justify-between space-y-4 py-5 sm:flex-row sm:space-y-0 lg:py-6">
+        <div className="flex items-center space-x-1">
+          <h2 className="text-xl font-medium text-slate-700 line-clamp-1 dark:text-navy-50">Pharmacies</h2>
+        </div>
+        <div className="flex items-center gap-3 flex-wrap">
+          {userIsSuperAdmin && (
             <select
-              value={selectedStatus}
-              onChange={(e) => { setSelectedStatus(e.target.value); setPage(1); }}
+              value={selectedTenantId}
+              onChange={(e) => { setSelectedTenantId(e.target.value); setPage(1); }}
               className="form-select h-9 rounded-lg border border-slate-300 bg-transparent px-3 py-1.5 text-sm dark:border-navy-450 dark:text-navy-100"
             >
-              <option value="">All Status</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
+              <option value="">All Provinces</option>
+              {tenants.map((t) => <option key={t.id} value={t.id}>{t.province}</option>)}
             </select>
-            <button
-              onClick={() => { setFormError(null); setShowCreateModal(true); }}
-              className="btn min-w-28 bg-success font-medium text-white hover:bg-success-focus focus:bg-success-focus"
-            >
-              + Add Pharmacy
-            </button>
-          </div>
+          )}
+          <select
+            value={selectedStatus}
+            onChange={(e) => { setSelectedStatus(e.target.value); setPage(1); }}
+            className="form-select h-9 rounded-lg border border-slate-300 bg-transparent px-3 py-1.5 text-sm dark:border-navy-450 dark:text-navy-100"
+          >
+            <option value="">All Status</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+          <button
+            onClick={() => { setFormError(null); setShowCreateModal(true); }}
+            className="btn min-w-28 bg-success font-medium text-white hover:bg-success-focus focus:bg-success-focus"
+          >
+            + Add Pharmacy
+          </button>
         </div>
       </div>
 

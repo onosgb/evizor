@@ -7,15 +7,32 @@ import DashboardLayout from "../components/DashboardLayout";
 import { Pagination } from "../components/Pagination";
 import { useAppointmentStore } from "../stores/appointmentStore";
 import { AppointmentStatus } from "../models";
+import { useSearchContext } from "../contexts/SearchContext";
 
 export default function AssignedCasesPage() {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [entriesPerPage, setEntriesPerPage] = useState(10);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
 
   const { assignedCases, assignedTotal, isLoading, error, fetchAssignedCases } =
     useAppointmentStore();
+
+  const { query: contextQuery, registerPageSearch, unregisterPageSearch } = useSearchContext();
+
+  useEffect(() => {
+    registerPageSearch("Search cases...");
+    return () => unregisterPageSearch();
+  }, [registerPageSearch, unregisterPageSearch]);
+
+  useEffect(() => { setSearchQuery(contextQuery); }, [contextQuery]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => { setDebouncedSearch(searchQuery); setCurrentPage(1); }, 450);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   useEffect(() => {
     fetchAssignedCases({
@@ -23,8 +40,9 @@ export default function AssignedCasesPage() {
       limit: entriesPerPage,
       from: dateFrom || undefined,
       to: dateTo || undefined,
+      search: debouncedSearch || undefined,
     });
-  }, [currentPage, entriesPerPage, dateFrom, dateTo]);
+  }, [currentPage, entriesPerPage, dateFrom, dateTo, debouncedSearch]);
 
   const completedCases = assignedCases.filter(
     (item) => item.status === AppointmentStatus.COMPLETED,

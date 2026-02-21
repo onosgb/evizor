@@ -18,6 +18,7 @@ interface AppointmentState {
     limit?: number;
     from?: string;
     to?: string;
+    search?: string;
   }) => Promise<void>;
   fetchHistory: (patientId: string) => Promise<void>;
   fetchPatientDetails: (patientId: string) => Promise<void>;

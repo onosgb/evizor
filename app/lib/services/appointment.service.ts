@@ -67,6 +67,7 @@ class AppointmentService {
     limit?: number;
     from?: string;
     to?: string;
+    search?: string;
   }): Promise<AllAppointmentsResponse> {
     const response = await apiClient.get<AllAppointmentsResponse>(
       "/appointments",
