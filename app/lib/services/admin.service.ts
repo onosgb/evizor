@@ -143,6 +143,7 @@ class AdminService {
     page: number = 1,
     limit: number = 10,
     status: string = "",
+    tenantId: string = "",
   ): Promise<ApiResponse<Appointment[]>> {
     const response = await apiClient.get<ApiResponse<Appointment[]>>(
       "/appointments/all",
@@ -150,7 +151,8 @@ class AdminService {
         params: {
           page,
           limit,
-          status,
+          ...(status && { status }),
+          ...(tenantId && { tenantId }),
         },
       },
     );

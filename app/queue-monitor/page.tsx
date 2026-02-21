@@ -6,6 +6,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { AppointmentStatus } from "@/app/models";
 import { useQueueMonitorStore } from "@/app/stores/queueMonitorStore";
+import { useTenantStore } from "@/app/stores/tenantStore";
+import { useAuthStore } from "@/app/stores/authStore";
+import { isSuperAdmin } from "@/app/lib/roles";
 import { Pagination } from "../components/Pagination";
 import { useSearchContext } from "../contexts/SearchContext";
 
@@ -16,12 +19,18 @@ export default function QueueMonitorPage() {
     page,
     limit,
     status,
+    tenantId,
     isLoading,
     setPage,
     setLimit,
     setStatus,
+    setTenantId,
     fetchAppointments
   } = useQueueMonitorStore();
+
+  const currentUser = useAuthStore((state) => state.user);
+  const userIsSuperAdmin = isSuperAdmin(currentUser);
+  const { tenants, fetchTenants } = useTenantStore();
 
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -34,9 +43,11 @@ export default function QueueMonitorPage() {
 
   useEffect(() => { setSearchQuery(contextQuery); }, [contextQuery]);
 
+  useEffect(() => { if (userIsSuperAdmin) fetchTenants(); }, [userIsSuperAdmin]);
+
   useEffect(() => {
     fetchAppointments();
-  }, [page, limit, status]);
+  }, [page, limit, status, tenantId]);
 
   const filteredData = (appointments || []).filter(
     (item) =>
@@ -89,20 +100,30 @@ export default function QueueMonitorPage() {
             Live Queue Monitor
           </h2>
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          {userIsSuperAdmin && (
             <select
-                className="form-select rounded-full border border-slate-300 bg-white px-3 py-2 pr-9 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:bg-navy-700 dark:hover:border-navy-400 dark:focus:border-accent"
-                value={status}
-                onChange={(e) => {
-                    setStatus(e.target.value as AppointmentStatus | "");
-                }}
+              value={tenantId}
+              className="form-select h-9 rounded-lg border border-slate-300 bg-transparent px-3 py-1.5 text-sm dark:border-navy-450 dark:text-navy-100"
+              onChange={(e) => setTenantId(e.target.value)}
             >
-                <option value="">All Status</option>
-                <option value={AppointmentStatus.SCHEDULED}>Scheduled</option>
-                <option value={AppointmentStatus.PROGRESS}>In Progress</option>
-                <option value={AppointmentStatus.COMPLETED}>Completed</option>
-                <option value={AppointmentStatus.CANCELLED}>Cancelled</option>
+              <option value="">All Provinces</option>
+              {tenants.map((t) => (
+                <option key={t.id} value={t.id}>{t.province}</option>
+              ))}
             </select>
+          )}
+          <select
+            className="form-select h-9 rounded-lg border border-slate-300 bg-transparent px-3 py-1.5 text-sm dark:border-navy-450 dark:text-navy-100"
+            value={status}
+            onChange={(e) => setStatus(e.target.value as AppointmentStatus | "")}
+          >
+            <option value="">All Status</option>
+            <option value={AppointmentStatus.SCHEDULED}>Scheduled</option>
+            <option value={AppointmentStatus.PROGRESS}>In Progress</option>
+            <option value={AppointmentStatus.COMPLETED}>Completed</option>
+            <option value={AppointmentStatus.CANCELLED}>Cancelled</option>
+          </select>
         </div>
       </div>
 
