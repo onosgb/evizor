@@ -97,7 +97,7 @@ export default function DashboardLayout({
       )}
 
       {/* Main Content Area */}
-      <div className="flex flex-1 flex-col overflow-hidden">
+      <div className="flex flex-1 flex-col overflow-y-auto h-screen">
         <Header
           sidebarExpanded={sidebarExpanded}
           setSidebarExpanded={setSidebarExpanded}

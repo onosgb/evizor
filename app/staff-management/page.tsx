@@ -11,6 +11,10 @@ import { staffService } from "../lib/services";
 import { ApiError } from "../models";
 import { Pagination } from "../components/Pagination";
 import TableActionMenu from "../components/TableActionMenu";
+import { useAuthStore } from "../stores/authStore";
+import { useTenantStore } from "../stores/tenantStore";
+import { isSuperAdmin } from "../lib/roles";
+import { useSearchContext } from "../contexts/SearchContext";
 
 // Helper function to get role badge color
 const getRoleBadgeColor = (role: string | null | undefined): string => {
@@ -28,12 +32,41 @@ const getRoleBadgeColor = (role: string | null | undefined): string => {
 // Helper function to check if status is active
 const isActiveStatus = (status: string | null | undefined): boolean => {
   if (!status) return false;
-  return status.toUpperCase() === "ACTIVE" || status === "true";
+  return status.toUpperCase() === "ACTIVE";
+};
+
+// Dot color for each status
+const getStatusDotColor = (status: string | null | undefined): string => {
+  switch ((status ?? "").toUpperCase()) {
+    case "ACTIVE":      return "bg-success";
+    case "PENDING":     return "bg-warning";
+    case "SUSPENDED":   return "bg-error";
+    case "DEACTIVATED": return "bg-slate-500";
+    default:            return "bg-slate-400";
+  }
+};
+
+// Badge bg for the confirmation button
+const getStatusBadgeColor = (status: string | null | undefined): string => {
+  switch ((status ?? "").toUpperCase()) {
+    case "ACTIVE":      return "bg-success";
+    case "PENDING":     return "bg-warning text-slate-800";
+    case "SUSPENDED":   return "bg-error";
+    case "DEACTIVATED": return "bg-slate-400";
+    default:            return "bg-slate-400";
+  }
 };
 
 export default function StaffManagementPage() {
   const router = useRouter();
+
+  const currentUser = useAuthStore((state) => state.user);
+  const userIsSuperAdmin = isSuperAdmin(currentUser);
+  const { tenants, fetchTenants } = useTenantStore();
+  const { query: contextQuery, registerPageSearch, unregisterPageSearch } = useSearchContext();
+
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedProvince, setSelectedProvince] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [selectedStaffForSchedule, setSelectedStaffForSchedule] = useState<{
@@ -43,21 +76,42 @@ export default function StaffManagementPage() {
   const [staff, setStaff] = useState<Staff[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [entriesPerPage, setEntriesPerPage] = useState(10);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [toggleTarget, setToggleTarget] = useState<Staff | null>(null);
+  const [toggleNewStatus, setToggleNewStatus] = useState<string>("");
 
-  // Fetch staff on component mount
+  // Register top-bar search for this page
+  useEffect(() => {
+    registerPageSearch("Search staff...");
+    return () => unregisterPageSearch();
+  }, [registerPageSearch, unregisterPageSearch]);
+
+  // Sync top-bar search query into local state
+  useEffect(() => {
+    setSearchQuery(contextQuery);
+    setPage(1);
+  }, [contextQuery]);
+
+  // Re-fetch whenever page, page size, search query or province filter changes
   useEffect(() => {
     const fetchStaff = async () => {
       try {
         setIsLoading(true);
         setError(null);
-        const response = await staffService.getAllStaff();
+        const response = await staffService.getAllStaff({
+          pageSize: limit,
+          pageNumber: page,
+          search: searchQuery || undefined,
+          tenantId: selectedProvince || undefined,
+        });
         if (response.status && response.data) {
           setStaff(response.data);
+          setTotal(response.total ?? 0);
         } else {
           setError(response.message || "Failed to fetch staff");
         }
@@ -74,30 +128,18 @@ export default function StaffManagementPage() {
     };
 
     fetchStaff();
-  }, []);
+  }, [page, limit, searchQuery, selectedProvince]);
 
-  const filteredData = staff.filter(
-    (item) =>
-      (item.fullName?.toLowerCase() || "").includes(
-        searchQuery.toLowerCase(),
-      ) ||
-      (item.email?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
-      (item.phoneNumber || "").includes(searchQuery),
-  );
+  useEffect(() => { if (userIsSuperAdmin) fetchTenants(); }, [userIsSuperAdmin]);
 
-  const totalPages = Math.ceil(filteredData.length / entriesPerPage);
-  const startIndex = (currentPage - 1) * entriesPerPage;
-  const endIndex = startIndex + entriesPerPage;
-  const paginatedData = filteredData.slice(startIndex, endIndex);
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    setCurrentPage(1);
-  };
+  // Data is already paginated by the server
+  const startIndex = (page - 1) * limit;
+  const paginatedData = staff;
 
   const toggleStaffStatus = async (id: string, currentStatus: string) => {
     try {
-      const newStatus = isActiveStatus(currentStatus) ? "INACTIVE" : "ACTIVE";
+      // ACTIVE → SUSPENDED; everything else → ACTIVE
+      const newStatus = isActiveStatus(currentStatus) ? "SUSPENDED" : "ACTIVE";
       const response = await staffService.toggleStaffStatus(id, newStatus);
       if (response.status && response.data) {
         setStaff(
@@ -113,6 +155,23 @@ export default function StaffManagementPage() {
         setError("An unexpected error occurred");
       }
       console.error("Error updating staff status:", err);
+    }
+  };
+
+  const confirmToggleStaffStatus = async () => {
+    if (!toggleTarget || !toggleNewStatus) return;
+    try {
+      const response = await staffService.toggleStaffStatus(toggleTarget.id, toggleNewStatus);
+      if (response.status && response.data) {
+        setStaff(staff.map((m) => (m.id === toggleTarget.id ? response.data : m)));
+      } else {
+        setError(response.message || "Failed to update staff status");
+      }
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "An unexpected error occurred");
+    } finally {
+      setToggleTarget(null);
+      setToggleNewStatus("");
     }
   };
 
@@ -148,19 +207,33 @@ export default function StaffManagementPage() {
 
   return (
     <DashboardLayout theme="admin">
-      <div className="flex flex-col items-center justify-between space-y-4 py-5 sm:flex-row sm:space-y-0 lg:py-6">
-        <div className="flex items-center space-x-1">
-          <h2 className="text-xl font-medium text-slate-700 line-clamp-1 dark:text-navy-50">
-            Staff Management
-          </h2>
-        </div>
-        <div className="flex justify-center space-x-2">
-          <button
-            onClick={() => setShowModal(true)}
-            className="btn min-w-28 bg-success font-medium text-white hover:bg-success-focus focus:bg-success-focus active:bg-success-focus/90 dark:bg-success dark:hover:bg-success-focus dark:focus:bg-success-focus dark:active:bg-success/90"
-          >
-            Add New Staff
-          </button>
+      <div className="sticky top-0 z-10 bg-slate-50 dark:bg-navy-900 -mx-4 px-4 sm:-mx-5 sm:px-5 lg:-mx-10 lg:px-10 pb-3 pt-1 mb-3 border-b border-slate-200 dark:border-navy-600">
+        <div className="flex flex-col items-center justify-between space-y-4 py-4 sm:flex-row sm:space-y-0">
+          <div className="flex items-center space-x-1">
+            <h2 className="text-xl font-medium text-slate-700 line-clamp-1 dark:text-navy-50">
+              Staff Management
+            </h2>
+          </div>
+          <div className="flex items-center justify-center gap-3 flex-wrap">
+            {userIsSuperAdmin && (
+              <select
+                value={selectedProvince}
+                onChange={(e) => { setSelectedProvince(e.target.value); setPage(1); }}
+                className="form-select h-9 rounded-lg border border-slate-300 bg-transparent px-3 py-1.5 text-sm dark:border-navy-450 dark:text-navy-100"
+              >
+                <option value="">All Provinces</option>
+                {tenants.map((t) => (
+                  <option key={t.id} value={t.id}>{t.province}</option>
+                ))}
+              </select>
+            )}
+            <button
+              onClick={() => setShowModal(true)}
+              className="btn min-w-28 bg-success font-medium text-white hover:bg-success-focus focus:bg-success-focus active:bg-success-focus/90 dark:bg-success dark:hover:bg-success-focus dark:focus:bg-success-focus dark:active:bg-success/90"
+            >
+              Add New Staff
+            </button>
+          </div>
         </div>
       </div>
 
@@ -177,6 +250,39 @@ export default function StaffManagementPage() {
         theme="admin"
       />
 
+      {/* Toggle Status Confirmation */}
+      {toggleTarget && (
+        <div className="fixed inset-0 z-100 flex items-center justify-center px-4" role="dialog">
+          <div className="absolute inset-0 bg-slate-900/60" onClick={() => { setToggleTarget(null); setToggleNewStatus(""); }} />
+          <div className="relative w-full max-w-sm rounded-lg bg-white p-6 shadow-xl dark:bg-navy-700">
+            <h3 className="text-base font-semibold text-slate-700 dark:text-navy-100">
+              Confirm Status Change
+            </h3>
+            <p className="mt-2 text-sm text-slate-500 dark:text-navy-300">
+              Are you sure you want to set{" "}
+              <span className="font-medium text-slate-700 dark:text-navy-100">
+                {toggleTarget.firstName} {toggleTarget.lastName}
+              </span>{" "}
+              to <span className="font-medium">{toggleNewStatus}</span>?
+            </p>
+            <div className="mt-5 flex justify-end gap-3">
+              <button
+                onClick={() => { setToggleTarget(null); setToggleNewStatus(""); }}
+                className="btn rounded-full border border-slate-300 font-medium text-slate-700 hover:bg-slate-100 dark:border-navy-450 dark:text-navy-100 dark:hover:bg-navy-600"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmToggleStaffStatus}
+                className={`btn rounded-full font-medium text-white ${getStatusBadgeColor(toggleNewStatus)}`}
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Schedule Management Modal */}
       {selectedStaffForSchedule && (
         <ScheduleManagementModal
@@ -190,46 +296,6 @@ export default function StaffManagementPage() {
           theme="admin"
         />
       )}
-
-      {/* Search Card */}
-      <div className="card rounded-2xl px-4 py-4 sm:px-5">
-        <div className="p-3">
-          <div className="">
-            <h2 className="mb-2 text-lg font-medium tracking-wide text-slate-700 line-clamp-1 dark:text-navy-100">
-              Search for Staff
-            </h2>
-          </div>
-          <form className="mt-2" onSubmit={handleSearch}>
-            <div className="relative flex -space-x-px">
-              <input
-                className="form-input peer w-full rounded-l-lg border border-slate-300 bg-transparent px-3 py-2 pl-9 placeholder:text-slate-400/70 hover:z-10 hover:border-slate-400 focus:z-10 focus:border-navy dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
-                placeholder="Search..."
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-
-              <div className="pointer-events-none absolute flex h-full w-10 items-center justify-center text-slate-400 peer-focus:text-primary dark:text-navy-300 dark:peer-focus:text-accent">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="size-4.5 transition-colors duration-200"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M3.316 13.781l.73-.171-.73.171zm0-5.457l.73.171-.73-.171zm15.473 0l.73-.171-.73.171zm0 5.457l.73.171-.73-.171zm-5.008 5.008l-.171-.73.171.73zm-5.457 0l-.171.73.171-.73zm0-15.473l-.171-.73.171.73zm5.457 0l.171-.73-.171.73zM20.47 21.53a.75.75 0 101.06-1.06l-1.06 1.06zM4.046 13.61a11.198 11.198 0 010-5.115l-1.46-.342a12.698 12.698 0 000 5.8l1.46-.343zm14.013-5.115a11.196 11.196 0 010 5.115l1.46.342a12.698 12.698 0 000-5.8l-1.46.343zm-4.45 9.564a11.196 11.196 0 01-5.114 0l-.342 1.46c1.907.448 3.892.448 5.8 0l-.343-1.46zM8.496 4.046a11.198 11.198 0 015.115 0l.342-1.46a12.698 12.698 0 00-5.8 0l.343 1.46zm0 14.013a5.97 5.97 0 01-4.45-4.45l-1.46.343a7.47 7.47 0 005.568 5.568l.342-1.46zm5.457 1.46a7.47 7.47 0 005.568-5.567l-1.46-.342a5.97 5.97 0 01-4.45 4.45l.342 1.46zM13.61 4.046a5.97 5.97 0 014.45 4.45l1.46-.343a7.47 7.47 0 00-5.568-5.567l-.342 1.46zm-5.457-1.46a7.47 7.47 0 00-5.567 5.567l1.46.342a5.97 5.97 0 014.45-4.45l-.343-1.46zm8.652 15.28l3.665 3.664 1.06-1.06-3.665-3.665-1.06 1.06z"></path>
-                </svg>
-              </div>
-
-              <button
-                type="submit"
-                className="btn rounded-l-none bg-success font-medium text-white hover:bg-success-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-success dark:hover:bg-success-focus dark:focus:bg-success-focus dark:active:bg-success/90"
-              >
-                Search
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
 
       {/* Error Message */}
       {error && (
@@ -339,7 +405,7 @@ export default function StaffManagementPage() {
                               </div>
                             </td>
                             <td className="whitespace-nowrap px-3 py-3 font-medium text-slate-700 dark:text-navy-100 lg:px-5">
-                              {member.fullName}
+                              {member.firstName + " " + member.lastName}
                             </td>
                             <td className="whitespace-nowrap px-4 py-3 sm:px-5">
                               {member.email}
@@ -357,16 +423,10 @@ export default function StaffManagementPage() {
                               </div>
                             </td>
                             <td className="whitespace-nowrap px-4 py-3 sm:px-5">
-                              <label className="inline-flex items-center">
-                                <input
-                                  checked={isActiveStatus(member.status)}
-                                  onChange={() =>
-                                    toggleStaffStatus(member.id, member.status)
-                                  }
-                                  className="form-switch h-5 w-10 rounded-full bg-slate-300 before:rounded-full before:bg-slate-50 checked:bg-primary checked:before:bg-white dark:bg-navy-900 dark:before:bg-navy-300 dark:checked:bg-accent dark:checked:before:bg-white"
-                                  type="checkbox"
-                                />
-                              </label>
+                              <div className="flex items-center gap-1.5">
+                                <span className={`inline-block size-2 rounded-full ${getStatusDotColor(member.status)}`} />
+                                <span className="text-xs font-medium text-slate-600 dark:text-navy-200">{member.status ?? "—"}</span>
+                              </div>
                             </td>
                             <td className="whitespace-nowrap px-4 py-3 sm:px-5">
                               <div className="flex justify-end">
@@ -386,6 +446,42 @@ export default function StaffManagementPage() {
                                         </a>
                                       </li>
                                     </ul>
+
+                                    {/* Status change actions */}
+                                    <div className="my-1 h-px bg-slate-150 dark:bg-navy-500" />
+                                    <ul>
+                                      {(member.status ?? "").toUpperCase() !== "ACTIVE" && (
+                                        <li>
+                                          <button
+                                            onClick={() => { setToggleTarget(member); setToggleNewStatus("ACTIVE"); }}
+                                            className="flex w-full h-8 items-center whitespace-nowrap px-3 pr-8 font-medium tracking-wide text-success outline-hidden transition-all hover:bg-slate-100 dark:hover:bg-navy-600"
+                                          >
+                                            Activate
+                                          </button>
+                                        </li>
+                                      )}
+                                      {(member.status ?? "").toUpperCase() !== "SUSPENDED" && (
+                                        <li>
+                                          <button
+                                            onClick={() => { setToggleTarget(member); setToggleNewStatus("SUSPENDED"); }}
+                                            className="flex w-full h-8 items-center whitespace-nowrap px-3 pr-8 font-medium tracking-wide text-error outline-hidden transition-all hover:bg-slate-100 dark:hover:bg-navy-600"
+                                          >
+                                            Suspend
+                                          </button>
+                                        </li>
+                                      )}
+                                      {(member.status ?? "").toUpperCase() !== "DEACTIVATED" && (
+                                        <li>
+                                          <button
+                                            onClick={() => { setToggleTarget(member); setToggleNewStatus("DEACTIVATED"); }}
+                                            className="flex w-full h-8 items-center whitespace-nowrap px-3 pr-8 font-medium tracking-wide text-slate-500 outline-hidden transition-all hover:bg-slate-100 dark:hover:bg-navy-600"
+                                          >
+                                            Deactivate
+                                          </button>
+                                        </li>
+                                      )}
+                                    </ul>
+
                                     {member.role?.toUpperCase() === "DOCTOR" && (
                                       <>
                                         <div className="my-1 h-px bg-slate-150 dark:bg-navy-500"></div>
@@ -395,7 +491,7 @@ export default function StaffManagementPage() {
                                               href="#"
                                               onClick={(e) => {
                                                 e.preventDefault();
-                                                handleOpenSchedule(member.id, member.fullName);
+                                                handleOpenSchedule(member.id, member.firstName + " " + member.lastName);
                                               }}
                                               className="flex h-8 items-center whitespace-nowrap px-3 pr-8 font-medium tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
                                             >
@@ -418,16 +514,13 @@ export default function StaffManagementPage() {
           )}
 
           {/* Pagination */}
-          <Pagination
-            currentPage={currentPage}
-            totalEntries={filteredData.length}
-            entriesPerPage={entriesPerPage}
-            onPageChange={setCurrentPage}
-            onEntriesPerPageChange={(entries) => {
-              setEntriesPerPage(entries);
-              setCurrentPage(1);
-            }}
-          />
+      <Pagination
+        currentPage={page}
+        totalEntries={total}
+        entriesPerPage={limit}
+        onPageChange={setPage}
+        onEntriesPerPageChange={setLimit}
+      />
         </div>
       </div>
     </DashboardLayout>

@@ -1,16 +1,13 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import {
-  SEARCH_TABS,
-  SEARCH_QUICK_ACCESS_ITEMS,
-  SEARCH_RECENT_ITEMS,
   NOTIFICATION_ITEMS_ALL,
   NOTIFICATION_ITEMS_ALERTS,
   NOTIFICATION_ITEMS_EVENTS,
 } from "../constants/dashboardData";
+import { useSearchContext } from "../contexts/SearchContext";
 
 interface HeaderProps {
   sidebarExpanded: boolean;
@@ -29,25 +26,15 @@ export default function Header({
   monochromeMode,
   toggleMonochromeMode,
 }: HeaderProps) {
+  const { query, setQuery, placeholder, isPageSearch } = useSearchContext();
   const [searchbarActive, setSearchbarActive] = useState(false);
-  const [searchPopperOpen, setSearchPopperOpen] = useState(false);
   const [notificationPopperOpen, setNotificationPopperOpen] = useState(false);
   const [notificationTab, setNotificationTab] = useState("tabAll");
-  const [searchTab, setSearchTab] = useState("tabAll");
-  const [searchInputWidth, setSearchInputWidth] = useState("w-60");
-  const searchPopperRef = useRef<HTMLDivElement>(null);
   const notificationPopperRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    // Close poppers when clicking outside
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        searchPopperRef.current &&
-        !searchPopperRef.current.contains(event.target as Node)
-      ) {
-        setSearchPopperOpen(false);
-      }
       if (
         notificationPopperRef.current &&
         !notificationPopperRef.current.contains(event.target as Node)
@@ -59,14 +46,6 @@ export default function Header({
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
-  useEffect(() => {
-    if (searchPopperOpen) {
-      setSearchInputWidth("w-80");
-    } else {
-      setSearchInputWidth("w-60");
-    }
-  }, [searchPopperOpen]);
 
   // Helper function to render notification icon
   const renderNotificationIcon = (icon: string, iconColor: string) => {
@@ -143,10 +122,10 @@ export default function Header({
 
             {/* Right: Header buttons */}
             <div className="-mr-1.5 flex items-center space-x-2">
-              {/* Mobile Search Toggle */}
+              {/* Mobile Search Toggle (only shown on pages that register a search) */}
               <button
                 onClick={() => setSearchbarActive(!searchbarActive)}
-                className="btn size-8 rounded-full p-0 hover:bg-slate-300/20 focus:bg-slate-300/20 active:bg-slate-300/25 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25 sm:hidden"
+                className={`btn size-8 rounded-full p-0 hover:bg-slate-300/20 focus:bg-slate-300/20 active:bg-slate-300/25 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25 sm:hidden ${!isPageSearch ? "hidden" : ""}`}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -164,125 +143,42 @@ export default function Header({
                 </svg>
               </button>
 
-              {/* Main Searchbar - Desktop */}
-              <div className="hidden sm:flex relative" ref={searchPopperRef}>
-                <div className="relative mr-4 flex h-8">
-                  <input
-                    ref={searchInputRef}
-                    placeholder="Search here..."
-                    className={`form-input peer h-full rounded-full bg-slate-150 px-4 pl-9 text-xs-plus text-slate-800 ring-primary/50 hover:bg-slate-200 focus:ring-3 dark:bg-navy-900/90 dark:text-navy-100 dark:placeholder-navy-300 dark:ring-accent/50 dark:hover:bg-navy-900 dark:focus:bg-navy-900 transition-all duration-200 ${searchInputWidth}`}
-                    onFocus={() => setSearchPopperOpen(true)}
-                    type="text"
-                  />
-                  <div className="pointer-events-none absolute flex h-full w-10 items-center justify-center text-slate-400 peer-focus:text-primary dark:text-navy-300 dark:peer-focus:text-accent">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="size-4.5 transition-colors duration-200"
-                      fill="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M3.316 13.781l.73-.171-.73.171zm0-5.457l.73.171-.73-.171zm15.473 0l.73-.171-.73.171zm0 5.457l.73.171-.73-.171zm-5.008 5.008l-.171-.73.171.73zm-5.457 0l-.171.73.171-.73zm0-15.473l-.171-.73.171.73zm5.457 0l.171-.73-.171.73zM20.47 21.53a.75.75 0 101.06-1.06l-1.06 1.06zM4.046 13.61a11.198 11.198 0 010-5.115l-1.46-.342a12.698 12.698 0 000 5.8l1.46-.343zm14.013-5.115a11.196 11.196 0 010 5.115l1.46.342a12.698 12.698 0 000-5.8l-1.46.343zm-4.45 9.564a11.196 11.196 0 01-5.114 0l-.342 1.46c1.907.448 3.892.448 5.8 0l-.343-1.46zM8.496 4.046a11.198 11.198 0 015.115 0l.342-1.46a12.698 12.698 0 00-5.8 0l.343 1.46zm0 14.013a5.97 5.97 0 01-4.45-4.45l-1.46.343a7.47 7.47 0 005.568 5.568l.342-1.46zm5.457 1.46a7.47 7.47 0 005.568-5.567l-1.46-.342a5.97 5.97 0 01-4.45 4.45l.342 1.46zM13.61 4.046a5.97 5.97 0 014.45 4.45l1.46-.343a7.47 7.47 0 00-5.568-5.567l-.342 1.46zm-5.457-1.46a7.47 7.47 0 00-5.567 5.567l1.46.342a5.97 5.97 0 014.45-4.45l-.343-1.46zm8.652 15.28l3.665 3.664 1.06-1.06-3.665-3.665-1.06 1.06z" />
-                    </svg>
+              {/* Main Searchbar - Desktop (only shown on pages that register a search) */}
+              {isPageSearch && (
+                <div className="hidden sm:flex relative mr-4">
+                  <div className="relative flex h-8">
+                    <input
+                      ref={searchInputRef}
+                      placeholder={placeholder}
+                      value={query}
+                      onChange={(e) => setQuery(e.target.value)}
+                      className="form-input peer h-full w-72 rounded-full bg-slate-150 px-4 pl-9 text-xs-plus text-slate-800 ring-primary/50 hover:bg-slate-200 focus:ring-3 dark:bg-navy-900/90 dark:text-navy-100 dark:placeholder-navy-300 dark:ring-accent/50 dark:hover:bg-navy-900 dark:focus:bg-navy-900 transition-all duration-200"
+                      type="text"
+                    />
+                    <div className="pointer-events-none absolute flex h-full w-10 items-center justify-center text-slate-400 peer-focus:text-primary dark:text-navy-300 dark:peer-focus:text-accent">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="size-4.5 transition-colors duration-200"
+                        fill="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M3.316 13.781l.73-.171-.73.171zm0-5.457l.73.171-.73-.171zm15.473 0l.73-.171-.73.171zm0 5.457l.73.171-.73-.171zm-5.008 5.008l-.171-.73.171.73zm-5.457 0l-.171.73.171-.73zm0-15.473l-.171-.73.171.73zm5.457 0l.171-.73-.171.73zM20.47 21.53a.75.75 0 101.06-1.06l-1.06 1.06zM4.046 13.61a11.198 11.198 0 010-5.115l-1.46-.342a12.698 12.698 0 000 5.8l1.46-.343zm14.013-5.115a11.196 11.196 0 010 5.115l1.46.342a12.698 12.698 0 000-5.8l-1.46.343zm-4.45 9.564a11.196 11.196 0 01-5.114 0l-.342 1.46c1.907.448 3.892.448 5.8 0l-.343-1.46zM8.496 4.046a11.198 11.198 0 015.115 0l.342-1.46a12.698 12.698 0 00-5.8 0l.343 1.46zm0 14.013a5.97 5.97 0 01-4.45-4.45l-1.46.343a7.47 7.47 0 005.568 5.568l.342-1.46zm5.457 1.46a7.47 7.47 0 005.568-5.567l-1.46-.342a5.97 5.97 0 01-4.45 4.45l.342 1.46zM13.61 4.046a5.97 5.97 0 014.45 4.45l1.46-.343a7.47 7.47 0 00-5.568-5.567l-.342 1.46zm-5.457-1.46a7.47 7.47 0 00-5.567 5.567l1.46.342a5.97 5.97 0 014.45-4.45l-.343-1.46zm8.652 15.28l3.665 3.664 1.06-1.06-3.665-3.665-1.06 1.06z" />
+                      </svg>
+                    </div>
+                    {query && (
+                      <button
+                        type="button"
+                        onClick={() => setQuery("")}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:text-navy-300 dark:hover:text-navy-100"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    )}
                   </div>
                 </div>
-                {searchPopperOpen && (
-                  <div className="popper-root show">
-                    <div className="popper-box flex max-h-[calc(100vh-6rem)] w-80 flex-col rounded-lg border border-slate-150 bg-white shadow-soft dark:border-navy-800 dark:bg-navy-700 dark:shadow-soft-dark">
-                      <div className="is-scrollbar-hidden flex shrink-0 overflow-x-auto rounded-t-lg bg-slate-100 px-2 text-slate-600 dark:bg-navy-800 dark:text-navy-200">
-                        {SEARCH_TABS.map((tab) => {
-                          const tabLabel = tab.replace("tab", "");
-                          return (
-                            <button
-                              key={tab}
-                              onClick={() => setSearchTab(tab)}
-                              className={`btn shrink-0 rounded-none border-b-2 px-3.5 py-2.5 ${
-                                searchTab === tab
-                                  ? "border-primary dark:border-accent text-primary dark:text-accent-light"
-                                  : "border-transparent hover:text-slate-800 focus:text-slate-800 dark:hover:text-navy-100 dark:focus:text-navy-100"
-                              }`}
-                            >
-                              {tabLabel}
-                            </button>
-                          );
-                        })}
-                      </div>
-                      <div className="is-scrollbar-hidden overflow-y-auto overscroll-contain pb-2">
-                        <div className="is-scrollbar-hidden mt-3 flex space-x-4 overflow-x-auto px-3">
-                          {SEARCH_QUICK_ACCESS_ITEMS.map((item) => (
-                            <Link
-                              key={item.name}
-                              href={item.href}
-                              className="w-14 text-center"
-                            >
-                              <div className="avatar size-12">
-                                <div
-                                  className={`is-initial rounded-full ${item.bg} text-white`}
-                                >
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    className="size-5"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                    strokeWidth="2"
-                                  >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      d={item.icon}
-                                    />
-                                  </svg>
-                                </div>
-                              </div>
-                              <p className="mt-1.5 overflow-hidden text-ellipsis whitespace-nowrap text-xs text-slate-700 dark:text-navy-100">
-                                {item.name}
-                              </p>
-                            </Link>
-                          ))}
-                        </div>
-
-                        <div className="mt-3 flex items-center justify-between bg-slate-100 py-1.5 px-3 dark:bg-navy-800">
-                          <p className="text-xs uppercase text-slate-400 dark:text-navy-300">
-                            Recent
-                          </p>
-                          <Link
-                            href="#"
-                            className="text-tiny-plus font-medium uppercase text-primary outline-hidden transition-colors duration-300 hover:text-primary/70 focus:text-primary/70 dark:text-accent-light dark:hover:text-accent-light/70 dark:focus:text-accent-light/70"
-                          >
-                            View All
-                          </Link>
-                        </div>
-
-                        <div className="mt-1 font-inter font-medium">
-                          {SEARCH_RECENT_ITEMS.map((item) => (
-                            <Link
-                              key={item.name}
-                              href={item.href}
-                              className="group flex items-center space-x-2 px-2.5 py-2 tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
-                            >
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="size-4.5 text-slate-400 transition-colors group-hover:text-slate-500 group-focus:text-slate-500 dark:text-navy-300 dark:group-hover:text-navy-200 dark:group-focus:text-navy-200"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                                strokeWidth="1.5"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  d={item.icon}
-                                />
-                              </svg>
-                              <span>{item.name}</span>
-                            </Link>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
+              )}
 
               {/* Dark Mode Toggle */}
               <button
@@ -578,103 +474,13 @@ export default function Header({
             <input
               className="form-input h-8 w-full bg-transparent placeholder-slate-400 dark:placeholder-navy-300"
               type="text"
-              placeholder="Search here..."
+              placeholder={placeholder}
+              value={isPageSearch ? query : undefined}
+              onChange={isPageSearch ? (e) => setQuery(e.target.value) : undefined}
               autoFocus
             />
           </div>
 
-          <div className="is-scrollbar-hidden flex shrink-0 overflow-x-auto bg-slate-100 px-2 text-slate-600 dark:bg-navy-800 dark:text-navy-200">
-            {SEARCH_TABS.map((tab) => {
-              const tabLabel = tab.replace("tab", "");
-              return (
-                <button
-                  key={tab}
-                  onClick={() => setSearchTab(tab)}
-                  className={`btn shrink-0 rounded-none border-b-2 px-3.5 py-2.5 ${
-                    searchTab === tab
-                      ? "border-primary dark:border-accent text-primary dark:text-accent-light"
-                      : "border-transparent hover:text-slate-800 focus:text-slate-800 dark:hover:text-navy-100 dark:focus:text-navy-100"
-                  }`}
-                >
-                  {tabLabel}
-                </button>
-              );
-            })}
-          </div>
-
-          <div className="is-scrollbar-hidden overflow-y-auto overscroll-contain pb-2">
-            <div className="is-scrollbar-hidden mt-3 flex space-x-4 overflow-x-auto px-3">
-              {SEARCH_QUICK_ACCESS_ITEMS.map((item) => (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className="w-14 text-center"
-                >
-                  <div className="avatar size-12">
-                    <div
-                      className={`is-initial rounded-full ${item.bg} text-white`}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="size-5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d={item.icon}
-                        />
-                      </svg>
-                    </div>
-                  </div>
-                  <p className="mt-1.5 overflow-hidden text-ellipsis whitespace-nowrap text-xs text-slate-700 dark:text-navy-100">
-                    {item.name}
-                  </p>
-                </Link>
-              ))}
-            </div>
-
-            <div className="mt-3 flex items-center justify-between bg-slate-100 py-1.5 px-3 dark:bg-navy-800">
-              <p className="text-xs uppercase text-slate-400 dark:text-navy-300">
-                Recent
-              </p>
-              <Link
-                href="#"
-                className="text-tiny-plus font-medium uppercase text-primary outline-hidden transition-colors duration-300 hover:text-primary/70 focus:text-primary/70 dark:text-accent-light dark:hover:text-accent-light/70 dark:focus:text-accent-light/70"
-              >
-                View All
-              </Link>
-            </div>
-
-            <div className="mt-1 font-inter font-medium">
-              {SEARCH_RECENT_ITEMS.map((item) => (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className="group flex items-center space-x-2 px-2.5 py-2 tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="size-4.5 text-slate-400 transition-colors group-hover:text-slate-500 group-focus:text-slate-500 dark:text-navy-300 dark:group-hover:text-navy-200 dark:group-focus:text-navy-200"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d={item.icon}
-                    />
-                  </svg>
-                  <span>{item.name}</span>
-                </Link>
-              ))}
-            </div>
-          </div>
         </div>
       )}
     </>

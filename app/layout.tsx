@@ -3,6 +3,7 @@ import { Inter, Poppins } from "next/font/google";
 import "./globals.css";
 import AuthProvider from "./components/AuthProvider";
 import DataProvider from "./components/DataProvider";
+import { SearchProvider } from "./contexts/SearchContext";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -56,7 +57,9 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <AuthProvider>
-          <DataProvider>{children}</DataProvider>
+          <SearchProvider>
+            <DataProvider>{children}</DataProvider>
+          </SearchProvider>
         </AuthProvider>
       </body>
     </html>
