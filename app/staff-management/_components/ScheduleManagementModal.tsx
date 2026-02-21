@@ -4,14 +4,12 @@ import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { adminService } from "@/app/lib/services";
 import { CreateScheduleRequest } from "@/app/models";
-import { AvailabilityStatus } from "@/app/models/DoctorAvailability";
 
 interface Schedule {
   id: string;
   dateScheduled: string;
   timeSlot: string;
-  consultations: number;
-  status: AvailabilityStatus;
+  isAvailable: boolean;
 }
 
 interface ScheduleManagementModalProps {
@@ -56,8 +54,7 @@ export default function ScheduleManagementModal({
           id: item.id,
           dateScheduled: item.date,
           timeSlot: `${item.startTime} – ${item.endTime}`,
-          consultations: 0,
-          status: (item.status ?? "Pending") as AvailabilityStatus,
+          isAvailable: item.isAvailable ?? false,
         }));
         setSchedules(mapped);
       } else {
@@ -270,13 +267,11 @@ export default function ScheduleManagementModal({
                                         <td className="px-4 py-3 text-slate-700 dark:text-navy-100">{schedule.timeSlot}</td>
                                         <td className="px-4 py-3">
                                             <span className={`badge rounded-full px-2 py-0.5 text-xs ${
-                                              schedule.status === "Accepted"
+                                              schedule.isAvailable
                                                 ? "bg-success/10 text-success"
-                                                : schedule.status === "Pending"
-                                                ? "bg-warning/10 text-warning"
                                                 : "bg-error/10 text-error"
                                             }`}>
-                                                {schedule.status}
+                                              {schedule.isAvailable ? "Available" : "Unavailable"}
                                             </span>
                                         </td>
                                         <td className="px-4 py-3 text-right">

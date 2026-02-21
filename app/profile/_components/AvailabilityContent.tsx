@@ -6,30 +6,28 @@ import { getTheme } from "@/app/lib/roles";
 import { createPortal } from "react-dom";
 import { useSearchParams } from "next/navigation";
 import { adminService, appointmentService } from "@/app/lib/services";
-import { AvailabilityStatus } from "@/app/models/DoctorAvailability";
 import ProfileSidebar from "./ProfileSidebar";
 
 interface Schedule {
   id: string;
+  doctorId: string;
   dateScheduled: string;
   startTime: string;
   endTime: string;
   timeSlot: string;
-  consultations: number;
-  status: AvailabilityStatus;
+  isAvailable: boolean;
 }
 
 export default function AvailabilityContent() {
   const user = useAuthStore((state) => state.user);
   const searchParams = useSearchParams();
   const userId = searchParams.get("userId");
-  const isReadOnly = !!userId;
+  const isReadOnly = !!userId && userId !== user?.id;
 
-  const theme = getTheme(user);
   const [isLoadingAvailability, setIsLoadingAvailability] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const [modalAction, setModalAction] = useState<"Accepted" | "Rejected">("Accepted");
+  const [modalAction, setModalAction] = useState<"accept" | "reject">("accept");
   const [reason, setReason] = useState("");
   const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null);
   const [schedules, setSchedules] = useState<Schedule[]>([]);
@@ -43,12 +41,12 @@ export default function AvailabilityContent() {
           if (response.status && response.data) {
             const mapped: Schedule[] = (response.data as any[]).map((item) => ({
               id: item.id,
+              doctorId: item.doctorId,
               dateScheduled: item.date,
               startTime: item.startTime,
               endTime: item.endTime,
               timeSlot: `${item.startTime} – ${item.endTime}`,
-              consultations: 0,
-              status: (item.status ?? "Pending") as AvailabilityStatus,
+              isAvailable: item.isAvailable ?? false,
             }));
             setSchedules(mapped);
           }
@@ -57,12 +55,12 @@ export default function AvailabilityContent() {
           if (response.status && response.data) {
             const mapped: Schedule[] = response.data.map((item) => ({
               id: item.id,
+              doctorId: item.doctorId,
               dateScheduled: item.date,
               startTime: item.startTime,
               endTime: item.endTime,
               timeSlot: `${item.startTime} – ${item.endTime}`,
-              consultations: 0,
-              status: (item.status ?? "Pending") as AvailabilityStatus,
+              isAvailable: item.isAvailable ?? false,
             }));
             setSchedules(mapped);
           }
@@ -76,7 +74,7 @@ export default function AvailabilityContent() {
     fetchAvailability();
   }, [userId]);
 
-  const openModal = (schedule: Schedule, action: "Accepted" | "Rejected") => {
+  const openModal = (schedule: Schedule, action: "accept" | "reject") => {
     setSelectedSchedule(schedule);
     setModalAction(action);
     setReason("");
@@ -95,15 +93,18 @@ export default function AvailabilityContent() {
     try {
       await appointmentService.proposeAvailability(selectedSchedule.id, {
         date: selectedSchedule.dateScheduled,
-        doctorId: user?.id ?? "",
+        doctorId: selectedSchedule.doctorId,
         startTime: selectedSchedule.startTime,
         endTime: selectedSchedule.endTime,
-        ...(modalAction === "Rejected" && { reason }),
+        isAvailable: modalAction === "accept",
+        ...(modalAction === "reject" && reason.trim() && { reason }),
       });
 
       setSchedules(
         schedules.map((s) =>
-          s.id === selectedSchedule.id ? { ...s, status: modalAction } : s,
+          s.id === selectedSchedule.id
+            ? { ...s, isAvailable: modalAction === "accept" }
+            : s,
         ),
       );
       setShowModal(false);
@@ -136,19 +137,14 @@ export default function AvailabilityContent() {
     });
   };
 
-  const statusDot = (status: AvailabilityStatus) =>
-    status === "Accepted"
-      ? "bg-success"
-      : status === "Pending"
-        ? "bg-warning"
-        : "bg-error";
+  const availabilityDot = (isAvailable: boolean) =>
+    isAvailable ? "bg-success" : "bg-error";
 
-  const statusText = (status: AvailabilityStatus) =>
-    status === "Accepted"
-      ? "text-success"
-      : status === "Pending"
-        ? "text-warning"
-        : "text-error";
+  const availabilityText = (isAvailable: boolean) =>
+    isAvailable ? "text-success" : "text-error";
+
+  const availabilityLabel = (isAvailable: boolean) =>
+    isAvailable ? "Available" : "Unavailable";
 
   return (
     <>
@@ -210,7 +206,9 @@ export default function AvailabilityContent() {
                           <tr
                             key={schedule.id}
                             className={`border-b border-slate-200 dark:border-navy-500 ${
-                              index % 2 === 0 ? "bg-slate-50 dark:bg-navy-800" : ""
+                              index % 2 === 0
+                                ? "bg-slate-50 dark:bg-navy-800"
+                                : ""
                             }`}
                           >
                             <td className="whitespace-nowrap px-4 py-4 text-slate-600 dark:text-navy-100 sm:px-5">
@@ -221,34 +219,35 @@ export default function AvailabilityContent() {
                             </td>
                             <td className="whitespace-nowrap px-4 py-4 sm:px-5">
                               <div className="inline-flex items-center space-x-2">
-                                <span className={`size-2 rounded-full ${statusDot(schedule.status)}`} />
-                                <span className={`text-sm font-medium ${statusText(schedule.status)}`}>
-                                  {schedule.status}
+                                <span className={`size-2 rounded-full ${availabilityDot(schedule.isAvailable)}`} />
+                                <span className={`text-sm font-medium ${availabilityText(schedule.isAvailable)}`}>
+                                  {availabilityLabel(schedule.isAvailable)}
                                 </span>
                               </div>
                             </td>
                             <td className="whitespace-nowrap px-4 py-4 sm:px-5">
-                              {!isReadOnly && schedule.status === "Pending" && (
-                                <div className="flex items-center space-x-2">
+                              {!isReadOnly && (
+                                schedule.isAvailable ? (
                                   <button
-                                    onClick={() => openModal(schedule, "Accepted")}
-                                    className="btn size-8 rounded-full p-0 text-success hover:bg-success/20 focus:bg-success/20 active:bg-success/25"
-                                    title="Accept slot"
-                                  >
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="size-5" viewBox="0 0 20 20" fill="currentColor">
-                                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                    </svg>
-                                  </button>
-                                  <button
-                                    onClick={() => openModal(schedule, "Rejected")}
+                                    onClick={() => openModal(schedule, "reject")}
                                     className="btn size-8 rounded-full p-0 text-error hover:bg-error/20 focus:bg-error/20 active:bg-error/25"
-                                    title="Reject slot"
+                                    title="Mark unavailable"
                                   >
                                     <svg xmlns="http://www.w3.org/2000/svg" className="size-5" viewBox="0 0 20 20" fill="currentColor">
                                       <path fillRule="evenodd" d="M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.367zM18 10a8 8 0 11-16 0 8 8 0 0116 0z" clipRule="evenodd" />
                                     </svg>
                                   </button>
-                                </div>
+                                ) : (
+                                  <button
+                                    onClick={() => openModal(schedule, "accept")}
+                                    className="btn size-8 rounded-full p-0 text-success hover:bg-success/20 focus:bg-success/20 active:bg-success/25"
+                                    title="Mark available"
+                                  >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="size-5" viewBox="0 0 20 20" fill="currentColor">
+                                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                    </svg>
+                                  </button>
+                                )
                               )}
                             </td>
                           </tr>
@@ -277,14 +276,25 @@ export default function AvailabilityContent() {
               {/* Header */}
               <div className="flex justify-between rounded-t-lg bg-slate-100 px-4 py-3 dark:bg-navy-800 sm:px-5">
                 <h3 className="text-base font-medium text-slate-700 dark:text-navy-100">
-                  {modalAction === "Accepted" ? "Accept Slot" : "Reject Slot"}
+                  {modalAction === "accept" ? "Mark as Available" : "Mark as Unavailable"}
                 </h3>
                 <button
                   onClick={handleCancel}
                   className="btn -mr-1.5 size-7 rounded-full p-0 hover:bg-slate-300/20 focus:bg-slate-300/20 active:bg-slate-300/25 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="size-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="size-4.5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
                   </svg>
                 </button>
               </div>
@@ -294,15 +304,23 @@ export default function AvailabilityContent() {
                 {/* Readonly slot info */}
                 <div className="grid grid-cols-3 gap-3">
                   <label className="block">
-                    <span className="text-xs font-medium text-slate-500 dark:text-navy-300">Date</span>
+                    <span className="text-xs font-medium text-slate-500 dark:text-navy-300">
+                      Date
+                    </span>
                     <input
                       readOnly
-                      value={selectedSchedule ? formatDate(selectedSchedule.dateScheduled) : ""}
+                      value={
+                        selectedSchedule
+                          ? formatDate(selectedSchedule.dateScheduled)
+                          : ""
+                      }
                       className="form-input mt-1 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600 dark:border-navy-500 dark:bg-navy-800 dark:text-navy-200 cursor-default"
                     />
                   </label>
                   <label className="block">
-                    <span className="text-xs font-medium text-slate-500 dark:text-navy-300">Start Time</span>
+                    <span className="text-xs font-medium text-slate-500 dark:text-navy-300">
+                      Start Time
+                    </span>
                     <input
                       readOnly
                       value={selectedSchedule?.startTime ?? ""}
@@ -310,7 +328,9 @@ export default function AvailabilityContent() {
                     />
                   </label>
                   <label className="block">
-                    <span className="text-xs font-medium text-slate-500 dark:text-navy-300">End Time</span>
+                    <span className="text-xs font-medium text-slate-500 dark:text-navy-300">
+                      End Time
+                    </span>
                     <input
                       readOnly
                       value={selectedSchedule?.endTime ?? ""}
@@ -318,9 +338,9 @@ export default function AvailabilityContent() {
                     />
                   </label>
                 </div>
-
-                {/* Reason — only for Reject */}
-                {modalAction === "Rejected" && (
+ 
+                {/* Reason — only for marking unavailable */}
+                {modalAction === "reject" && (
                   <label className="block">
                     <span className="text-sm font-medium text-slate-700 dark:text-navy-100">
                       Reason <span className="text-error">*</span>
@@ -346,18 +366,14 @@ export default function AvailabilityContent() {
                   </button>
                   <button
                     onClick={handleApply}
-                    disabled={isSubmitting || (modalAction === "Rejected" && !reason.trim())}
+                    disabled={isSubmitting || (modalAction === "reject" && !reason.trim())}
                     className={`btn min-w-28 rounded-full font-medium text-white disabled:opacity-60 ${
-                      modalAction === "Accepted"
+                      modalAction === "accept"
                         ? "bg-success hover:bg-success-focus focus:bg-success-focus active:bg-success-focus/90"
                         : "bg-error hover:bg-error-focus focus:bg-error-focus active:bg-error-focus/90"
                     }`}
                   >
-                    {isSubmitting
-                      ? "Saving..."
-                      : modalAction === "Accepted"
-                        ? "Accept"
-                        : "Reject"}
+                    {isSubmitting ? "Saving..." : modalAction === "accept" ? "Confirm" : "Confirm"}
                   </button>
                 </div>
               </div>

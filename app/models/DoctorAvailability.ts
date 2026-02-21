@@ -6,13 +6,14 @@ export interface CreateScheduleRequest {
   startTime: string;
   endTime: string;
 }
+
 export interface DoctorAvailability {
   id: string;
   doctorId: string;
   date: string;
   startTime: string;
   endTime: string;
-  status: AvailabilityStatus;
+  isAvailable: boolean;
 }
 
 export interface ProposeAvailabilityRequest {
@@ -20,5 +21,6 @@ export interface ProposeAvailabilityRequest {
   doctorId: string;
   startTime: string;
   endTime: string;
+  isAvailable: boolean;
   reason?: string;
 }
