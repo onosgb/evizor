@@ -10,5 +10,6 @@ export * from "./PendingVerification";
 export type { Appointment, LiveQueueResponse, AllAppointmentsResponse } from "./Appointment";
 export { AppointmentStatus } from "./Appointment";
 export type { Specialty } from "./Specialty";
+export type { Symptom } from "./Symptom";
 export type { Qualification } from "./Qualification";
 export type { DoctorAvailability, CreateScheduleRequest, ProposeAvailabilityRequest, AvailabilityStatus } from "./DoctorAvailability";
