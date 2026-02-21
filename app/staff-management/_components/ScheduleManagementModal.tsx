@@ -72,6 +72,18 @@ export default function ScheduleManagementModal({
     }
   };
 
+  const formatDate = (dateStr: string) => {
+    if (!dateStr) return "—";
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    return d.toLocaleDateString("en-GB", {
+      weekday: "short",
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setNewSchedule((prev) => ({
@@ -80,8 +92,9 @@ export default function ScheduleManagementModal({
     }));
   };
 
+  const todayStr = () => new Date().toISOString().split("T")[0];
+
   const handleAddSchedule = async () => {
-    // Basic validation
     if (!newSchedule.date || !newSchedule.startTime || !newSchedule.endTime) {
       setError("Please fill in all fields.");
       return;
@@ -195,6 +208,7 @@ export default function ScheduleManagementModal({
                             type="date"
                             name="date"
                             value={newSchedule.date}
+                            min={todayStr()}
                             onChange={handleInputChange}
                             className="form-input mt-1 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 text-sm placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
                         />
@@ -252,7 +266,7 @@ export default function ScheduleManagementModal({
                             <tbody className="divide-y divide-slate-200 dark:divide-navy-500">
                                 {schedules.map((schedule) => (
                                     <tr key={schedule.id}>
-                                        <td className="px-4 py-3 text-slate-700 dark:text-navy-100">{schedule.dateScheduled}</td>
+                                        <td className="px-4 py-3 text-slate-700 dark:text-navy-100">{formatDate(schedule.dateScheduled)}</td>
                                         <td className="px-4 py-3 text-slate-700 dark:text-navy-100">{schedule.timeSlot}</td>
                                         <td className="px-4 py-3">
                                             <span className={`badge rounded-full px-2 py-0.5 text-xs ${

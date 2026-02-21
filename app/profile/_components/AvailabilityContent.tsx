@@ -124,6 +124,18 @@ export default function AvailabilityContent() {
     return () => document.removeEventListener("keydown", handleEscape);
   }, [showModal]);
 
+  const formatDate = (dateStr: string) => {
+    if (!dateStr) return "—";
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    return d.toLocaleDateString("en-GB", {
+      weekday: "short",
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+  };
+
   const statusDot = (status: AvailabilityStatus) =>
     status === "Accepted"
       ? "bg-success"
@@ -202,7 +214,7 @@ export default function AvailabilityContent() {
                             }`}
                           >
                             <td className="whitespace-nowrap px-4 py-4 text-slate-600 dark:text-navy-100 sm:px-5">
-                              {schedule.dateScheduled}
+                              {formatDate(schedule.dateScheduled)}
                             </td>
                             <td className="whitespace-nowrap px-4 py-4 text-slate-600 dark:text-navy-100 sm:px-5">
                               {schedule.timeSlot}
@@ -285,7 +297,7 @@ export default function AvailabilityContent() {
                     <span className="text-xs font-medium text-slate-500 dark:text-navy-300">Date</span>
                     <input
                       readOnly
-                      value={selectedSchedule?.dateScheduled ?? ""}
+                      value={selectedSchedule ? formatDate(selectedSchedule.dateScheduled) : ""}
                       className="form-input mt-1 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600 dark:border-navy-500 dark:bg-navy-800 dark:text-navy-200 cursor-default"
                     />
                   </label>

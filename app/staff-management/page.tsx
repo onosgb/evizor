@@ -66,6 +66,7 @@ export default function StaffManagementPage() {
   const { query: contextQuery, registerPageSearch, unregisterPageSearch } = useSearchContext();
 
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [selectedProvince, setSelectedProvince] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
@@ -94,8 +95,16 @@ export default function StaffManagementPage() {
   // Sync top-bar search query into local state
   useEffect(() => {
     setSearchQuery(contextQuery);
-    setPage(1);
   }, [contextQuery]);
+
+  // Debounce search — wait 450 ms after the user stops typing before fetching
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+      setPage(1);
+    }, 450);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   // Re-fetch whenever page, page size, search query or province filter changes
   useEffect(() => {
@@ -106,7 +115,7 @@ export default function StaffManagementPage() {
         const response = await staffService.getAllStaff({
           pageSize: limit,
           pageNumber: page,
-          search: searchQuery || undefined,
+          search: debouncedSearch || undefined,
           tenantId: selectedProvince || undefined,
         });
         if (response.status && response.data) {
@@ -128,7 +137,7 @@ export default function StaffManagementPage() {
     };
 
     fetchStaff();
-  }, [page, limit, searchQuery, selectedProvince]);
+  }, [page, limit, debouncedSearch, selectedProvince]);
 
   useEffect(() => { if (userIsSuperAdmin) fetchTenants(); }, [userIsSuperAdmin]);
 
