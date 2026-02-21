@@ -451,6 +451,26 @@ export default function Sidebar({
                 </TooltipWrapper>
               )}
 
+              {/* Pharmacies - Admin & Super Admin */}
+              {isAdmin && (
+                <TooltipWrapper text="Pharmacies">
+                  <Link
+                    href="/pharmacies"
+                    onClick={handleLinkClick}
+                    className={`flex size-11 items-center justify-center rounded-lg text-white outline-hidden transition-colors duration-200 hover:bg-white/20 focus:bg-white/20 active:bg-white/25 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25 ${
+                      isActive("/pharmacies")
+                        ? "bg-primary/10 dark:bg-navy-600 dark:text-accent-light"
+                        : ""
+                    }`}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="size-8" viewBox="0 0 24 24" fill="currentColor">
+                      <path fillOpacity=".25" d="M3 9a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9Z" />
+                      <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M12 12v4m-2-2h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+                    </svg>
+                  </Link>
+                </TooltipWrapper>
+              )}
+
               {/* History - Doctor Only */}
               {isDoctor && (
                 <TooltipWrapper text="History">
