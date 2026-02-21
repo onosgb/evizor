@@ -423,6 +423,34 @@ export default function Sidebar({
                 </TooltipWrapper>
               )}
 
+              {/* Reference Data - Admin & Super Admin */}
+              {isAdmin && (
+                <TooltipWrapper text="Reference Data">
+                  <Link
+                    href="/references"
+                    onClick={handleLinkClick}
+                    className={`flex size-11 items-center justify-center rounded-lg text-white outline-hidden transition-colors duration-200 hover:bg-white/20 focus:bg-white/20 active:bg-white/25 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25 ${
+                      isActive("/references")
+                        ? "bg-primary/10 dark:bg-navy-600 dark:text-accent-light"
+                        : ""
+                    }`}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="size-8"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillOpacity=".25"
+                        d="M12 3C7.582 3 4 4.343 4 6v12c0 1.657 3.582 3 8 3s8-1.343 8-3V6c0-1.657-3.582-3-8-3Z"
+                      />
+                      <path d="M20 6c0 1.657-3.582 3-8 3S4 7.657 4 6s3.582-3 8-3 8 1.343 8 3ZM4 11.278C5.375 12.33 8.404 13 12 13s6.625-.67 8-1.722V12c0 1.657-3.582 3-8 3s-8-1.343-8-3v-.722Zm0 5C5.375 17.33 8.404 18 12 18s6.625-.67 8-1.722V17c0 1.657-3.582 3-8 3s-8-1.343-8-3v-.722Z" />
+                    </svg>
+                  </Link>
+                </TooltipWrapper>
+              )}
+
               {/* History - Doctor Only */}
               {isDoctor && (
                 <TooltipWrapper text="History">

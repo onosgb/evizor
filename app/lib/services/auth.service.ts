@@ -46,9 +46,10 @@ class AuthService {
 
       // Only login to store if we have tokens (i.e. not waiting for 2FA)
       if (accessToken && newRefreshToken) {
+        const rememberMe = useAuthStore.getState().rememberMe;
         useAuthStore
           .getState()
-          .login(accessToken, newRefreshToken, user, profileCompleted);
+          .login(accessToken, newRefreshToken, user, profileCompleted, rememberMe);
       }
 
       return response.data;
@@ -84,9 +85,10 @@ class AuthService {
     }
 
     if (accessToken && newRefreshToken) {
+      const rememberMe = useAuthStore.getState().rememberMe;
       useAuthStore
         .getState()
-        .login(accessToken, newRefreshToken, user, profileCompleted);
+        .login(accessToken, newRefreshToken, user, profileCompleted, rememberMe);
     }
 
     return response.data;
@@ -126,9 +128,10 @@ class AuthService {
     }
 
     if (accessToken && newRefreshToken) {
+      const rememberMe = useAuthStore.getState().rememberMe;
       useAuthStore
         .getState()
-        .login(accessToken, newRefreshToken, user, profileCompleted);
+        .login(accessToken, newRefreshToken, user, profileCompleted, rememberMe);
     }
     // Note: We might want to keep rememberMe preference, but here we just update tokens and user
     return response.data;

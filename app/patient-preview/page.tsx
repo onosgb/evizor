@@ -1,6 +1,7 @@
 "use client";
 
 import ActionButtons from "../components/ActionButtons";
+import { AppointmentStatus } from "../models";
 import { useAppointmentStore } from "../stores/appointmentStore";
 
 function SkeletonField({ wide = false }: { wide?: boolean }) {
@@ -93,7 +94,7 @@ export default function PatientPreviewPage() {
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <label className="block">
-              <span>Consultation Type</span>
+              <span>Consultation Purpose</span>
               <span className="relative mt-1.5 flex">
                 <span className="text-base font-medium text-slate-600 dark:text-navy-100">
                   {selectedAppointment?.description ?? "—"}
@@ -122,7 +123,7 @@ export default function PatientPreviewPage() {
               <span>Status</span>
               <span className="relative mt-1.5 flex">
                 <span className="text-base font-medium text-slate-600 dark:text-navy-100">
-                  {selectedAppointment?.status ?? "—"}
+                  {selectedAppointment?.status  === AppointmentStatus.SCHEDULED?'WAITING' : selectedAppointment?.status?? '—'}
                 </span>
               </span>
             </label>

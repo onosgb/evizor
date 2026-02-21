@@ -18,11 +18,24 @@ class StaffService {
   }
 
   /**
-   * Get all staff members
+   * Get all staff members (server-side pagination + filtering)
    */
-  async getAllStaff(): Promise<ApiResponse<Staff[]>> {
+  async getAllStaff(params: {
+    pageSize: number;
+    pageNumber: number;
+    search?: string;
+    tenantId?: string;
+  }): Promise<ApiResponse<Staff[]>> {
+    const query: Record<string, string | number> = {
+      pageSize: params.pageSize,
+      pageNumber: params.pageNumber,
+    };
+    if (params.search)   query.search   = params.search;
+    if (params.tenantId) query.tenantId = params.tenantId;
+
     const response = await apiClient.get<ApiResponse<Staff[]>>(
-      "/staff/all-staff"
+      "/staff/all-staff",
+      { params: query }
     );
     return response.data;
   }

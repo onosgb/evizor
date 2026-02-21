@@ -21,7 +21,8 @@ export interface Staff {
   email: string;
   socialId: string;
   phoneNumber: string;
-  fullName: string;
+  firstName: string;
+  lastName: string;
   role: string;
   status: string;
   tenantId: string;

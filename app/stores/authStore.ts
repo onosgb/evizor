@@ -1,6 +1,37 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { persist, createJSONStorage } from "zustand/middleware";
 import { User } from "../models";
+
+/**
+ * Custom storage that uses localStorage when rememberMe is true,
+ * and sessionStorage otherwise. The decision is based on whatever
+ * was last persisted, so it survives hot-reloads correctly.
+ */
+const rememberMeStorage = createJSONStorage(() => ({
+  getItem: (key: string) => {
+    // Try localStorage first (rememberMe=true path), then sessionStorage
+    return localStorage.getItem(key) ?? sessionStorage.getItem(key);
+  },
+  setItem: (key: string, value: string) => {
+    try {
+      const parsed = JSON.parse(value);
+      const rememberMe = parsed?.state?.rememberMe ?? false;
+      if (rememberMe) {
+        localStorage.setItem(key, value);
+        sessionStorage.removeItem(key);
+      } else {
+        sessionStorage.setItem(key, value);
+        localStorage.removeItem(key);
+      }
+    } catch {
+      sessionStorage.setItem(key, value);
+    }
+  },
+  removeItem: (key: string) => {
+    localStorage.removeItem(key);
+    sessionStorage.removeItem(key);
+  },
+}));
 
 interface AuthState {
   isAuthenticated: boolean;
@@ -78,6 +109,7 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: "auth-storage",
+      storage: rememberMeStorage,
       partialize: (state) => ({
         isAuthenticated: state.isAuthenticated,
         accessToken: state.accessToken,
