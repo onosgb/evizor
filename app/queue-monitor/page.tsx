@@ -20,11 +20,13 @@ export default function QueueMonitorPage() {
     limit,
     status,
     tenantId,
+    search,
     isLoading,
     setPage,
     setLimit,
     setStatus,
     setTenantId,
+    setSearch,
     fetchAppointments
   } = useQueueMonitorStore();
 
@@ -43,17 +45,17 @@ export default function QueueMonitorPage() {
 
   useEffect(() => { setSearchQuery(contextQuery); }, [contextQuery]);
 
+  // Debounce — wait 450 ms then push to store (triggers backend fetch)
+  useEffect(() => {
+    const timer = setTimeout(() => setSearch(searchQuery), 450);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
   useEffect(() => { if (userIsSuperAdmin) fetchTenants(); }, [userIsSuperAdmin]);
 
   useEffect(() => {
     fetchAppointments();
-  }, [page, limit, status, tenantId]);
-
-  const filteredData = (appointments || []).filter(
-    (item) =>
-      item.patientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.doctorName.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  }, [page, limit, status, tenantId, search]);
 
   const totalPages = Math.ceil(total / limit);
 
@@ -161,25 +163,25 @@ export default function QueueMonitorPage() {
                         <td className="px-4 py-3 sm:px-5"><div className="h-8 w-8 rounded-full bg-slate-200 dark:bg-navy-500" /></td>
                       </tr>
                     ))
-                ) : filteredData.length === 0 ? (
+                ) : appointments.length === 0 ? (
                     <tr>
                         <td colSpan={5} className="px-4 py-8 text-center text-slate-500">
                             No appointments found.
                         </td>
                     </tr>
                 ) : (
-                    filteredData.map((item, index) => (
+                    appointments.map((item, index) => (
                     <tr
                         key={item.id}
                         className={`border-y border-transparent ${
-                        index === filteredData.length - 1
+                        index === appointments.length - 1
                             ? ""
                             : "border-b-slate-200 dark:border-b-navy-500"
                         }`}
                     >
                         <td
                         className={`whitespace-nowrap px-4 py-3 sm:px-5 ${
-                            index === filteredData.length - 1
+                            index === appointments.length - 1
                             ? "rounded-bl-lg"
                             : ""
                         }`}
@@ -215,7 +217,7 @@ export default function QueueMonitorPage() {
                         </td>
                         <td
                         className={`whitespace-nowrap px-4 py-3 sm:px-5 ${
-                            index === filteredData.length - 1
+                            index === appointments.length - 1
                             ? "rounded-br-lg"
                             : ""
                         }`}

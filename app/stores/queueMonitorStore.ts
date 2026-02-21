@@ -9,6 +9,7 @@ interface QueueMonitorState {
   limit: number;
   status: AppointmentStatus | "";
   tenantId: string;
+  search: string;
   isLoading: boolean;
   error: string | null;
 
@@ -16,6 +17,7 @@ interface QueueMonitorState {
   setLimit: (limit: number) => void;
   setStatus: (status: AppointmentStatus | "") => void;
   setTenantId: (tenantId: string) => void;
+  setSearch: (search: string) => void;
   fetchAppointments: () => Promise<void>;
 }
 
@@ -26,6 +28,7 @@ export const useQueueMonitorStore = create<QueueMonitorState>((set, get) => ({
   limit: 10,
   status: "",
   tenantId: "",
+  search: "",
   isLoading: false,
   error: null,
 
@@ -33,12 +36,13 @@ export const useQueueMonitorStore = create<QueueMonitorState>((set, get) => ({
   setLimit: (limit) => set({ limit, page: 1 }),
   setStatus: (status) => set({ status, page: 1 }),
   setTenantId: (tenantId) => set({ tenantId, page: 1 }),
+  setSearch: (search) => set({ search, page: 1 }),
 
   fetchAppointments: async () => {
-    const { page, limit, status, tenantId } = get();
+    const { page, limit, status, tenantId, search } = get();
     set({ isLoading: true, error: null });
     try {
-      const response = await adminService.getAllAppointments(page, limit, status, tenantId);
+      const response = await adminService.getAllAppointments(page, limit, status, tenantId, search);
       if (response.status && response.data) {
         // The API returns appointments array in 'data' field
         set({

@@ -64,6 +64,26 @@ const categories: ReferenceCategory[] = [
       </svg>
     ),
   },
+  {
+    id: "symptoms",
+    title: "Symptoms",
+    description: "Symptoms available for selection during consultations.",
+    href: "/references/symptoms",
+    adminCanView: true,
+    adminCanCreate: true,
+    color: "bg-warning/15 text-warning dark:bg-navy-600 dark:text-warning-light",
+    icon: (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        className="size-7"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+      >
+        <path fillOpacity=".25" d="M12 3a9 9 0 1 0 0 18A9 9 0 0 0 12 3Z" />
+        <path d="M12 8v4m0 4h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none" />
+      </svg>
+    ),
+  },
 ];
 
 export default function ReferencesPage() {

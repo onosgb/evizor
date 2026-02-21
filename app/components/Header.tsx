@@ -171,8 +171,19 @@ export default function Header({
                         onClick={() => setQuery("")}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:text-navy-300 dark:hover:text-navy-100"
                       >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="size-3.5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M6 18L18 6M6 6l12 12"
+                          />
                         </svg>
                       </button>
                     )}
@@ -326,7 +337,7 @@ export default function Header({
                                 >
                                   {renderNotificationIcon(
                                     item.icon,
-                                    item.iconColor
+                                    item.iconColor,
                                   )}
                                 </div>
                                 <div>
@@ -369,7 +380,7 @@ export default function Header({
                                 >
                                   {renderNotificationIcon(
                                     item.icon,
-                                    item.iconColor
+                                    item.iconColor,
                                   )}
                                 </div>
                                 <div>
@@ -396,7 +407,7 @@ export default function Header({
                                 >
                                   {renderNotificationIcon(
                                     item.icon,
-                                    item.iconColor
+                                    item.iconColor,
                                   )}
                                 </div>
                                 <div>
@@ -450,7 +461,7 @@ export default function Header({
 
       {/* Mobile Searchbar */}
       {searchbarActive && (
-        <div className="fixed inset-0 z-[100] flex flex-col bg-white dark:bg-navy-700 sm:hidden">
+        <div className="fixed inset-0 z-100 flex flex-col bg-white dark:bg-navy-700 sm:hidden">
           <div className="flex items-center space-x-2 bg-slate-100 px-3 pt-2 dark:bg-navy-800">
             <button
               className="btn -ml-1.5 size-7 shrink-0 rounded-full p-0 text-slate-600 hover:bg-slate-300/20 active:bg-slate-300/25 dark:text-navy-100 dark:hover:bg-navy-300/20 dark:active:bg-navy-300/25"
@@ -476,11 +487,12 @@ export default function Header({
               type="text"
               placeholder={placeholder}
               value={isPageSearch ? query : undefined}
-              onChange={isPageSearch ? (e) => setQuery(e.target.value) : undefined}
+              onChange={
+                isPageSearch ? (e) => setQuery(e.target.value) : undefined
+              }
               autoFocus
             />
           </div>
-
         </div>
       )}
     </>
