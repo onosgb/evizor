@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -34,71 +35,66 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-navy-900 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full">
-        <form className="form-signin" onSubmit={handleSubmit}>
-          <div className="text-center mb-8">
-            <div className="mx-auto h-20 w-20 bg-blue-50 rounded-full flex items-center justify-center mb-4">
-               <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-               </svg>
-            </div>
-            <h2 className="text-2xl font-semibold text-slate-800 dark:text-navy-50 mb-2">
-              Forgot Password?
-            </h2>
-            <p className="text-slate-600 dark:text-navy-300">
-              Don't worry! Enter your email and we'll send you a verification code to reset your password.
-            </p>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4">
+      <div className="w-full max-w-md bg-white shadow-2xl rounded-2xl p-8">
+
+        {/* Logo + heading */}
+        <div className="text-center mb-6">
+          <Image
+            src="/images/evizor_logo_dark.png"
+            alt="eVizor"
+            width={140}
+            height={40}
+            className="h-10 w-auto mx-auto mb-4"
+          />
+          <h2 className="text-2xl font-semibold text-gray-900">Forgot Your Password?</h2>
+          <p className="text-gray-500 mt-2">
+            Enter your registered email address and we&apos;ll send you a verification code to reset your password.
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-5">
+
+          {/* Email */}
+          <div>
+            <label htmlFor="inputEmail" className="block text-sm font-medium text-gray-700 mb-1">
+              Email Address
+            </label>
+            <input
+              type="email"
+              id="inputEmail"
+              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition"
+              placeholder="Enter your email"
+              required
+              autoFocus
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
           </div>
 
-          <div className="space-y-4">
-            <div className="form-label-group">
-              <input
-                type="email"
-                id="inputEmail"
-                className="form-control w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-navy-600 bg-white dark:bg-navy-700 text-slate-800 dark:text-navy-100 placeholder-slate-400 dark:placeholder-navy-400 focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-accent focus:border-transparent"
-                placeholder="Email address"
-                required
-                autoFocus
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-              <label
-                htmlFor="inputEmail"
-                className="block mt-2 text-sm font-medium text-slate-700 dark:text-navy-200"
-              >
-                Email address
-              </label>
+          {/* Error */}
+          {error && (
+            <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3">
+              <p className="text-sm text-red-700">{error}</p>
             </div>
+          )}
 
-            {error && (
-              <div className="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 px-4 py-3 mb-4">
-                <p className="text-sm text-red-800 dark:text-red-200">
-                  {error}
-                </p>
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="btn btn-lg btn-primary1 btn-block w-full py-3 px-4 rounded-lg bg-primary text-white font-medium hover:bg-primary-focus focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:bg-accent dark:hover:bg-accent-focus disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {isLoading ? "Sending..." : "Send Verification Code"}
-            </button>
-
-            <Link
-              href="/login"
-              className="block w-full py-3 px-4 rounded-lg border border-slate-300 dark:border-navy-600 bg-white dark:bg-navy-700 text-slate-800 dark:text-navy-100 font-medium hover:bg-slate-50 dark:hover:bg-navy-600 focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-accent focus:ring-offset-2 text-center transition-colors"
-            >
-              Back to Login
-            </Link>
-
-            <p className="mt-6 text-center text-sm text-slate-500 dark:text-navy-400">
-               eVizor © {new Date().getFullYear()}
-            </p>
-          </div>
+          {/* Submit */}
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="w-full py-3 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoading ? "Sending..." : "Send Verification Code"}
+          </button>
         </form>
+
+        {/* Back to login */}
+        <div className="mt-6 text-center text-sm">
+          <Link href="/login" className="text-blue-600 hover:underline font-medium">
+            ← Back to Login
+          </Link>
+        </div>
       </div>
     </div>
   );

@@ -5,6 +5,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "../stores/authStore";
+import AOS from "aos";
+import "aos/dist/aos.css";
 
 const howItWorksSteps = [
   {
@@ -141,6 +143,10 @@ export default function LandingPage() {
   useEffect(() => {
     if (!isLoading && isAuthenticated) router.push("/dashboard");
   }, [isAuthenticated, isLoading, router]);
+
+  useEffect(() => {
+    AOS.init({ duration: 700, once: true, easing: "ease-out-cubic", offset: 60 });
+  }, []);
 
   useEffect(() => {
     const onScroll = () => setNavScrolled(window.scrollY > 50);
@@ -298,13 +304,13 @@ export default function LandingPage() {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center max-w-3xl mx-auto">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl text-white font-semibold leading-tight capitalize">
+            <h1 data-aos="fade-up" className="text-4xl md:text-5xl lg:text-6xl text-white font-semibold leading-tight capitalize">
               Care without limits. <br /> See a doctor in minutes
             </h1>
-            <p className="text-base font-medium text-white/90 leading-7 mt-4 max-w-xl mx-auto capitalize">
+            <p data-aos="fade-up" data-aos-delay="150" className="text-base font-medium text-white/90 leading-7 mt-4 max-w-xl mx-auto capitalize">
               A secure virtual healthcare platform connecting you to licensed doctors through video, chat, and digital prescriptions.
             </p>
-            <div className="flex flex-wrap items-center justify-center mt-9 gap-3">
+            <div data-aos="fade-up" data-aos-delay="300" className="flex flex-wrap items-center justify-center mt-9 gap-3">
               <button className="py-2 px-6 rounded-md text-white text-base bg-blue-600 hover:bg-blue-700 border border-blue-600 transition-all duration-300 font-medium">
                 Download
               </button>
@@ -318,7 +324,7 @@ export default function LandingPage() {
           </div>
 
           {/* Dashboard screenshot */}
-          <div className="bg-white/30 px-4 pt-4 mt-16 rounded-t-xl mx-auto max-w-5xl">
+          <div data-aos="fade-up" data-aos-delay="450" className="bg-white/30 px-4 pt-4 mt-16 rounded-t-xl mx-auto max-w-5xl">
             <Image
               src="/images/dashboard-1.png"
               alt="eVizor dashboard"
@@ -334,18 +340,20 @@ export default function LandingPage() {
       {/* ── About ──────────────────────────────────────────────────── */}
       <section id="about_evizor" className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="grid lg:grid-cols-2 items-center gap-10">
-            <div className="flex items-center justify-center">
+          <div className="grid lg:grid-cols-2 items-center gap-6">
+            <div data-aos="fade-right" className="flex items-center">
+              {/* about.png is a pre-composed collage of two photos */}
               <Image
                 src="/images/about.png"
                 alt="About eVizor"
-                width={520}
-                height={650}
-                className="rounded-xl max-h-[650px] w-auto"
+                width={1222}
+                height={1375}
+                className="rounded-xl mx-auto"
+                style={{ height: "650px", width: "auto" }}
               />
             </div>
 
-            <div className="lg:pl-6">
+            <div data-aos="fade-left" className="lg:ms-5 ms-8">
               <span className="text-sm text-blue-600 uppercase font-semibold tracking-wider">ABOUT eVIZOR</span>
               <h2 className="text-3xl md:text-4xl font-semibold text-black mt-4">Healthcare Without Boundaries</h2>
               <p className="text-lg font-medium mt-4 text-slate-500 leading-relaxed">
@@ -354,7 +362,7 @@ export default function LandingPage() {
 
               <hr className="border-gray-200 my-6" />
 
-              <div className="flex items-start gap-5">
+              <div data-aos="fade-up" data-aos-delay="100" className="flex items-start gap-5">
                 <div className="w-12 h-12 rounded-full border border-dashed border-blue-300 bg-blue-50 flex items-center justify-center shrink-0">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
@@ -366,7 +374,7 @@ export default function LandingPage() {
                 </div>
               </div>
 
-              <div className="flex items-start gap-5 mt-7">
+              <div data-aos="fade-up" data-aos-delay="200" className="flex items-start gap-5 mt-7">
                 <div className="w-12 h-12 rounded-full border border-dashed border-blue-300 bg-blue-50 flex items-center justify-center shrink-0">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
@@ -378,7 +386,7 @@ export default function LandingPage() {
                 </div>
               </div>
 
-              <div className="flex items-start gap-5 mt-7">
+              <div data-aos="fade-up" data-aos-delay="300" className="flex items-start gap-5 mt-7">
                 <div className="w-12 h-12 rounded-full border border-dashed border-blue-300 bg-blue-50 flex items-center justify-center shrink-0">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
@@ -397,7 +405,7 @@ export default function LandingPage() {
       {/* ── For Patient ─────────────────────────────────────────────── */}
       <section id="for_patient" className="py-20 bg-blue-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="max-w-3xl mx-auto text-center">
+          <div data-aos="fade-up" className="max-w-3xl mx-auto text-center">
             <span className="text-sm text-blue-600 uppercase font-semibold tracking-wider">For Patient</span>
             <h2 className="text-3xl md:text-4xl font-semibold text-black mt-4">Fast, Simple Access to Quality Care</h2>
             <p className="text-lg font-medium mt-4 text-slate-500">
@@ -461,8 +469,8 @@ export default function LandingPage() {
                 title: "Digital Prescriptions",
                 desc: "Receive prescriptions instantly after your consultation, ready to download or share.",
               },
-            ].map((f) => (
-              <div key={f.title} className="text-center">
+            ].map((f, i) => (
+              <div key={f.title} data-aos="zoom-in" data-aos-delay={i * 100} className="text-center">
                 <div className="flex items-center justify-center">
                   <div className="flex items-center justify-center bg-blue-600 rounded-[49%_80%_40%_90%/50%_30%_70%_80%] h-20 w-20">
                     {f.icon}
@@ -485,7 +493,7 @@ export default function LandingPage() {
       >
         <div className="absolute inset-0 w-full h-full bg-gray-900/70" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="flex flex-col items-center justify-center text-center">
+          <div data-aos="fade-up" className="flex flex-col items-center justify-center text-center">
             <h2 className="text-3xl md:text-4xl font-semibold text-white">Talk to a Doctor Now</h2>
             <p className="text-lg font-normal max-w-xl text-white/90 mt-5 leading-relaxed">
               Access licensed medical professionals through secure video consultations, receive digital prescriptions instantly, and manage your health records safely — all from the comfort of your home.
@@ -509,7 +517,7 @@ export default function LandingPage() {
       <section id="for_doctor" className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="grid lg:grid-cols-2 items-center gap-10">
-            <div className="lg:pr-6">
+            <div data-aos="fade-right" className="lg:pr-6">
               <span className="text-sm text-emerald-600 uppercase font-semibold tracking-wider">For Doctor</span>
               <h2 className="text-3xl md:text-4xl font-semibold text-black mt-4">Fast Access to Trusted Doctors</h2>
               <p className="text-lg font-normal text-slate-500 mt-5 leading-relaxed">
@@ -554,8 +562,8 @@ export default function LandingPage() {
                     title: "E-Prescriptions & Case Management",
                     desc: "Generate digital prescriptions and manage patient cases seamlessly from intake to resolution.",
                   },
-                ].map((f) => (
-                  <div key={f.title}>
+                ].map((f, i) => (
+                  <div key={f.title} data-aos="fade-up" data-aos-delay={i * 100}>
                     <div className="flex items-center justify-start">
                       <div className="flex items-center justify-center bg-emerald-500 rounded-full h-16 w-16">
                         {f.icon}
@@ -568,7 +576,7 @@ export default function LandingPage() {
               </div>
             </div>
 
-            <div className="flex items-center justify-center">
+            <div data-aos="fade-left" className="flex items-center justify-center">
               <Image
                 src="/images/feature-iphone.png"
                 alt="eVizor doctor app"
@@ -584,7 +592,7 @@ export default function LandingPage() {
       {/* ── How It Works ────────────────────────────────────────────── */}
       <section id="how_it_works" className="py-20" style={{ background: "#2a27c2" }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="max-w-2xl mx-auto text-center">
+          <div data-aos="fade-up" className="max-w-2xl mx-auto text-center">
             <span className="text-base text-white uppercase font-semibold tracking-wider">How it works</span>
             <h2 className="text-3xl md:text-4xl font-semibold text-white mt-4">Step-by-Step Guide to eVizor</h2>
             <p className="text-base max-w-xl mx-auto mt-5 text-blue-100">
@@ -594,7 +602,7 @@ export default function LandingPage() {
 
           <div className="mt-12">
             {/* Tab Buttons */}
-            <div className="flex flex-wrap justify-center gap-3 mb-10">
+            <div data-aos="fade-up" data-aos-delay="150" className="flex flex-wrap justify-center gap-3 mb-10">
               {howItWorksSteps.map((step) => (
                 <button
                   key={step.id}
@@ -611,7 +619,7 @@ export default function LandingPage() {
             </div>
 
             {/* Tab Content */}
-            <div className="max-w-2xl mx-auto text-center bg-white shadow-xl rounded-xl">
+            <div data-aos="fade-up" data-aos-delay="250" className="max-w-2xl mx-auto text-center bg-white shadow-xl rounded-xl">
               {howItWorksSteps.map((step) => (
                 <div
                   key={step.id}
@@ -631,7 +639,7 @@ export default function LandingPage() {
       {/* ── Why Choose Us ───────────────────────────────────────────── */}
       <section id="why_evizor" className="py-20 bg-blue-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="max-w-3xl mx-auto text-center">
+          <div data-aos="fade-up" className="max-w-3xl mx-auto text-center">
             <span className="text-sm text-blue-600 uppercase font-semibold tracking-wider">Why Choose eVizor</span>
             <h2 className="text-3xl md:text-4xl font-semibold text-black mt-4">Better Care Starts Here</h2>
             <p className="text-lg font-medium mt-4 text-slate-500">
@@ -668,8 +676,8 @@ export default function LandingPage() {
                 title: "Quality Care, Without the Wait",
                 desc: "See a doctor in minutes through a secure, easy-to-use app—anytime, anywhere.",
               },
-            ].map((f) => (
-              <div key={f.title} className="text-center">
+            ].map((f, i) => (
+              <div key={f.title} data-aos="zoom-in" data-aos-delay={i * 150} className="text-center">
                 <div className="flex items-center justify-center">
                   <div className="flex items-center justify-center bg-blue-600 rounded-[49%_80%_40%_90%/50%_30%_70%_80%] h-20 w-20">
                     {f.icon}
@@ -688,12 +696,12 @@ export default function LandingPage() {
       {/* ── FAQs ────────────────────────────────────────────────────── */}
       <section id="faqs" className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="text-center max-w-xl mx-auto mb-12">
+          <div data-aos="fade-up" className="text-center max-w-xl mx-auto mb-12">
             <span className="text-sm text-blue-600 uppercase font-medium tracking-wider">FAQs</span>
             <h2 className="text-3xl md:text-4xl font-semibold mt-4">Frequently Asked Questions</h2>
           </div>
 
-          <div className="max-w-3xl mx-auto bg-white rounded-xl divide-y divide-gray-200 shadow-sm overflow-hidden">
+          <div data-aos="fade-up" data-aos-delay="150" className="max-w-3xl mx-auto bg-white rounded-xl divide-y divide-gray-200 shadow-sm overflow-hidden">
             {faqs.map((f) => (
               <div key={f.id} className="overflow-hidden">
                 <button
@@ -727,12 +735,12 @@ export default function LandingPage() {
       {/* ── Testimonials ────────────────────────────────────────────── */}
       <section id="testimonial" className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="text-center max-w-xl mx-auto mb-12">
+          <div data-aos="fade-up" className="text-center max-w-xl mx-auto mb-12">
             <span className="text-sm text-blue-600 uppercase font-semibold tracking-wider">Our Clients</span>
             <h2 className="text-3xl md:text-4xl font-semibold mt-4">Stories From Our Customers</h2>
           </div>
 
-          <div className="relative max-w-5xl mx-auto">
+          <div data-aos="fade-up" data-aos-delay="150" className="relative max-w-5xl mx-auto">
             {/* Slides */}
             <div className="grid md:grid-cols-2 gap-6">
               {testimonials.map((t, i) => (
@@ -787,13 +795,13 @@ export default function LandingPage() {
       {/* ── Trusted Companies ───────────────────────────────────────── */}
       <section className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="text-center max-w-xl mx-auto mb-12">
+          <div data-aos="fade-up" className="text-center max-w-xl mx-auto mb-12">
             <h2 className="text-3xl md:text-4xl font-semibold">Trusted by Leading Companies</h2>
           </div>
 
           <div className="grid md:grid-cols-6 grid-cols-3 justify-center gap-8 items-center">
-            {["amazon", "google", "lenovo", "paypal", "shopify", "spotify"].map((brand) => (
-              <div key={brand} className="mx-auto py-2 flex items-center justify-center">
+            {["amazon", "google", "lenovo", "paypal", "shopify", "spotify"].map((brand, i) => (
+              <div key={brand} data-aos="zoom-in" data-aos-delay={i * 80} className="mx-auto py-2 flex items-center justify-center">
                 <Image
                   src={`/images/client/${brand}.svg`}
                   alt={brand}
@@ -810,14 +818,14 @@ export default function LandingPage() {
       {/* ── Blog ────────────────────────────────────────────────────── */}
       <section id="blog" className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="text-center max-w-xl mx-auto mb-12">
+          <div data-aos="fade-up" className="text-center max-w-xl mx-auto mb-12">
             <span className="text-sm text-blue-600 uppercase font-semibold tracking-wider">Blog</span>
             <h2 className="text-3xl md:text-4xl font-semibold mt-4">Check the latest news about eVizor in our blog.</h2>
           </div>
 
           <div className="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-6">
             {blogPosts.map((post, i) => (
-              <div key={i} className="bg-white rounded-xl border overflow-hidden hover:shadow-md transition-shadow">
+              <div key={i} data-aos="fade-up" data-aos-delay={i * 150} className="bg-white rounded-xl border overflow-hidden hover:shadow-md transition-shadow">
                 <div className="relative h-48 w-full overflow-hidden">
                   <Image src={post.img} alt={post.title} fill className="object-cover" />
                 </div>
@@ -848,7 +856,7 @@ export default function LandingPage() {
       <section id="contact" className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="grid lg:grid-cols-3 gap-8 items-start">
-            <div>
+            <div data-aos="fade-right">
               <span className="text-sm text-blue-600 uppercase font-semibold tracking-wider">Contact Us</span>
               <h2 className="text-3xl md:text-4xl font-semibold mt-4">We&apos;re open to talk to good people.</h2>
 
@@ -890,7 +898,7 @@ export default function LandingPage() {
               </div>
             </div>
 
-            <div className="lg:col-span-2 lg:ms-10">
+            <div data-aos="fade-left" data-aos-delay="150" className="lg:col-span-2 lg:ms-10">
               <div className="p-6 md:p-10 rounded-xl shadow-lg bg-white">
                 <form className="space-y-5">
                   <div className="grid sm:grid-cols-2 gap-5">
