@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { Appointment, AppointmentStatus } from "../models";
+import { ListQueryParams } from "../models/QueryParams";
 import { adminService } from "../lib/services";
 
 interface QueueMonitorState {
@@ -18,6 +19,7 @@ interface QueueMonitorState {
   setStatus: (status: AppointmentStatus | "") => void;
   setTenantId: (tenantId: string) => void;
   setSearch: (search: string) => void;
+  setFilters: (filters: Partial<ListQueryParams>) => void;
   fetchAppointments: () => Promise<void>;
 }
 
@@ -37,12 +39,26 @@ export const useQueueMonitorStore = create<QueueMonitorState>((set, get) => ({
   setStatus: (status) => set({ status, page: 1 }),
   setTenantId: (tenantId) => set({ tenantId, page: 1 }),
   setSearch: (search) => set({ search, page: 1 }),
+  setFilters: (filters) => set((state) => ({
+    ...state,
+    page: filters.page ?? (Object.keys(filters).some(k => k !== "page") ? 1 : state.page),
+    limit: filters.limit ?? state.limit,
+    status: (filters.status as AppointmentStatus | "") ?? state.status,
+    tenantId: filters.tenantId ?? state.tenantId,
+    search: filters.search ?? state.search,
+  })),
 
   fetchAppointments: async () => {
     const { page, limit, status, tenantId, search } = get();
     set({ isLoading: true, error: null });
     try {
-      const response = await adminService.getAllAppointments(page, limit, status, tenantId, search);
+      const response = await adminService.getAllAppointments({
+        page,
+        limit,
+        status,
+        tenantId,
+        search
+      });
       if (response.status && response.data) {
         // The API returns appointments array in 'data' field
         set({

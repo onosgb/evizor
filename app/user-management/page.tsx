@@ -3,11 +3,11 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import DashboardLayout from "../components/DashboardLayout";
-import CreateStaffForm from "./_components/CreateStaffForm";
+import CreateUserForm from "./_components/CreateUserForm";
 import ScheduleManagementModal from "./_components/ScheduleManagementModal";
 import Image from "next/image";
 import { Staff, CreateStaffRequest } from "../models";
-import { staffService } from "../lib/services";
+import { userService } from "../lib/services";
 import { ApiError } from "../models";
 import { Pagination } from "../components/Pagination";
 import TableActionMenu from "../components/TableActionMenu";
@@ -24,6 +24,8 @@ const getRoleBadgeColor = (role: string | null | undefined): string => {
       return "bg-primary";
     case "SUPERADMIN":
       return "bg-success";
+    case "ADMIN":
+      return "bg-warning";
     default:
       return "bg-slate-400";
   }
@@ -57,7 +59,7 @@ const getStatusBadgeColor = (status: string | null | undefined): string => {
   }
 };
 
-export default function StaffManagementPage() {
+export default function UserManagementPage() {
   const router = useRouter();
 
   const currentUser = useAuthStore((state) => state.user);
@@ -68,13 +70,14 @@ export default function StaffManagementPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [selectedProvince, setSelectedProvince] = useState("");
+  const [selectedRole, setSelectedRole] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
-  const [selectedStaffForSchedule, setSelectedStaffForSchedule] = useState<{
+  const [selectedUserForSchedule, setSelectedUserForSchedule] = useState<{
     id: string;
     name: string;
   } | null>(null);
-  const [staff, setStaff] = useState<Staff[]>([]);
+  const [users, setUsers] = useState<Staff[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [limit, setLimit] = useState(10);
@@ -88,7 +91,7 @@ export default function StaffManagementPage() {
 
   // Register top-bar search for this page
   useEffect(() => {
-    registerPageSearch("Search staff...");
+    registerPageSearch("Search users...");
     return () => unregisterPageSearch();
   }, [registerPageSearch, unregisterPageSearch]);
 
@@ -106,75 +109,76 @@ export default function StaffManagementPage() {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Re-fetch whenever page, page size, search query or province filter changes
+  // Re-fetch whenever page, page size, search query, province or role filter changes
   useEffect(() => {
-    const fetchStaff = async () => {
+    const fetchUsers = async () => {
       try {
         setIsLoading(true);
         setError(null);
-        const response = await staffService.getAllStaff({
-          pageSize: limit,
-          pageNumber: page,
+        const response = await userService.getAllUsers({
+          page,
+          limit,
           search: debouncedSearch || undefined,
           tenantId: selectedProvince || undefined,
+          role: selectedRole || undefined,
         });
         if (response.status && response.data) {
-          setStaff(response.data);
+          setUsers(response.data);
           setTotal(response.total ?? 0);
         } else {
-          setError(response.message || "Failed to fetch staff");
+          setError(response.message || "Failed to fetch users");
         }
       } catch (err) {
         if (err instanceof ApiError) {
-          setError(err.message || "Failed to fetch staff");
+          setError(err.message || "Failed to fetch users");
         } else {
           setError("An unexpected error occurred");
         }
-        console.error("Error fetching staff:", err);
+        console.error("Error fetching users:", err);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchStaff();
-  }, [page, limit, debouncedSearch, selectedProvince]);
+    fetchUsers();
+  }, [page, limit, debouncedSearch, selectedProvince, selectedRole]);
 
   useEffect(() => { if (userIsSuperAdmin) fetchTenants(); }, [userIsSuperAdmin]);
 
   // Data is already paginated by the server
   const startIndex = (page - 1) * limit;
-  const paginatedData = staff;
+  const paginatedData = users;
 
-  const toggleStaffStatus = async (id: string, currentStatus: string) => {
+  const toggleUserStatus = async (id: string, currentStatus: string) => {
     try {
       // ACTIVE → SUSPENDED; everything else → ACTIVE
       const newStatus = isActiveStatus(currentStatus) ? "SUSPENDED" : "ACTIVE";
-      const response = await staffService.toggleStaffStatus(id, newStatus);
+      const response = await userService.toggleUserStatus(id, newStatus);
       if (response.status && response.data) {
-        setStaff(
-          staff.map((member) => (member.id === id ? response.data : member)),
+        setUsers(
+          users.map((member) => (member.id === id ? response.data : member)),
         );
       } else {
-        setError(response.message || "Failed to update staff status");
+        setError(response.message || "Failed to update user status");
       }
     } catch (err) {
       if (err instanceof ApiError) {
-        setError(err.message || "Failed to update staff status");
+        setError(err.message || "Failed to update user status");
       } else {
         setError("An unexpected error occurred");
       }
-      console.error("Error updating staff status:", err);
+      console.error("Error updating user status:", err);
     }
   };
 
-  const confirmToggleStaffStatus = async () => {
+  const confirmToggleUserStatus = async () => {
     if (!toggleTarget || !toggleNewStatus) return;
     try {
-      const response = await staffService.toggleStaffStatus(toggleTarget.id, toggleNewStatus);
+      const response = await userService.toggleUserStatus(toggleTarget.id, toggleNewStatus);
       if (response.status && response.data) {
-        setStaff(staff.map((m) => (m.id === toggleTarget.id ? response.data : m)));
+        setUsers(users.map((m) => (m.id === toggleTarget.id ? response.data : m)));
       } else {
-        setError(response.message || "Failed to update staff status");
+        setError(response.message || "Failed to update user status");
       }
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "An unexpected error occurred");
@@ -184,33 +188,33 @@ export default function StaffManagementPage() {
     }
   };
 
-  const handleCreateStaff = async (data: CreateStaffRequest) => {
+  const handleCreateUser = async (data: CreateStaffRequest) => {
     setIsSubmitting(true);
     setFormError(null);
     setError(null);
 
     try {
-      const response = await staffService.createStaff(data);
+      const response = await userService.createUser(data);
       if (response.status && response.data) {
-        setStaff([...staff, response.data]);
+        setUsers([...users, response.data]);
         setShowModal(false);
       } else {
-        setFormError(response.message || "Failed to create staff");
+        setFormError(response.message || "Failed to create user");
       }
     } catch (err) {
       if (err instanceof ApiError) {
-        setFormError(err.message || "Failed to create staff");
+        setFormError(err.message || "Failed to create user");
       } else {
         setFormError("An unexpected error occurred");
       }
-      console.error("Error creating staff:", err);
+      console.error("Error creating user:", err);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleOpenSchedule = (staffId: string, staffName: string) => {
-    setSelectedStaffForSchedule({ id: staffId, name: staffName });
+  const handleOpenSchedule = (userId: string, userName: string) => {
+    setSelectedUserForSchedule({ id: userId, name: userName });
     setShowScheduleModal(true);
   };
 
@@ -219,10 +223,20 @@ export default function StaffManagementPage() {
       <div className="flex flex-col items-center justify-between space-y-4 py-5 sm:flex-row sm:space-y-0 lg:py-6">
         <div className="flex items-center space-x-1">
           <h2 className="text-xl font-medium text-slate-700 line-clamp-1 dark:text-navy-50">
-            Staff Management
+            User Management
           </h2>
         </div>
         <div className="flex items-center justify-center gap-3 flex-wrap">
+          <select
+            value={selectedRole}
+            onChange={(e) => { setSelectedRole(e.target.value); setPage(1); }}
+            className="form-select h-9 w-36 rounded-lg border border-slate-300 bg-transparent px-3 py-1.5 text-sm dark:border-navy-450 dark:text-navy-100"
+          >
+            <option value="">All Roles</option>
+            <option value="DOCTOR">Doctor</option>
+            <option value="ADMIN">Admin</option>
+            <option value="PATIENT">Patient</option>
+          </select>
           {userIsSuperAdmin && (
             <select
               value={selectedProvince}
@@ -239,19 +253,19 @@ export default function StaffManagementPage() {
             onClick={() => setShowModal(true)}
             className="btn min-w-28 bg-success font-medium text-white hover:bg-success-focus focus:bg-success-focus active:bg-success-focus/90 dark:bg-success dark:hover:bg-success-focus dark:focus:bg-success-focus dark:active:bg-success/90"
           >
-            Add New Staff
+            Add New User
           </button>
         </div>
       </div>
 
-      {/* Add Staff Modal */}
-      <CreateStaffForm
+      {/* Add User Modal */}
+      <CreateUserForm
         isOpen={showModal}
         onClose={() => {
           setShowModal(false);
           setFormError(null);
         }}
-        onSubmit={handleCreateStaff}
+        onSubmit={handleCreateUser}
         error={formError}
         isSubmitting={isSubmitting}
         theme="admin"
@@ -280,7 +294,7 @@ export default function StaffManagementPage() {
                 Cancel
               </button>
               <button
-                onClick={confirmToggleStaffStatus}
+                onClick={confirmToggleUserStatus}
                 className={`btn rounded-full font-medium text-white ${getStatusBadgeColor(toggleNewStatus)}`}
               >
                 Confirm
@@ -291,15 +305,15 @@ export default function StaffManagementPage() {
       )}
 
       {/* Schedule Management Modal */}
-      {selectedStaffForSchedule && (
+      {selectedUserForSchedule && (
         <ScheduleManagementModal
           isOpen={showScheduleModal}
           onClose={() => {
             setShowScheduleModal(false);
-            setSelectedStaffForSchedule(null);
+            setSelectedUserForSchedule(null);
           }}
-          userId={selectedStaffForSchedule.id}
-          userName={selectedStaffForSchedule.name}
+          userId={selectedUserForSchedule.id}
+          userName={selectedUserForSchedule.name}
           theme="admin"
         />
       )}
@@ -314,13 +328,13 @@ export default function StaffManagementPage() {
         </div>
       )}
 
-      {/* Staff Table */}
+      {/* User Table */}
       <div>
         <div className="card mt-3">
-          {staff.length === 0 && !isLoading ? (
+          {users.length === 0 && !isLoading ? (
             <div className="flex items-center justify-center py-12">
               <p className="text-slate-600 dark:text-navy-300">
-                No staff members found.
+                No users found.
               </p>
             </div>
           ) : (
@@ -445,7 +459,11 @@ export default function StaffManagementPage() {
                                           href="#"
                                           onClick={(e) => {
                                             e.preventDefault();
-                                            router.push(`/profile?userId=${member.id}`);
+                                            if (member.role?.toUpperCase() === "PATIENT") {
+                                              router.push(`/patient-preview?patientId=${member.id}`);
+                                            } else {
+                                              router.push(`/profile?userId=${member.id}`);
+                                            }
                                           }}
                                           className="flex h-8 items-center whitespace-nowrap px-3 pr-8 font-medium tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
                                         >

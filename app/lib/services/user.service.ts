@@ -1,15 +1,16 @@
 import apiClient from "../api-client";
 import { ApiResponse, CreateStaffRequest, Staff } from "../../models";
+import { ListQueryParams } from "../../models/QueryParams";
 
 /**
- * Staff service
- * Handles all staff-related API endpoints
+ * User service (previously Staff service)
+ * Handles all user-related API endpoints (using /staff prefix as per backend)
  */
-class StaffService {
+class UserService {
   /**
-   * Create a new staff member
+   * Create a new user
    */
-  async createStaff(data: CreateStaffRequest): Promise<ApiResponse<Staff>> {
+  async createUser(data: CreateStaffRequest): Promise<ApiResponse<Staff>> {
     const response = await apiClient.post<ApiResponse<Staff>>(
       "/staff/create-staff",
       data
@@ -18,20 +19,17 @@ class StaffService {
   }
 
   /**
-   * Get all staff members (server-side pagination + filtering)
+   * Get all users (server-side pagination + filtering)
    */
-  async getAllStaff(params: {
-    pageSize: number;
-    pageNumber: number;
-    search?: string;
-    tenantId?: string;
-  }): Promise<ApiResponse<Staff[]>> {
+  async getAllUsers(params: ListQueryParams): Promise<ApiResponse<Staff[]>> {
     const query: Record<string, string | number> = {
-      pageSize: params.pageSize,
-      pageNumber: params.pageNumber,
+      page: params.page ?? 1,
+      limit: params.limit ?? 10,
     };
     if (params.search)   query.search   = params.search;
     if (params.tenantId) query.tenantId = params.tenantId;
+    if (params.status)   query.status   = params.status;
+    if (params.role)     query.role     = params.role;
 
     const response = await apiClient.get<ApiResponse<Staff[]>>(
       "/staff/all-staff",
@@ -41,17 +39,17 @@ class StaffService {
   }
 
   /**
-   * Get staff member by ID
+   * Get user by ID
    */
-  async getStaffById(id: string): Promise<ApiResponse<Staff>> {
+  async getUserById(id: string): Promise<ApiResponse<Staff>> {
     const response = await apiClient.get<ApiResponse<Staff>>(`/staff/${id}`);
     return response.data;
   }
 
   /**
-   * Update staff member
+   * Update user
    */
-  async updateStaff(
+  async updateUser(
     id: string,
     data: Partial<CreateStaffRequest>
   ): Promise<ApiResponse<Staff>> {
@@ -63,17 +61,17 @@ class StaffService {
   }
 
   /**
-   * Delete staff member
+   * Delete user
    */
-  async deleteStaff(id: string): Promise<ApiResponse<void>> {
+  async deleteUser(id: string): Promise<ApiResponse<void>> {
     const response = await apiClient.delete<ApiResponse<void>>(`/staff/${id}`);
     return response.data;
   }
 
   /**
-   * Toggle staff status
+   * Toggle user status
    */
-  async toggleStaffStatus(
+  async toggleUserStatus(
     userId: string,
     status: string
   ): Promise<ApiResponse<Staff>> {
@@ -88,4 +86,4 @@ class StaffService {
   }
 }
 
-export const staffService = new StaffService();
+export const userService = new UserService();

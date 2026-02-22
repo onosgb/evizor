@@ -6,6 +6,7 @@ import {
   DoctorAvailability,
 } from "../../models";
 import type { ProposeAvailabilityRequest } from "../../models/DoctorAvailability";
+import { ListQueryParams } from "../../models/QueryParams";
 
 /**
  * Appointment service
@@ -62,13 +63,7 @@ class AppointmentService {
    * Get all appointments assigned to the authenticated doctor.
    * Supports server-side pagination and date range filtering.
    */
-  async getAssignedCases(params?: {
-    page?: number;
-    limit?: number;
-    from?: string;
-    to?: string;
-    search?: string;
-  }): Promise<AllAppointmentsResponse> {
+  async getAssignedCases(params?: ListQueryParams): Promise<AllAppointmentsResponse> {
     const response = await apiClient.get<AllAppointmentsResponse>(
       "/appointments",
       { params },

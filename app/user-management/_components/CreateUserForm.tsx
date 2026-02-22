@@ -156,9 +156,7 @@ export default function CreateStaffForm({
               >
                 <option value="">Select role</option>
                 <option value="DOCTOR">Doctor</option>
-                {currentUserIsSuperAdmin && (
-                  <option value="ADMIN">Admin</option>
-                )}
+                <option value="ADMIN">Admin</option>
               </select>
             </label>
             {currentUserIsSuperAdmin && (

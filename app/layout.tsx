@@ -18,6 +18,7 @@ const poppins = Poppins({
   display: "swap",
 });
 
+
 export const metadata: Metadata = {
   title: "eVizor - Connecting patients and doctors instantly",
   description:

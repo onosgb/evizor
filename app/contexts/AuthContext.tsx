@@ -45,7 +45,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // Protect routes - redirect based on authentication status
     if (!isLoading) {
-      const publicRoutes = ["/login", "/", "/landing", '/forgot-password', '/reset-password'];
+      const publicRoutes = ["/login", "/", "/forgot-password", "/reset-password"];
       const isPublicRoute = publicRoutes.includes(pathname || "");
       const isProfileRoute = pathname?.startsWith("/profile");
 
@@ -60,12 +60,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return;
         }
 
-        // If authenticated and on login or landing, redirect to dashboard (only if profile is complete)
+        // If authenticated and on login or root, redirect to root (only if profile is complete)
         if (
           profileCompleted &&
-          (pathname === "/login" || pathname === "/" || pathname === "/landing")
+          (pathname === "/login" || pathname === "/")
         ) {
-          router.push("/dashboard");
+          router.push("/");
           return;
         }
       }
@@ -86,7 +86,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.error("Logout error:", error);
       logoutStore();
     }
-    router.push("/landing");
+    window.location.href = "https://evizor-landing-page.vercel.app";
   };
 
   return (

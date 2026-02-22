@@ -22,11 +22,7 @@ export default function QueueMonitorPage() {
     tenantId,
     search,
     isLoading,
-    setPage,
-    setLimit,
-    setStatus,
-    setTenantId,
-    setSearch,
+    setFilters,
     fetchAppointments,
   } = useQueueMonitorStore();
 
@@ -53,7 +49,7 @@ export default function QueueMonitorPage() {
 
   // Debounce — wait 450 ms then push to store (triggers backend fetch)
   useEffect(() => {
-    const timer = setTimeout(() => setSearch(searchQuery), 450);
+    const timer = setTimeout(() => setFilters({ search: searchQuery }), 450);
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
@@ -115,7 +111,7 @@ export default function QueueMonitorPage() {
             <select
               value={tenantId}
               className="form-select h-9 rounded-lg border border-slate-300 bg-transparent px-3 py-1.5 text-sm dark:border-navy-450 dark:text-navy-100"
-              onChange={(e) => setTenantId(e.target.value)}
+              onChange={(e) => setFilters({ tenantId: e.target.value })}
             >
               <option value="">All Provinces</option>
               {tenants.map((t) => (
@@ -129,7 +125,7 @@ export default function QueueMonitorPage() {
             className="form-select h-9 rounded-lg border border-slate-300 bg-transparent px-3 py-1.5 text-sm dark:border-navy-450 dark:text-navy-100"
             value={status}
             onChange={(e) =>
-              setStatus(e.target.value as AppointmentStatus | "")
+              setFilters({ status: e.target.value as AppointmentStatus | "" })
             }
           >
             <option value="">All Status</option>
@@ -286,8 +282,8 @@ export default function QueueMonitorPage() {
         currentPage={page}
         totalEntries={total}
         entriesPerPage={limit}
-        onPageChange={setPage}
-        onEntriesPerPageChange={setLimit}
+        onPageChange={(p) => setFilters({ page: p })}
+        onEntriesPerPageChange={(l) => setFilters({ limit: l })}
       />
     </DashboardLayout>
   );

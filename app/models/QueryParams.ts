@@ -4,4 +4,7 @@ export interface ListQueryParams {
   search?: string;
   tenantId?: string;
   status?: string;
+  role?: string;
+  from?: string;
+  to?: string;
 }

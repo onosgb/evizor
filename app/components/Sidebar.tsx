@@ -332,14 +332,14 @@ export default function Sidebar({
                 </TooltipWrapper>
               )}
 
-              {/* Staff Management - Admin Only */}
+              {/* User Management - Admin Only */}
               {isAdmin && (
-                <TooltipWrapper text="Staff Management">
+                <TooltipWrapper text="User Management">
                   <Link
-                    href="/staff-management"
+                    href="/user-management"
                     onClick={handleLinkClick}
                     className={`flex size-11 items-center justify-center rounded-lg text-white outline-hidden transition-colors duration-200 hover:bg-white/20 focus:bg-white/20 active:bg-white/25 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25 ${
-                      isActive("/staff-management")
+                      isActive("/user-management")
                         ? "bg-primary/10 dark:bg-navy-600 dark:text-accent-light"
                         : ""
                     }`}

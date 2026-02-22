@@ -10,4 +10,4 @@
 
 // Re-export services for backward compatibility
 export { authService as authApi } from "./services";
-export { staffService as staffApi } from "./services";
+export { userService as staffApi } from "./services";

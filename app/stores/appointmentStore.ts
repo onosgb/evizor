@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { Appointment, User } from "../models";
+import { ListQueryParams } from "../models/QueryParams";
 import { appointmentService, adminService } from "../lib/services";
 
 interface AppointmentState {
@@ -13,13 +14,7 @@ interface AppointmentState {
   error: string | null;
 
   fetchLiveQueue: () => Promise<void>;
-  fetchAssignedCases: (params?: {
-    page?: number;
-    limit?: number;
-    from?: string;
-    to?: string;
-    search?: string;
-  }) => Promise<void>;
+  fetchAssignedCases: (params?: ListQueryParams) => Promise<void>;
   fetchHistory: (patientId: string) => Promise<void>;
   fetchPatientDetails: (patientId: string) => Promise<void>;
   selectAppointment: (appointmentId: string | null) => void;

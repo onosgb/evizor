@@ -7,6 +7,7 @@ import {
   Qualification,
   Appointment,
   CreateScheduleRequest,
+  ListQueryParams,
 } from "@/app/models";
 
 class AdminService {
@@ -140,23 +141,11 @@ class AdminService {
    * Get all appointments
    */
   async getAllAppointments(
-    page: number = 1,
-    limit: number = 10,
-    status: string = "",
-    tenantId: string = "",
-    search: string = "",
+    queryParams: ListQueryParams,
   ): Promise<ApiResponse<Appointment[]>> {
     const response = await apiClient.get<ApiResponse<Appointment[]>>(
       "/appointments/all",
-      {
-        params: {
-          page,
-          limit,
-          ...(status && { status }),
-          ...(tenantId && { tenantId }),
-          ...(search && { search }),
-        },
-      },
+      { params: queryParams },
     );
     return response.data;
   }
