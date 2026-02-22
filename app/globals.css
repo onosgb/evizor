@@ -3,31 +3,6 @@
 /* ── Smooth scrolling ──────────────────────────────────────────────── */
 html { scroll-behavior: smooth; }
 
-/* ── Scroll-triggered animations ──────────────────────────────────── */
-[data-animate] {
-  opacity: 0;
-  transition: opacity 0.7s ease, transform 0.7s ease;
-}
-[data-animate="fade-up"]    { transform: translateY(44px); }
-[data-animate="fade-left"]  { transform: translateX(-52px); }
-[data-animate="fade-right"] { transform: translateX(52px); }
-[data-animate="fade-in"]    { transform: none; }
-[data-animate="zoom-in"]    { transform: scale(0.92); }
-
-[data-animate].in-view {
-  opacity: 1;
-  transform: translate(0, 0) scale(1);
-}
-
-[data-delay="100"]  { transition-delay: 100ms;  }
-[data-delay="150"]  { transition-delay: 150ms;  }
-[data-delay="200"]  { transition-delay: 200ms;  }
-[data-delay="250"]  { transition-delay: 250ms;  }
-[data-delay="300"]  { transition-delay: 300ms;  }
-[data-delay="350"]  { transition-delay: 350ms;  }
-[data-delay="400"]  { transition-delay: 400ms;  }
-[data-delay="500"]  { transition-delay: 500ms;  }
-[data-delay="600"]  { transition-delay: 600ms;  }
 
 /* Force dark: variants to require the .dark class on a parent element,
    not the OS prefers-color-scheme. Since we never add .dark, all

@@ -5,6 +5,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "../stores/authStore";
+import AOS from "aos";
+import "aos/dist/aos.css";
 
 const heroSlides = [
   { heading: "Care Without Limits" },
@@ -67,14 +69,9 @@ export default function LandingPage() {
     return () => clearInterval(t);
   }, []);
 
-  // Scroll-triggered animations
+  // AOS scroll animations
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add("in-view"); }),
-      { threshold: 0.12, rootMargin: "0px 0px -60px 0px" }
-    );
-    document.querySelectorAll("[data-animate]").forEach((el) => observer.observe(el));
-    return () => observer.disconnect();
+    AOS.init({ duration: 750, once: true, easing: "ease-out-cubic", offset: 60 });
   }, []);
 
   const scrollTo = (id: string) => {
@@ -185,7 +182,7 @@ export default function LandingPage() {
             ))}
           </div>
 
-          <div data-animate="fade-up" data-delay="300" className="flex flex-wrap gap-3 justify-center">
+          <div data-aos="fade-up" data-aos-delay="300" className="flex flex-wrap gap-3 justify-center">
             <a href="#" className="rounded-full bg-white text-purple-700 px-8 py-3 text-sm font-semibold shadow hover:bg-purple-50 transition-colors">
               Download
             </a>
@@ -197,7 +194,7 @@ export default function LandingPage() {
 
         {/* Mockup images */}
         <div className="max-w-4xl mx-auto w-full px-4 pb-0 flex justify-center items-end gap-4">
-          <div data-animate="fade-up" data-delay="400" className="relative w-full max-w-[520px] rounded-t-2xl overflow-hidden shadow-2xl border border-white/20">
+          <div data-aos="fade-up" data-aos-delay="400" className="relative w-full max-w-[520px] rounded-t-2xl overflow-hidden shadow-2xl border border-white/20">
             <div className="h-5 bg-slate-800 rounded-t-xl flex items-center px-3 gap-1.5">
               <span className="size-2.5 rounded-full bg-red-400" />
               <span className="size-2.5 rounded-full bg-yellow-400" />
@@ -205,7 +202,7 @@ export default function LandingPage() {
             </div>
             <Image src="/images/software-screen-a.jpg" alt="eVizor software" width={800} height={500} className="w-full" />
           </div>
-          <div data-animate="fade-up" data-delay="500" className="relative w-32 sm:w-40 shrink-0 rounded-t-3xl overflow-hidden shadow-2xl border border-white/20">
+          <div data-aos="fade-up" data-aos-delay="500" className="relative w-32 sm:w-40 shrink-0 rounded-t-3xl overflow-hidden shadow-2xl border border-white/20">
             <Image src="/images/app-screen-a.jpg" alt="eVizor app" width={200} height={400} className="w-full" />
           </div>
         </div>
@@ -214,7 +211,7 @@ export default function LandingPage() {
       {/* ── About ────────────────────────────────────────────────── */}
       <section id="about" className="py-24 bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div data-animate="fade-up" className="text-center mb-14">
+          <div data-aos="fade-up" className="text-center mb-14">
             <h2 className="text-3xl sm:text-4xl font-bold text-slate-800">About <span className="text-purple-700">eVizor</span></h2>
             <p className="mt-4 text-slate-500 max-w-2xl mx-auto leading-relaxed">
               eVizor envisions a future where quality healthcare is not limited by location, time, or infrastructure. By combining trusted medical expertise with smart digital technology, eVizor is making healthcare more connected, responsive, and accessible for everyone.
@@ -222,10 +219,10 @@ export default function LandingPage() {
           </div>
 
           <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div data-animate="fade-left" className="flex justify-center">
+            <div data-aos="fade-left" className="flex justify-center">
               <Image src="/images/about.png" alt="About eVizor" width={480} height={400} className="w-full max-w-md rounded-2xl" />
             </div>
-            <div data-animate="fade-right">
+            <div data-aos="fade-right">
               <h3 className="text-2xl font-bold text-slate-800 mb-4">Trusted Medical Care—Anywhere, Anytime</h3>
               <p className="text-slate-500 leading-relaxed mb-4">
                 eVizor is a secure virtual healthcare platform that connects patients with licensed medical professionals through real-time video consultations, digital prescriptions, and smart clinical workflows.
@@ -244,7 +241,7 @@ export default function LandingPage() {
       {/* ── For Patient ──────────────────────────────────────────── */}
       <section id="forpatient" className="py-24 bg-emerald-600">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div data-animate="fade-up" className="text-center mb-14">
+          <div data-aos="fade-up" className="text-center mb-14">
             <h2 className="text-3xl sm:text-4xl font-bold text-white">For Patient</h2>
             <p className="mt-4 text-emerald-100 max-w-xl mx-auto leading-relaxed">
               eVizor makes accessing healthcare simple and fast. Patients can describe their symptoms, upload photos or medical documents, and join a live virtual queue to consult a licensed doctor within minutes.
@@ -260,7 +257,7 @@ export default function LandingPage() {
               { icon: "📹", title: "Secure Video Consultations", desc: "Connect through encrypted, high-quality video calls that protect your privacy.", delay: "250" },
               { icon: "📋", title: "Digital Prescriptions", desc: "Receive prescriptions instantly after your consultation, ready to download or share.", delay: "350" },
             ].map((f) => (
-              <div key={f.title} data-animate="fade-up" data-delay={f.delay} className="bg-white/10 rounded-2xl p-6 backdrop-blur-sm border border-white/20 hover:bg-white/20 transition-colors">
+              <div key={f.title} data-aos="fade-up" data-aos-delay={f.delay} className="bg-white/10 rounded-2xl p-6 backdrop-blur-sm border border-white/20 hover:bg-white/20 transition-colors">
                 <div className="text-3xl mb-3">{f.icon}</div>
                 <h4 className="text-white font-semibold text-lg mb-2">{f.title}</h4>
                 <p className="text-emerald-100 text-sm leading-relaxed">{f.desc}</p>
@@ -274,7 +271,7 @@ export default function LandingPage() {
       <section id="fordoctor" className="py-24 bg-blue-700">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div data-animate="fade-left">
+            <div data-aos="fade-left">
               <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">For Doctor</h2>
               <p className="text-blue-100 leading-relaxed mb-10">
                 eVizor equips doctors with efficient tools to deliver high-quality virtual care. Clinicians can view a live patient queue, preview symptoms and uploaded files before consultations, and conduct secure video visits.
@@ -296,7 +293,7 @@ export default function LandingPage() {
                 ))}
               </div>
             </div>
-            <div data-animate="fade-right" className="relative flex justify-center items-end gap-4">
+            <div data-aos="fade-right" className="relative flex justify-center items-end gap-4">
               <div className="relative w-72 rounded-t-2xl overflow-hidden shadow-2xl border border-white/20">
                 <div className="h-5 bg-slate-800 rounded-t-xl flex items-center px-3 gap-1.5">
                   <span className="size-2.5 rounded-full bg-red-400" /><span className="size-2.5 rounded-full bg-yellow-400" /><span className="size-2.5 rounded-full bg-green-400" />
@@ -314,7 +311,7 @@ export default function LandingPage() {
       {/* ── How It Works ─────────────────────────────────────────── */}
       <section id="how_it_works" className="py-24 bg-white">
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
-          <div data-animate="fade-up" className="text-center mb-14">
+          <div data-aos="fade-up" className="text-center mb-14">
             <h2 className="text-3xl sm:text-4xl font-bold text-slate-800">Step by Step <span className="text-purple-700">of eVizor</span></h2>
             <p className="mt-4 text-slate-500 max-w-xl mx-auto leading-relaxed">
               Fast, secure, and seamless virtual consultations—bringing professional healthcare directly to you.
@@ -322,7 +319,7 @@ export default function LandingPage() {
           </div>
 
           {/* Step tabs */}
-          <div data-animate="fade-up" data-delay="150" className="flex flex-wrap justify-center gap-2 mb-10">
+          <div data-aos="fade-up" data-aos-delay="150" className="flex flex-wrap justify-center gap-2 mb-10">
             {howItWorksSteps.map((step, i) => (
               <button
                 key={step.id}
@@ -357,7 +354,7 @@ export default function LandingPage() {
       {/* ── Why Choose Us ────────────────────────────────────────── */}
       <section id="why_choose_us" className="py-24" style={{ background: "#ecf4fd" }}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div data-animate="fade-up" className="text-center mb-14">
+          <div data-aos="fade-up" className="text-center mb-14">
             <h2 className="text-3xl sm:text-4xl font-bold text-slate-800">
               Why Choose <span className="text-emerald-600">eVizor</span>
             </h2>
@@ -371,7 +368,7 @@ export default function LandingPage() {
               { icon: "🔒", title: "Trusted. Secure. Simple.", desc: "Private video consultations with licensed professionals, backed by strong security and easy access to care.", delay: "250" },
               { icon: "🏅", title: "Quality Care, Without the Wait", desc: "See a doctor in minutes through a secure, easy-to-use app—anytime, anywhere.", delay: "400" },
             ].map((f) => (
-              <div key={f.title} data-animate="zoom-in" data-delay={f.delay} className="bg-white rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow">
+              <div key={f.title} data-aos="zoom-in" data-aos-delay={f.delay} className="bg-white rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow">
                 <div className="text-4xl mb-4">{f.icon}</div>
                 <h3 className="text-lg font-bold text-slate-800 mb-3">{f.title}</h3>
                 <p className="text-slate-500 text-sm leading-relaxed">{f.desc}</p>
@@ -385,7 +382,7 @@ export default function LandingPage() {
       <section id="faq" className="py-24 bg-white">
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
           <div className="grid md:grid-cols-5 gap-12">
-            <div data-animate="fade-left" className="md:col-span-2">
+            <div data-aos="fade-left" className="md:col-span-2">
               <h2 className="text-3xl sm:text-4xl font-bold text-slate-800 mb-4">eVizor <span className="text-purple-700">FAQ</span></h2>
               <p className="text-slate-500 leading-relaxed mb-3">
                 Find answers to common questions about eVizor, virtual consultations, and using the app with ease.
@@ -397,7 +394,7 @@ export default function LandingPage() {
                 </button>
               </p>
             </div>
-            <div data-animate="fade-right" data-delay="150" className="md:col-span-3 space-y-3">
+            <div data-aos="fade-right" data-aos-delay="150" className="md:col-span-3 space-y-3">
               {faqs.map((f) => (
                 <div key={f.id} className="border border-slate-200 rounded-xl overflow-hidden">
                   <button
@@ -427,12 +424,12 @@ export default function LandingPage() {
           <Image src="/images/testimonial-bg.png" alt="" fill className="object-cover" />
         </div>
         <div className="relative max-w-3xl mx-auto px-4 sm:px-6 text-center">
-          <div data-animate="fade-up">
+          <div data-aos="fade-up">
             <h2 className="text-3xl sm:text-4xl font-bold text-slate-800 mb-3">What our <span className="text-purple-700">clients say!</span></h2>
             <p className="text-slate-500 mb-12">Stories from people who chose eVizor for easier healthcare.</p>
           </div>
 
-          <div data-animate="fade-up" data-delay="200" className="relative min-h-[200px]">
+          <div data-aos="fade-up" data-aos-delay="200" className="relative min-h-[200px]">
             {testimonials.map((t, i) => (
               <div key={i} className={`absolute inset-0 transition-all duration-700 ${i === testimonialIdx ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"}`}>
                 <Image src="/images/quote-icon.png" alt="quote" width={40} height={30} className="mx-auto mb-6 opacity-60" />
@@ -458,12 +455,12 @@ export default function LandingPage() {
       {/* ── Contact ──────────────────────────────────────────────── */}
       <section id="contacts" className="py-24 bg-linear-to-br from-purple-900 via-purple-700 to-indigo-800">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div data-animate="fade-up" className="text-center mb-14">
+          <div data-aos="fade-up" className="text-center mb-14">
             <h2 className="text-3xl sm:text-4xl font-bold text-white">Get In Touch</h2>
           </div>
           <div className="grid md:grid-cols-2 gap-10">
             {/* Form */}
-            <div data-animate="fade-left" className="bg-white rounded-2xl p-8 shadow-xl text-center">
+            <div data-aos="fade-left" className="bg-white rounded-2xl p-8 shadow-xl text-center">
               <h3 className="text-xl font-bold text-slate-800 mb-2">Contact Us</h3>
               <p className="text-slate-500 text-sm mb-6">Working contact form along send mail feature with contact form validation.</p>
               <form className="space-y-4 text-left">
@@ -483,7 +480,7 @@ export default function LandingPage() {
             </div>
 
             {/* Info */}
-            <div data-animate="fade-right" data-delay="150" className="flex flex-col gap-6">
+            <div data-aos="fade-right" data-aos-delay="150" className="flex flex-col gap-6">
               <div className="bg-white/10 rounded-2xl p-6 border border-white/20 backdrop-blur-sm">
                 <div className="grid sm:grid-cols-2 gap-4 mb-4">
                   <div className="flex items-center gap-3 text-white">
@@ -510,7 +507,7 @@ export default function LandingPage() {
 
       {/* ── Footer ───────────────────────────────────────────────── */}
       <footer className="bg-slate-900 py-10">
-        <div data-animate="fade-in" className="max-w-6xl mx-auto px-4 sm:px-6 text-center">
+        <div data-aos="fade-in" className="max-w-6xl mx-auto px-4 sm:px-6 text-center">
           <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 mb-6">
             {navLinks.map((l) => (
               <button key={l.id} onClick={() => scrollTo(l.id)} className="text-sm text-slate-400 hover:text-white transition-colors">
