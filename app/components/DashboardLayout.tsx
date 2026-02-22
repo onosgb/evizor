@@ -18,12 +18,9 @@ export default function DashboardLayout({
   const [profilePopperOpen, setProfilePopperOpen] = useState(false);
 
   useEffect(() => {
-    // Check for dark mode preference
-    const isDark = localStorage.getItem("_x_darkMode_on") === "true";
-    setDarkMode(isDark);
-    if (isDark) {
-      document.documentElement.classList.add("dark");
-    }
+    // Dark mode is disabled — ensure the class is never applied
+    document.documentElement.classList.remove("dark");
+    localStorage.removeItem("_x_darkMode_on");
 
     // Check for monochrome mode preference
     const isMono = localStorage.getItem("_x_monochrome_on") === "true";
@@ -51,16 +48,8 @@ export default function DashboardLayout({
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const toggleDarkMode = () => {
-    const newDarkMode = !darkMode;
-    setDarkMode(newDarkMode);
-    localStorage.setItem("_x_darkMode_on", String(newDarkMode));
-    if (newDarkMode) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  };
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  const toggleDarkMode = () => {};
 
   const toggleMonochromeMode = () => {
     const newMonochromeMode = !monochromeMode;

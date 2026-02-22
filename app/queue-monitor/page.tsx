@@ -232,18 +232,9 @@ export default function QueueMonitorPage() {
                         </div>
                       </td>
                       <td className="whitespace-nowrap px-4 py-3 sm:px-5">
-                        {item.doctorName ? (
-                          <a
-                            href={`/prifile?userId=${item.doctorId}`}
-                            className="hover:underline focus:underline"
-                          >
-                            {item.doctorName}
-                          </a>
-                        ) : (
-                          <span className="text-xs italic text-slate-400 dark:text-navy-400">
-                            No doctor assigned
-                          </span>
-                        )}
+                        <a href="#" className="hover:underline focus:underline">
+                          {item.doctorName}
+                        </a>
                       </td>
                       <td className="whitespace-nowrap px-4 py-3 font-medium text-slate-600 dark:text-navy-100 sm:px-5">
                         {item.scheduledAt}

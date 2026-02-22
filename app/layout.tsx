@@ -44,8 +44,6 @@ export default function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html: `
-              localStorage.getItem("_x_darkMode_on") === "true" &&
-                document.documentElement.classList.add("dark");
               localStorage.getItem("_x_monochrome_on") === "true" &&
                 document.documentElement.classList.add("monochrome");
             `,
