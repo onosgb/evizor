@@ -200,7 +200,7 @@ export default function LoginPage() {
 
         {/* Footer links */}
         <p className="text-center text-sm text-gray-600">
-          <a href="https://evizor-landing-page.vercel.app" className="text-blue-600 font-medium hover:underline">
+          <a href="https://evizor.vercel.app" className="text-blue-600 font-medium hover:underline">
             ← Back to Home
           </a>
         </p>

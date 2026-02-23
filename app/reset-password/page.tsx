@@ -114,13 +114,23 @@ function ResetPasswordForm() {
 
         {/* Logo + heading */}
         <div className="text-center mb-6">
-          <Image
-            src="/images/evizor_logo_dark.png"
-            alt="eVizor"
-            width={140}
-            height={40}
-            className="h-10 w-auto mx-auto mb-4"
-          />
+        
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100 text-blue-600">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-8 w-8"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+              />
+            </svg>
+          </div>
           <h2 className="text-2xl font-semibold text-gray-900">Reset Password</h2>
           <p className="text-gray-500 mt-2">
             We&apos;ve sent a verification code to <span className="font-medium text-gray-700">{email}</span>. Enter the code and your new password.
