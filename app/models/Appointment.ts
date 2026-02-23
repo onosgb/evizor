@@ -17,6 +17,7 @@ export interface Appointment {
   severity: number;
   scheduledAt: string;
   createdAt: string;
+  tenantId: string;
   attachments: string[];
   symptoms: string[];
 }

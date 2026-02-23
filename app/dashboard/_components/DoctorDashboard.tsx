@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useEffect } from "react";
 import { User } from "@/app/models";
 import { useAppointmentStore } from "@/app/stores/appointmentStore";
+import { formatDate } from "@/app/lib/utils/dateUtils";
 
 const getGreeting = () => {
   const hour = new Date().getHours();
@@ -187,11 +188,8 @@ export default function DoctorDashboard({ user }: { user: User | null }) {
                             </span>
                           </div>
                         </td>
-                        <td className="whitespace-nowrap px-4 py-3 sm:px-5 text-slate-600 dark:text-navy-100">
-                          {caseItem.description || "—"}
-                        </td>
                         <td className="whitespace-nowrap px-4 py-3 font-medium text-slate-600 dark:text-navy-100 sm:px-5">
-                          {new Date(caseItem.scheduledAt).toLocaleString()}
+                          {formatDate(caseItem.scheduledAt)}
                         </td>
                         <td className={`whitespace-nowrap px-4 py-3 sm:px-5 ${index === recentCompletedCases.length - 1 ? "rounded-br-lg" : ""}`}>
                           <div className="flex justify-end">

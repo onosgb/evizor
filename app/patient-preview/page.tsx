@@ -3,6 +3,7 @@
 import ActionButtons from "../components/ActionButtons";
 import { AppointmentStatus } from "../models";
 import { useAppointmentStore } from "../stores/appointmentStore";
+import { formatDate } from "../lib/utils/dateUtils";
 
 function SkeletonField({ wide = false }: { wide?: boolean }) {
   return (
@@ -106,7 +107,7 @@ export default function PatientPreviewPage() {
               <span className="relative mt-1.5 flex">
                 <span className="text-base font-medium text-slate-600 dark:text-navy-100">
                   {selectedAppointment
-                    ? new Date(selectedAppointment.scheduledAt).toLocaleString()
+                    ? formatDate(selectedAppointment.scheduledAt)
                     : "—"}
                 </span>
               </span>

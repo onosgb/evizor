@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { formatDate } from "@/app/lib/utils/dateUtils";
 
 interface WaitingPatientCardProps {
   name: string;
@@ -44,7 +45,7 @@ export default function WaitingPatientCard({
         </div>
       </div>
       <div>
-        <p>{date}</p>
+        <p>{formatDate(date)}</p>
         <p className="text-xl font-medium text-slate-700 dark:text-navy-100">
           {time}
         </p>

@@ -359,6 +359,9 @@ export default function UserManagementPage() {
                         Phone
                       </th>
                       <th className="whitespace-nowrap bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">
+                        Province
+                      </th>
+                      <th className="whitespace-nowrap bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">
                         Role
                       </th>
                       <th className="whitespace-nowrap bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">
@@ -390,6 +393,9 @@ export default function UserManagementPage() {
                             </td>
                             <td className="px-4 py-3 sm:px-5">
                               <div className="h-4 w-28 rounded bg-slate-200 dark:bg-navy-500" />
+                            </td>
+                            <td className="px-4 py-3 sm:px-5">
+                              <div className="h-4 w-24 rounded bg-slate-200 dark:bg-navy-500" />
                             </td>
                             <td className="px-4 py-3 sm:px-5">
                               <div className="h-5 w-16 rounded-full bg-slate-200 dark:bg-navy-500" />
@@ -435,8 +441,11 @@ export default function UserManagementPage() {
                               {member.phoneNumber}
                             </td>
                             <td className="whitespace-nowrap px-4 py-3 sm:px-5">
-                              <div
-                                className={`badge rounded-full ${getRoleBadgeColor(
+                              {tenants.find((t) => t.id === member.tenantId)?.province || "—"}
+                            </td>
+                            <td className="whitespace-nowrap px-4 py-3 sm:px-5">
+                               <div
+                                 className={`badge rounded-full ${getRoleBadgeColor(
                                   member.role,
                                 )} text-white`}
                               >

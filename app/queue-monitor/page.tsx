@@ -11,6 +11,7 @@ import { useAuthStore } from "@/app/stores/authStore";
 import { isSuperAdmin } from "@/app/lib/roles";
 import { Pagination } from "../components/Pagination";
 import { useSearchContext } from "../contexts/SearchContext";
+import { formatDate } from "@/app/lib/utils/dateUtils";
 
 export default function QueueMonitorPage() {
   const {
@@ -173,9 +174,6 @@ export default function QueueMonitorPage() {
                         <div className="h-4 w-24 rounded bg-slate-200 dark:bg-navy-500" />
                       </td>
                       <td className="px-4 py-3 sm:px-5">
-                        <div className="h-4 w-10 rounded bg-slate-200 dark:bg-navy-500" />
-                      </td>
-                      <td className="px-4 py-3 sm:px-5">
                         <div className="h-4 w-32 rounded bg-slate-200 dark:bg-navy-500" />
                       </td>
                       <td className="px-4 py-3 sm:px-5">
@@ -227,13 +225,11 @@ export default function QueueMonitorPage() {
                           </span>
                         </div>
                       </td>
-                      <td className="whitespace-nowrap px-4 py-3 sm:px-5">
-                        <a href="#" className="hover:underline focus:underline">
-                          {item.doctorName}
-                        </a>
+                       <td className="whitespace-nowrap px-4 py-3 sm:px-5">
+                        {item.doctorName || "—"}
                       </td>
                       <td className="whitespace-nowrap px-4 py-3 font-medium text-slate-600 dark:text-navy-100 sm:px-5">
-                        {item.scheduledAt}
+                        {formatDate(item.scheduledAt)}
                       </td>
                       <td className="whitespace-nowrap px-4 py-3 sm:px-5">
                         {getStatusIcon(item.status)}

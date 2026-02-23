@@ -8,6 +8,7 @@ import { Pagination } from "../components/Pagination";
 import { useAppointmentStore } from "../stores/appointmentStore";
 import { AppointmentStatus } from "../models";
 import { useSearchContext } from "../contexts/SearchContext";
+import { formatDate } from "@/app/lib/utils/dateUtils";
 
 export default function AssignedCasesPage() {
   const [dateFrom, setDateFrom] = useState("");
@@ -226,7 +227,7 @@ export default function AssignedCasesPage() {
                       {item.description || "—"}
                     </td>
                     <td className="whitespace-nowrap px-4 py-3 sm:px-5 text-slate-600 dark:text-navy-100">
-                      {new Date(item.scheduledAt).toLocaleString()}
+                      {formatDate(item.scheduledAt)}
                     </td>
                     <td className="whitespace-nowrap px-4 py-3 sm:px-5 text-slate-600 dark:text-navy-100">
                       {item.severity ?? "—"}
