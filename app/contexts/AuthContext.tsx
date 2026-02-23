@@ -82,11 +82,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await authService.logout();
     } catch (error) {
-      // Even if logout fails, clear local state
       console.error("Logout error:", error);
+    } finally {
+      // Clear local state before redirecting
       logoutStore();
+      window.location.href = "https://evizor.vercel.app";
     }
-    window.location.href = "https://evizor-landing-page.vercel.app";
   };
 
   return (
