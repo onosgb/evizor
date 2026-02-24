@@ -51,7 +51,13 @@ class AuthService {
         const rememberMe = useAuthStore.getState().rememberMe;
         useAuthStore
           .getState()
-          .login(accessToken, newRefreshToken, user, profileCompleted, rememberMe);
+          .login(
+            accessToken,
+            newRefreshToken,
+            user,
+            profileCompleted,
+            rememberMe,
+          );
       }
 
       return response.data;
@@ -90,7 +96,13 @@ class AuthService {
       const rememberMe = useAuthStore.getState().rememberMe;
       useAuthStore
         .getState()
-        .login(accessToken, newRefreshToken, user, profileCompleted, rememberMe);
+        .login(
+          accessToken,
+          newRefreshToken,
+          user,
+          profileCompleted,
+          rememberMe,
+        );
     }
 
     return response.data;
@@ -133,7 +145,13 @@ class AuthService {
       const rememberMe = useAuthStore.getState().rememberMe;
       useAuthStore
         .getState()
-        .login(accessToken, newRefreshToken, user, profileCompleted, rememberMe);
+        .login(
+          accessToken,
+          newRefreshToken,
+          user,
+          profileCompleted,
+          rememberMe,
+        );
     }
     // Note: We might want to keep rememberMe preference, but here we just update tokens and user
     return response.data;
@@ -174,7 +192,8 @@ class AuthService {
    * Get current user's profile
    */
   async getMyProfile(): Promise<ApiResponse<User>> {
-    const response = await apiClient.get<ApiResponse<User>>("/users/profile");
+    const response =
+      await apiClient.get<ApiResponse<User>>("/users/my-profile");
     return response.data;
   }
 

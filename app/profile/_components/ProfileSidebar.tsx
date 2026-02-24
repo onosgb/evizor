@@ -1,13 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useAuthStore } from "@/app/stores/authStore";
+import { useProfileStore } from "@/app/stores/profileStore";
 import { getTheme, isDoctor } from "@/app/lib/roles";
-import { adminService } from "@/app/lib/services";
-import { User } from "@/app/models";
 
 interface ProfileSidebarProps {
   theme?: "admin" | "doctor";
@@ -19,35 +18,18 @@ export default function ProfileSidebar({ theme }: ProfileSidebarProps) {
   const userId = searchParams.get("userId");
   const user = useAuthStore((state) => state.user);
 
-  const [displayUser, setDisplayUser] = useState<User | null>(user);
-  const [isSidebarLoading, setIsSidebarLoading] = useState(
-    !!(userId && userId !== user?.id),
-  );
+  const {
+    viewedUser,
+    isLoading: isSidebarLoading,
+    fetchViewedUser,
+  } = useProfileStore();
+  const displayUser = viewedUser ?? user;
 
-  // Effect to determine which user to display
   useEffect(() => {
-    const fetchUser = async () => {
-      if (userId && userId !== user?.id) {
-        setIsSidebarLoading(true);
-        try {
-          const response = await adminService.getUserProfile(userId);
-          if (response.status && response.data) {
-            setDisplayUser(response.data);
-          }
-        } catch (error) {
-          console.error("Failed to fetch user profile for sidebar:", error);
-          setDisplayUser(user);
-        } finally {
-          setIsSidebarLoading(false);
-        }
-      } else {
-        setDisplayUser(user);
-        setIsSidebarLoading(false);
-      }
-    };
-
-    fetchUser();
-  }, [userId, user]);
+    if (user) {
+      fetchViewedUser(userId, user?.id);
+    }
+  }, [userId, user?.id, fetchViewedUser]);
 
   // Helper to build links with userId query param if present
   const getLink = (path: string) => {

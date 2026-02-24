@@ -3,9 +3,9 @@
 import { useState, useEffect } from "react";
 import ProfileSidebar from "./ProfileSidebar";
 import { useAuthStore } from "@/app/stores/authStore";
-import { getTheme, isAdmin, isDoctor } from "@/app/lib/roles";
+import { getTheme } from "@/app/lib/roles";
 import { useSearchParams } from "next/navigation";
-import { authService, adminService } from "@/app/lib/services";
+import { adminService } from "@/app/lib/services";
 
 interface ConsultationPreferences {
   acceptOnDemandVisits: boolean;
@@ -20,16 +20,16 @@ export default function ConsultationContent() {
   const searchParams = useSearchParams();
   const userId = searchParams.get("userId");
   const isReadOnly = !!userId;
-  
+
   const theme = getTheme(user);
-  
+
   // Theme-based switch styling
   const getSwitchClasses = () => {
     return theme === "admin"
       ? "form-switch h-5 w-10 rounded-full bg-slate-300 before:rounded-full before:bg-slate-50 checked:bg-green-600 checked:before:bg-white dark:bg-navy-900 dark:before:bg-navy-300 dark:checked:bg-green-500 dark:checked:before:bg-white"
       : "form-switch h-5 w-10 rounded-full bg-slate-300 before:rounded-full before:bg-slate-50 checked:bg-primary checked:before:bg-white dark:bg-navy-900 dark:before:bg-navy-300 dark:checked:bg-accent dark:checked:before:bg-white";
   };
-  const [isLoadingPreferences, setIsLoadingPreferences] = useState(!!(userId));
+  const [isLoadingPreferences, setIsLoadingPreferences] = useState(!!userId);
   const [preferences, setPreferences] = useState<ConsultationPreferences>({
     acceptOnDemandVisits: true,
     acceptScheduledVisits: true,
@@ -43,7 +43,8 @@ export default function ConsultationContent() {
       const fetchPreferences = async () => {
         setIsLoadingPreferences(true);
         try {
-          const response = await adminService.getUserConsultationPreferences(userId);
+          const response =
+            await adminService.getUserConsultationPreferences(userId);
           if (response.status && response.data) {
             setPreferences(response.data);
           }
@@ -62,11 +63,6 @@ export default function ConsultationContent() {
       ...prev,
       [key]: !prev[key],
     }));
-  };
-
-  const handleSave = () => {
-    // TODO: Implement save functionality
-    console.log("Saving consultation preferences:", preferences);
   };
 
   return (
@@ -92,97 +88,116 @@ export default function ConsultationContent() {
                 {isLoadingPreferences ? (
                   <div className="animate-pulse space-y-2">
                     {Array.from({ length: 5 }).map((_, i) => (
-                      <div key={i} className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-navy-500">
-                        <div className={`h-4 rounded bg-slate-200 dark:bg-navy-500 ${i % 2 === 0 ? "w-52" : "w-40"}`} />
+                      <div
+                        key={i}
+                        className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-navy-500"
+                      >
+                        <div
+                          className={`h-4 rounded bg-slate-200 dark:bg-navy-500 ${i % 2 === 0 ? "w-52" : "w-40"}`}
+                        />
                         <div className="h-5 w-10 rounded-full bg-slate-200 dark:bg-navy-500" />
                       </div>
                     ))}
                   </div>
                 ) : (
-                <table className="w-full text-left">
-                  <tbody>
-                    <tr className="border border-transparent border-b-slate-200 dark:border-b-navy-500">
-                      <td className="whitespace-nowrap px-4 py-3 sm:px-5">
-                        Accept On-Demand Visits
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-3 sm:px-5">
-                        <label className="inline-flex items-center">
-                          <input
-                            disabled={isReadOnly}
-                            checked={preferences.acceptOnDemandVisits}
-                            onChange={() => !isReadOnly && handleToggle("acceptOnDemandVisits")}
-                            className={`${getSwitchClasses()} ${isReadOnly ? "opacity-60 cursor-not-allowed" : ""}`}
-                            type="checkbox"
-                          />
-                        </label>
-                      </td>
-                    </tr>
-                    <tr className="border border-transparent border-b-slate-200 dark:border-b-navy-500">
-                      <td className="whitespace-nowrap px-4 py-3 sm:px-5">
-                        Accept Scheduled Visits
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-3 sm:px-5">
-                        <label className="inline-flex items-center">
-                          <input
-                            disabled={isReadOnly}
-                            checked={preferences.acceptScheduledVisits}
-                            onChange={() => !isReadOnly && handleToggle("acceptScheduledVisits")}
-                            className={`${getSwitchClasses()} ${isReadOnly ? "opacity-60 cursor-not-allowed" : ""}`}
-                            type="checkbox"
-                          />
-                        </label>
-                      </td>
-                    </tr>
-                    <tr className="border border-transparent border-b-slate-200 dark:border-b-navy-500">
-                      <td className="whitespace-nowrap px-4 py-3 sm:px-5">
-                        Follow-up Only
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-3 sm:px-5">
-                        <label className="inline-flex items-center">
-                          <input
-                            disabled={isReadOnly}
-                            checked={preferences.followUpOnly}
-                            onChange={() => !isReadOnly && handleToggle("followUpOnly")}
-                            className={`${getSwitchClasses()} ${isReadOnly ? "opacity-60 cursor-not-allowed" : ""}`}
-                            type="checkbox"
-                          />
-                        </label>
-                      </td>
-                    </tr>
-                    <tr className="border border-transparent border-b-slate-200 dark:border-b-navy-500">
-                      <td className="whitespace-nowrap px-4 py-3 sm:px-5">
-                        Preferred Consultation Type: General
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-3 sm:px-5">
-                        <label className="inline-flex items-center">
-                          <input
-                            disabled={isReadOnly}
-                            checked={preferences.preferredTypeGeneral}
-                            onChange={() => !isReadOnly && handleToggle("preferredTypeGeneral")}
-                            className={`${getSwitchClasses()} ${isReadOnly ? "opacity-60 cursor-not-allowed" : ""}`}
-                            type="checkbox"
-                          />
-                        </label>
-                      </td>
-                    </tr>
-                    <tr className="border border-transparent border-b-slate-200 dark:border-b-navy-500">
-                      <td className="whitespace-nowrap px-4 py-3 sm:px-5">
-                        Preferred Consultation Type: Specialist
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-3 sm:px-5">
-                        <label className="inline-flex items-center">
-                          <input
-                            disabled={isReadOnly}
-                            checked={preferences.preferredTypeSpecialist}
-                            onChange={() => !isReadOnly && handleToggle("preferredTypeSpecialist")}
-                            className={`${getSwitchClasses()} ${isReadOnly ? "opacity-60 cursor-not-allowed" : ""}`}
-                            type="checkbox"
-                          />
-                        </label>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+                  <table className="w-full text-left">
+                    <tbody>
+                      <tr className="border border-transparent border-b-slate-200 dark:border-b-navy-500">
+                        <td className="whitespace-nowrap px-4 py-3 sm:px-5">
+                          Accept On-Demand Visits
+                        </td>
+                        <td className="whitespace-nowrap px-4 py-3 sm:px-5">
+                          <label className="inline-flex items-center">
+                            <input
+                              disabled={isReadOnly}
+                              checked={preferences.acceptOnDemandVisits}
+                              onChange={() =>
+                                !isReadOnly &&
+                                handleToggle("acceptOnDemandVisits")
+                              }
+                              className={`${getSwitchClasses()} ${isReadOnly ? "opacity-60 cursor-not-allowed" : ""}`}
+                              type="checkbox"
+                            />
+                          </label>
+                        </td>
+                      </tr>
+                      <tr className="border border-transparent border-b-slate-200 dark:border-b-navy-500">
+                        <td className="whitespace-nowrap px-4 py-3 sm:px-5">
+                          Accept Scheduled Visits
+                        </td>
+                        <td className="whitespace-nowrap px-4 py-3 sm:px-5">
+                          <label className="inline-flex items-center">
+                            <input
+                              disabled={isReadOnly}
+                              checked={preferences.acceptScheduledVisits}
+                              onChange={() =>
+                                !isReadOnly &&
+                                handleToggle("acceptScheduledVisits")
+                              }
+                              className={`${getSwitchClasses()} ${isReadOnly ? "opacity-60 cursor-not-allowed" : ""}`}
+                              type="checkbox"
+                            />
+                          </label>
+                        </td>
+                      </tr>
+                      <tr className="border border-transparent border-b-slate-200 dark:border-b-navy-500">
+                        <td className="whitespace-nowrap px-4 py-3 sm:px-5">
+                          Follow-up Only
+                        </td>
+                        <td className="whitespace-nowrap px-4 py-3 sm:px-5">
+                          <label className="inline-flex items-center">
+                            <input
+                              disabled={isReadOnly}
+                              checked={preferences.followUpOnly}
+                              onChange={() =>
+                                !isReadOnly && handleToggle("followUpOnly")
+                              }
+                              className={`${getSwitchClasses()} ${isReadOnly ? "opacity-60 cursor-not-allowed" : ""}`}
+                              type="checkbox"
+                            />
+                          </label>
+                        </td>
+                      </tr>
+                      <tr className="border border-transparent border-b-slate-200 dark:border-b-navy-500">
+                        <td className="whitespace-nowrap px-4 py-3 sm:px-5">
+                          Preferred Consultation Type: General
+                        </td>
+                        <td className="whitespace-nowrap px-4 py-3 sm:px-5">
+                          <label className="inline-flex items-center">
+                            <input
+                              disabled={isReadOnly}
+                              checked={preferences.preferredTypeGeneral}
+                              onChange={() =>
+                                !isReadOnly &&
+                                handleToggle("preferredTypeGeneral")
+                              }
+                              className={`${getSwitchClasses()} ${isReadOnly ? "opacity-60 cursor-not-allowed" : ""}`}
+                              type="checkbox"
+                            />
+                          </label>
+                        </td>
+                      </tr>
+                      <tr className="border border-transparent border-b-slate-200 dark:border-b-navy-500">
+                        <td className="whitespace-nowrap px-4 py-3 sm:px-5">
+                          Preferred Consultation Type: Specialist
+                        </td>
+                        <td className="whitespace-nowrap px-4 py-3 sm:px-5">
+                          <label className="inline-flex items-center">
+                            <input
+                              disabled={isReadOnly}
+                              checked={preferences.preferredTypeSpecialist}
+                              onChange={() =>
+                                !isReadOnly &&
+                                handleToggle("preferredTypeSpecialist")
+                              }
+                              className={`${getSwitchClasses()} ${isReadOnly ? "opacity-60 cursor-not-allowed" : ""}`}
+                              type="checkbox"
+                            />
+                          </label>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
                 )}
               </div>
             </div>
@@ -192,5 +207,3 @@ export default function ConsultationContent() {
     </>
   );
 }
-
-

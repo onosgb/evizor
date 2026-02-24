@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useAuthStore } from "@/app/stores/authStore";
-import { getTheme } from "@/app/lib/roles";
 import { createPortal } from "react-dom";
 import { useSearchParams } from "next/navigation";
 import { adminService, appointmentService } from "@/app/lib/services";
@@ -29,7 +28,9 @@ export default function AvailabilityContent() {
   const [showModal, setShowModal] = useState(false);
   const [modalAction, setModalAction] = useState<"accept" | "reject">("accept");
   const [reason, setReason] = useState("");
-  const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null);
+  const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(
+    null,
+  );
   const [schedules, setSchedules] = useState<Schedule[]>([]);
 
   useEffect(() => {
@@ -219,36 +220,61 @@ export default function AvailabilityContent() {
                             </td>
                             <td className="whitespace-nowrap px-4 py-4 sm:px-5">
                               <div className="inline-flex items-center space-x-2">
-                                <span className={`size-2 rounded-full ${availabilityDot(schedule.isAvailable)}`} />
-                                <span className={`text-sm font-medium ${availabilityText(schedule.isAvailable)}`}>
+                                <span
+                                  className={`size-2 rounded-full ${availabilityDot(schedule.isAvailable)}`}
+                                />
+                                <span
+                                  className={`text-sm font-medium ${availabilityText(schedule.isAvailable)}`}
+                                >
                                   {availabilityLabel(schedule.isAvailable)}
                                 </span>
                               </div>
                             </td>
                             <td className="whitespace-nowrap px-4 py-4 sm:px-5">
-                              {!isReadOnly && (
-                                schedule.isAvailable ? (
+                              {!isReadOnly &&
+                                (schedule.isAvailable ? (
                                   <button
-                                    onClick={() => openModal(schedule, "reject")}
+                                    onClick={() =>
+                                      openModal(schedule, "reject")
+                                    }
                                     className="btn size-8 rounded-full p-0 text-error hover:bg-error/20 focus:bg-error/20 active:bg-error/25"
                                     title="Mark unavailable"
                                   >
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="size-5" viewBox="0 0 20 20" fill="currentColor">
-                                      <path fillRule="evenodd" d="M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.367zM18 10a8 8 0 11-16 0 8 8 0 0116 0z" clipRule="evenodd" />
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      className="size-5"
+                                      viewBox="0 0 20 20"
+                                      fill="currentColor"
+                                    >
+                                      <path
+                                        fillRule="evenodd"
+                                        d="M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.367zM18 10a8 8 0 11-16 0 8 8 0 0116 0z"
+                                        clipRule="evenodd"
+                                      />
                                     </svg>
                                   </button>
                                 ) : (
                                   <button
-                                    onClick={() => openModal(schedule, "accept")}
+                                    onClick={() =>
+                                      openModal(schedule, "accept")
+                                    }
                                     className="btn size-8 rounded-full p-0 text-success hover:bg-success/20 focus:bg-success/20 active:bg-success/25"
                                     title="Mark available"
                                   >
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="size-5" viewBox="0 0 20 20" fill="currentColor">
-                                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      className="size-5"
+                                      viewBox="0 0 20 20"
+                                      fill="currentColor"
+                                    >
+                                      <path
+                                        fillRule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clipRule="evenodd"
+                                      />
                                     </svg>
                                   </button>
-                                )
-                              )}
+                                ))}
                             </td>
                           </tr>
                         ))}
@@ -276,7 +302,9 @@ export default function AvailabilityContent() {
               {/* Header */}
               <div className="flex justify-between rounded-t-lg bg-slate-100 px-4 py-3 dark:bg-navy-800 sm:px-5">
                 <h3 className="text-base font-medium text-slate-700 dark:text-navy-100">
-                  {modalAction === "accept" ? "Mark as Available" : "Mark as Unavailable"}
+                  {modalAction === "accept"
+                    ? "Mark as Available"
+                    : "Mark as Unavailable"}
                 </h3>
                 <button
                   onClick={handleCancel}
@@ -338,7 +366,7 @@ export default function AvailabilityContent() {
                     />
                   </label>
                 </div>
- 
+
                 {/* Reason — only for marking unavailable */}
                 {modalAction === "reject" && (
                   <label className="block">
@@ -366,14 +394,21 @@ export default function AvailabilityContent() {
                   </button>
                   <button
                     onClick={handleApply}
-                    disabled={isSubmitting || (modalAction === "reject" && !reason.trim())}
+                    disabled={
+                      isSubmitting ||
+                      (modalAction === "reject" && !reason.trim())
+                    }
                     className={`btn min-w-28 rounded-full font-medium text-white disabled:opacity-60 ${
                       modalAction === "accept"
                         ? "bg-success hover:bg-success-focus focus:bg-success-focus active:bg-success-focus/90"
                         : "bg-error hover:bg-error-focus focus:bg-error-focus active:bg-error-focus/90"
                     }`}
                   >
-                    {isSubmitting ? "Saving..." : modalAction === "accept" ? "Confirm" : "Confirm"}
+                    {isSubmitting
+                      ? "Saving..."
+                      : modalAction === "accept"
+                        ? "Confirm"
+                        : "Confirm"}
                   </button>
                 </div>
               </div>

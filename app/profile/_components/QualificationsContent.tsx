@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAuthStore } from "@/app/stores/authStore";
-import { getTheme, isAdmin, isDoctor } from "@/app/lib/roles";
+import { getTheme } from "@/app/lib/roles";
 import { createPortal } from "react-dom";
 import ProfileSidebar from "./ProfileSidebar";
 import { useQualificationStore } from "@/app/stores/qualificationStore";
@@ -18,15 +18,16 @@ export default function QualificationsContent() {
   // If userId param exists, it's read-only UNLESS it matches the logged-in user's ID
   // If userId param is missing, we are viewing our own profile (not read-only)
   const isReadOnly = !!paramUserId && String(paramUserId) !== String(user?.id);
-  
+
   // The actual userId to fetch data for (either from params or current user)
   const userId = paramUserId;
-  
+
   const theme = getTheme(user);
   const [showModal, setShowModal] = useState(false);
   const [showViewerModal, setShowViewerModal] = useState(false);
-  const [selectedDocument, setSelectedDocument] = useState<Qualification | null>(null);
-  
+  const [selectedDocument, setSelectedDocument] =
+    useState<Qualification | null>(null);
+
   // Delete confirmation state
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [documentToDelete, setDocumentToDelete] = useState<number | null>(null);
@@ -58,7 +59,9 @@ export default function QualificationsContent() {
   const [fileError, setFileError] = useState<string | null>(null);
 
   const handleUploadFormChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >,
   ) => {
     const { name, value } = e.target;
     setUploadFormData((prev) => ({
@@ -69,22 +72,24 @@ export default function QualificationsContent() {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
-    
+
     if (file) {
       // Validate file type - only PDF and Word documents
       const validTypes = [
-        'application/pdf',
-        'application/msword',
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        "application/pdf",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
       ];
-      
+
       if (!validTypes.includes(file.type)) {
-        setFileError('Please upload only PDF or Word documents (.pdf, .doc, .docx)');
+        setFileError(
+          "Please upload only PDF or Word documents (.pdf, .doc, .docx)",
+        );
         setSelectedFile(null);
         return;
       }
     }
-    
+
     setSelectedFile(file);
     setFileError(null);
   };
@@ -113,14 +118,12 @@ export default function QualificationsContent() {
   };
 
   const handleViewDocument = (id: number) => {
-    const document = qualifications.find(q => q.id === id);
+    const document = qualifications.find((q) => q.id === id);
     if (document) {
       setSelectedDocument(document);
       setShowViewerModal(true);
     }
   };
-
-
 
   const confirmDeleteDocument = (id: number) => {
     setDocumentToDelete(id);
@@ -141,8 +144,8 @@ export default function QualificationsContent() {
     <>
       <div className="grid grid-cols-12 gap-4 sm:gap-5 lg:gap-6">
         {/* Sidebar Navigation */}
-      <ProfileSidebar />
-       
+        <ProfileSidebar />
+
         {/* Main Content */}
         <div className="col-span-12 lg:col-span-8">
           <div className="card">
@@ -169,7 +172,10 @@ export default function QualificationsContent() {
               {isLoading ? (
                 <div className="animate-pulse space-y-3">
                   {Array.from({ length: 3 }).map((_, i) => (
-                    <div key={i} className="flex items-center justify-between rounded-lg border border-slate-200 p-4 dark:border-navy-500">
+                    <div
+                      key={i}
+                      className="flex items-center justify-between rounded-lg border border-slate-200 p-4 dark:border-navy-500"
+                    >
                       <div className="flex items-center space-x-3">
                         <div className="size-10 rounded-lg bg-slate-200 dark:bg-navy-500" />
                         <div className="space-y-2">
@@ -183,97 +189,116 @@ export default function QualificationsContent() {
                 </div>
               ) : qualifications.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-10 text-slate-400 dark:text-navy-300">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="size-12 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="size-12 mb-3"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
+                    />
                   </svg>
                   <p>No documents uploaded yet</p>
                 </div>
               ) : (
-              <div className="is-scrollbar-hidden min-w-full overflow-x-auto">
-                <table className="is-zebra w-full text-left">
-                  <thead>
-                    <tr>
-                      <th className="whitespace-nowrap rounded-l-lg bg-slate-200 px-3 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">
-                        #
-                      </th>
-                      <th className="whitespace-nowrap bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">
-                        Title
-                      </th>
-                      <th className="whitespace-nowrap bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">
-                        Description
-                      </th>
-                      <th className="whitespace-nowrap bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">
-                        Date
-                      </th>
-                      <th className="whitespace-nowrap rounded-r-lg bg-slate-200 px-3 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">
-                        Action
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {qualifications.map((doc, index) => (
-                      <tr key={doc.id}>
-                        <td className="whitespace-nowrap rounded-l-lg px-4 py-3 sm:px-5">
-                          {index + 1}
-                        </td>
-                        <td className="whitespace-nowrap px-4 py-3 sm:px-5">{doc.title}</td>
-                        <td className="whitespace-nowrap px-4 py-3 sm:px-5">{doc.description || "â€”"}</td>
-                        <td className="whitespace-nowrap px-4 py-3 sm:px-5">
-                          {doc.createdAt ? new Date(doc.createdAt).toLocaleDateString() : "â€”"}
-                        </td>
-                        <td className="whitespace-nowrap rounded-r-lg px-4 py-3 sm:px-5">
-                          <div className="flex justify-center space-x-2">
-                            <button
-                              onClick={() => handleViewDocument(doc.id)}
-                              className="btn size-8 p-0 text-info hover:bg-info/20 focus:bg-info/20 active:bg-info/25"
-                            >
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="size-4"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                                />
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                                />
-                              </svg>
-                            </button>
-                              <button
-                                onClick={() => !isReadOnly && confirmDeleteDocument(doc.id)}
-                                disabled={isReadOnly}
-                                className={`btn size-8 p-0 text-error hover:bg-error/20 focus:bg-error/20 active:bg-error/25 ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
-                              >
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="size-4"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                                />
-                              </svg>
-                            </button>
-                          </div>
-                        </td>
+                <div className="is-scrollbar-hidden min-w-full overflow-x-auto">
+                  <table className="is-zebra w-full text-left">
+                    <thead>
+                      <tr>
+                        <th className="whitespace-nowrap rounded-l-lg bg-slate-200 px-3 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">
+                          #
+                        </th>
+                        <th className="whitespace-nowrap bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">
+                          Title
+                        </th>
+                        <th className="whitespace-nowrap bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">
+                          Description
+                        </th>
+                        <th className="whitespace-nowrap bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">
+                          Date
+                        </th>
+                        <th className="whitespace-nowrap rounded-r-lg bg-slate-200 px-3 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">
+                          Action
+                        </th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {qualifications.map((doc, index) => (
+                        <tr key={doc.id}>
+                          <td className="whitespace-nowrap rounded-l-lg px-4 py-3 sm:px-5">
+                            {index + 1}
+                          </td>
+                          <td className="whitespace-nowrap px-4 py-3 sm:px-5">
+                            {doc.title}
+                          </td>
+                          <td className="whitespace-nowrap px-4 py-3 sm:px-5">
+                            {doc.description || "â€”"}
+                          </td>
+                          <td className="whitespace-nowrap px-4 py-3 sm:px-5">
+                            {doc.createdAt
+                              ? new Date(doc.createdAt).toLocaleDateString()
+                              : "â€”"}
+                          </td>
+                          <td className="whitespace-nowrap rounded-r-lg px-4 py-3 sm:px-5">
+                            <div className="flex justify-center space-x-2">
+                              <button
+                                onClick={() => handleViewDocument(doc.id)}
+                                className="btn size-8 p-0 text-info hover:bg-info/20 focus:bg-info/20 active:bg-info/25"
+                              >
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  className="size-4"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                  />
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                                  />
+                                </svg>
+                              </button>
+                              <button
+                                onClick={() =>
+                                  !isReadOnly && confirmDeleteDocument(doc.id)
+                                }
+                                disabled={isReadOnly}
+                                className={`btn size-8 p-0 text-error hover:bg-error/20 focus:bg-error/20 active:bg-error/25 ${isReadOnly ? "opacity-50 cursor-not-allowed" : ""}`}
+                              >
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  className="size-4"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                  />
+                                </svg>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               )}
             </div>
           </div>
@@ -319,22 +344,32 @@ export default function QualificationsContent() {
                     stroke="currentColor"
                     strokeWidth="2"
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
                   </svg>
                 </button>
               </div>
               <div className="px-4 py-4 sm:px-5">
                 <p className="text-slate-600 dark:text-navy-200">
-                  Upload a qualification or document. All fields marked with <span className="text-error">*</span> are required.
+                  Upload a qualification or document. All fields marked with{" "}
+                  <span className="text-error">*</span> are required.
                 </p>
                 {uploadError && (
-                  <div className="mt-3 bg-error/10 text-error px-4 py-3 rounded-lg text-center text-sm" role="alert">
+                  <div
+                    className="mt-3 bg-error/10 text-error px-4 py-3 rounded-lg text-center text-sm"
+                    role="alert"
+                  >
                     {uploadError}
                   </div>
                 )}
                 <div className="mt-4 space-y-4">
                   <label className="block">
-                    <span>Document Title <span className="text-error">*</span></span>
+                    <span>
+                      Document Title <span className="text-error">*</span>
+                    </span>
                     <input
                       name="title"
                       value={uploadFormData.title}
@@ -357,20 +392,24 @@ export default function QualificationsContent() {
                     ></textarea>
                   </label>
                   <div className="block">
-                    <span>Attachment <span className="text-error">*</span></span>
+                    <span>
+                      Attachment <span className="text-error">*</span>
+                    </span>
                     <label
                       className={`mt-1.5 flex w-full cursor-pointer flex-col items-center rounded-lg border-2 border-dashed px-4 py-6 transition-colors ${
                         fileError
                           ? "border-error bg-error/5"
                           : selectedFile
-                          ? "border-success bg-success/5"
-                          : "border-slate-300 hover:border-slate-400 dark:border-navy-450 dark:hover:border-navy-400"
+                            ? "border-success bg-success/5"
+                            : "border-slate-300 hover:border-slate-400 dark:border-navy-450 dark:hover:border-navy-400"
                       }`}
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         className={`size-8 ${
-                          selectedFile ? "text-success" : "text-slate-400 dark:text-navy-300"
+                          selectedFile
+                            ? "text-success"
+                            : "text-slate-400 dark:text-navy-300"
                         }`}
                         fill="none"
                         viewBox="0 0 24 24"
@@ -425,10 +464,10 @@ export default function QualificationsContent() {
                       onClick={handleUpload}
                       disabled={isUploading}
                       className={`btn min-w-28 rounded-full font-medium text-white disabled:opacity-50 disabled:cursor-not-allowed ${
-                    theme === "admin"
-                      ? "bg-success hover:bg-success-focus focus:bg-success-focus active:bg-success-focus/90 dark:bg-success dark:hover:bg-success-focus dark:focus:bg-success-focus dark:active:bg-success/90"
-                      : "bg-primary hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
-                  }`}
+                        theme === "admin"
+                          ? "bg-success hover:bg-success-focus focus:bg-success-focus active:bg-success-focus/90 dark:bg-success dark:hover:bg-success-focus dark:focus:bg-success-focus dark:active:bg-success/90"
+                          : "bg-primary hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
+                      }`}
                     >
                       {isUploading ? "Uploading..." : "Upload"}
                     </button>
@@ -437,7 +476,7 @@ export default function QualificationsContent() {
               </div>
             </div>
           </div>,
-          document.body
+          document.body,
         )}
 
       {/* Document Viewer Modal */}
@@ -495,12 +534,16 @@ export default function QualificationsContent() {
                     stroke="currentColor"
                     strokeWidth="2"
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
                   </svg>
                 </button>
               </div>
               <div className="flex-1 overflow-auto p-4 sm:p-5">
-                {selectedDocument.fileType.startsWith('image/') ? (
+                {selectedDocument.fileType.startsWith("image/") ? (
                   <div className="flex items-center justify-center h-full">
                     <img
                       src={selectedDocument.fileUrl}
@@ -508,7 +551,7 @@ export default function QualificationsContent() {
                       className="max-w-full max-h-full object-contain"
                     />
                   </div>
-                ) : selectedDocument.fileType === 'application/pdf' ? (
+                ) : selectedDocument.fileType === "application/pdf" ? (
                   <iframe
                     src={selectedDocument.fileUrl}
                     className="w-full h-full border-0"
@@ -530,8 +573,12 @@ export default function QualificationsContent() {
                         d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
                       />
                     </svg>
-                    <p className="text-lg font-medium mb-2">Preview not available</p>
-                    <p className="text-sm mb-4">This file type cannot be previewed in the browser</p>
+                    <p className="text-lg font-medium mb-2">
+                      Preview not available
+                    </p>
+                    <p className="text-sm mb-4">
+                      This file type cannot be previewed in the browser
+                    </p>
                     <a
                       href={selectedDocument.fileUrl}
                       target="_blank"
@@ -545,10 +592,9 @@ export default function QualificationsContent() {
               </div>
             </div>
           </div>,
-          document.body
+          document.body,
         )}
 
-        
       {/* Delete Confirmation Modal */}
       <ConfirmationModal
         isOpen={showDeleteModal}
@@ -564,5 +610,3 @@ export default function QualificationsContent() {
     </>
   );
 }
-
-
