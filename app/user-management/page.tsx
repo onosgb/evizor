@@ -235,7 +235,6 @@ export default function UserManagementPage() {
             <option value="">All Roles</option>
             <option value="DOCTOR">Doctor</option>
             <option value="ADMIN">Admin</option>
-            <option value="PATIENT">Patient</option>
           </select>
           {userIsSuperAdmin && (
             <select
