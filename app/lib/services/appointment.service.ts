@@ -7,6 +7,7 @@ import {
 } from "../../models";
 import type { ProposeAvailabilityRequest } from "../../models/DoctorAvailability";
 import { ListQueryParams } from "../../models/QueryParams";
+import { buildQueryParams } from "../utils/queryParams";
 
 /**
  * Appointment service
@@ -66,7 +67,7 @@ class AppointmentService {
   async getAssignedCases(params?: ListQueryParams): Promise<AllAppointmentsResponse> {
     const response = await apiClient.get<AllAppointmentsResponse>(
       "/appointments",
-      { params },
+      { params: buildQueryParams(params) },
     );
     return response.data;
   }

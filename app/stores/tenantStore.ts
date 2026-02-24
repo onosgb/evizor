@@ -8,7 +8,7 @@ interface TenantState {
   error: string | null;
   isSubmitting: boolean;
   submitError: string | null;
-  fetchTenants: () => Promise<void>;
+  fetchTenants: (search?: string) => Promise<void>;
   getTenantById: (id: string) => Tenant | undefined;
   getTenantByName: (name: string) => Tenant | undefined;
   updateTenant: (id: string, data: UpdateTenantRequest) => Promise<boolean>;
@@ -23,11 +23,11 @@ export const useTenantStore = create<TenantState>()((set, get) => ({
   isSubmitting: false,
   submitError: null,
 
-  fetchTenants: async () => {
-    if (get().isLoading) return;
+  fetchTenants: async (search?: string) => {
+    if (!search && get().isLoading) return;
     set({ isLoading: true, error: null });
     try {
-      const response = await tenantService.getAllTenants();
+      const response = await tenantService.getAllTenants(search);
       set({ tenants: response, isLoading: false });
     } catch (error) {
       const errorMessage =

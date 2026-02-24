@@ -8,7 +8,7 @@ interface SymptomState {
   error: string | null;
   isSubmitting: boolean;
   submitError: string | null;
-  fetchSymptoms: (tenantId?: string) => Promise<void>;
+  fetchSymptoms: (tenantId?: string, search?: string) => Promise<void>;
   createSymptom: (data: CreateSymptomRequest) => Promise<boolean>;
   updateSymptom: (id: string, data: CreateSymptomRequest) => Promise<boolean>;
   deleteSymptom: (id: string) => Promise<boolean>;
@@ -21,10 +21,10 @@ export const useSymptomStore = create<SymptomState>((set) => ({
   isSubmitting: false,
   submitError: null,
 
-  fetchSymptoms: async (tenantId?: string) => {
+  fetchSymptoms: async (tenantId?: string, search?: string) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await symptomService.getSymptoms(tenantId);
+      const response = await symptomService.getSymptoms(tenantId, search);
       if (response.status) {
         set({ symptoms: response.data || [] });
       } else {

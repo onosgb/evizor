@@ -9,8 +9,10 @@ export interface CreateSymptomRequest {
 }
 
 class SymptomService {
-  async getSymptoms(tenantId?: string): Promise<ApiArrayResponse<Symptom>> {
-    const params = tenantId ? { tenantId } : {};
+  async getSymptoms(tenantId?: string, search?: string): Promise<ApiArrayResponse<Symptom>> {
+    const params: Record<string, string> = {};
+    if (tenantId) params.tenantId = tenantId;
+    if (search) params.search = search;
     const response = await apiClient.get<ApiArrayResponse<Symptom>>("/symptoms", { params });
     return response.data;
   }

@@ -1,5 +1,6 @@
 import apiClient from "../api-client";
 import { ApiResponse } from "@/app/models/ApiResponse";
+import { buildQueryParams } from "../utils/queryParams";
 import { PendingVerification } from "@/app/models/PendingVerification";
 import {
   User,
@@ -145,7 +146,7 @@ class AdminService {
   ): Promise<ApiResponse<Appointment[]>> {
     const response = await apiClient.get<ApiResponse<Appointment[]>>(
       "/appointments/all",
-      { params: queryParams },
+      { params: buildQueryParams(queryParams) },
     );
     return response.data;
   }

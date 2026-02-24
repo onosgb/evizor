@@ -17,10 +17,10 @@ class TenantService {
   /**
    * Get all tenants
    */
-  async getAllTenants(): Promise<Tenant[]> {
-    const response = await apiClient.get<ApiResponse<Tenant[]>>(
-      "/tenant/all-tenants"
-    );
+  async getAllTenants(search?: string): Promise<Tenant[]> {
+    const params: Record<string, string> = {};
+    if (search) params.search = search;
+    const response = await apiClient.get<ApiResponse<Tenant[]>>("/tenant/all-tenants", { params });
     return response.data.data;
   }
 

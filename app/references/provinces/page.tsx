@@ -25,6 +25,7 @@ export default function ProvincesPage() {
   const [formError, setFormError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
 
   const { query: contextQuery, registerPageSearch, unregisterPageSearch } = useSearchContext();
 
@@ -35,7 +36,12 @@ export default function ProvincesPage() {
 
   useEffect(() => { setSearchQuery(contextQuery); }, [contextQuery]);
 
-  useEffect(() => { fetchTenants(); }, []);
+  useEffect(() => {
+    const timer = setTimeout(() => { setDebouncedSearch(searchQuery); }, 450);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  useEffect(() => { fetchTenants(debouncedSearch || undefined); }, [debouncedSearch]);
 
   const flash = (msg: string) => {
     setSuccessMessage(msg);
@@ -64,11 +70,6 @@ export default function ProvincesPage() {
       setToggleTarget(null);
     }
   };
-
-  const filtered = tenants.filter((t: Tenant) =>
-    t.province.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    t.slug.toLowerCase().includes(searchQuery.toLowerCase())
-  );
 
   return (
     <DashboardLayout theme="admin">
@@ -189,7 +190,7 @@ export default function ProvincesPage() {
               </tbody>
             </table>
           </div>
-        ) : filtered.length === 0 ? (
+        ) : tenants.length === 0 ? (
           <div className="flex items-center justify-center py-12">
             <p className="text-slate-600 dark:text-navy-300">No provinces found.</p>
           </div>
@@ -208,10 +209,10 @@ export default function ProvincesPage() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((t: Tenant, index: number) => (
+                {tenants.map((t: Tenant, index: number) => (
                   <tr
                     key={t.id}
-                    className={`border-y border-transparent ${index === filtered.length - 1 ? "" : "border-b-slate-200 dark:border-b-navy-500"}`}
+                    className={`border-y border-transparent ${index === tenants.length - 1 ? "" : "border-b-slate-200 dark:border-b-navy-500"}`}
                   >
                     <td className="whitespace-nowrap px-4 py-3 sm:px-5">{index + 1}</td>
                     <td className="whitespace-nowrap px-3 py-3 font-medium text-slate-700 dark:text-navy-100 lg:px-5">{t.province}</td>

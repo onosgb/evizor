@@ -6,9 +6,6 @@
     {
       "path": "../../../../evizor-mobile",
     },
-    {
-      "path": "../../../../../../Users/HP/Downloads/frontend",
-    },
   ],
   "settings": {
     "liveServer.settings.multiRootWorkspaceName": "frontend",

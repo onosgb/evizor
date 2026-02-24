@@ -34,6 +34,7 @@ export default function SpecialtiesPage() {
   const [formError, setFormError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
 
   const { query: contextQuery, registerPageSearch, unregisterPageSearch } = useSearchContext();
 
@@ -44,7 +45,12 @@ export default function SpecialtiesPage() {
 
   useEffect(() => { setSearchQuery(contextQuery); }, [contextQuery]);
 
-  useEffect(() => { fetchSpecialties(); }, []);
+  useEffect(() => {
+    const timer = setTimeout(() => { setDebouncedSearch(searchQuery); }, 450);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  useEffect(() => { fetchSpecialties(debouncedSearch || undefined); }, [debouncedSearch]);
 
   const flash = (msg: string) => {
     setSuccessMessage(msg);
@@ -70,11 +76,6 @@ export default function SpecialtiesPage() {
     const ok = await deleteSpecialty(deleteTarget.id);
     if (ok) { setDeleteTarget(null); flash("Specialty deleted."); }
   };
-
-  const filtered = specialties.filter((s: Specialty) =>
-    s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (s.description ?? "").toLowerCase().includes(searchQuery.toLowerCase())
-  );
 
   return (
     <DashboardLayout theme="admin">
@@ -185,7 +186,7 @@ export default function SpecialtiesPage() {
               </tbody>
             </table>
           </div>
-        ) : filtered.length === 0 ? (
+        ) : specialties.length === 0 ? (
           <div className="flex items-center justify-center py-12">
             <p className="text-slate-600 dark:text-navy-300">No specialties found.</p>
           </div>
@@ -204,10 +205,10 @@ export default function SpecialtiesPage() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((s: Specialty, index: number) => (
+                {specialties.map((s: Specialty, index: number) => (
                   <tr
                     key={s.id}
-                    className={`border-y border-transparent ${index === filtered.length - 1 ? "" : "border-b-slate-200 dark:border-b-navy-500"}`}
+                    className={`border-y border-transparent ${index === specialties.length - 1 ? "" : "border-b-slate-200 dark:border-b-navy-500"}`}
                   >
                     <td className="whitespace-nowrap px-4 py-3 sm:px-5">{index + 1}</td>
                     <td className="whitespace-nowrap px-3 py-3 font-medium text-slate-700 dark:text-navy-100 lg:px-5">{s.name}</td>

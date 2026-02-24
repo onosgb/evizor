@@ -1,6 +1,7 @@
 import apiClient from "../api-client";
 import { ApiResponse, CreateStaffRequest, Staff } from "../../models";
 import { ListQueryParams } from "../../models/QueryParams";
+import { buildQueryParams } from "../utils/queryParams";
 
 /**
  * User service (previously Staff service)
@@ -22,18 +23,9 @@ class UserService {
    * Get all users (server-side pagination + filtering)
    */
   async getAllUsers(params: ListQueryParams): Promise<ApiResponse<Staff[]>> {
-    const query: Record<string, string | number> = {
-      page: params.page ?? 1,
-      limit: params.limit ?? 10,
-    };
-    if (params.search)   query.search   = params.search;
-    if (params.tenantId) query.tenantId = params.tenantId;
-    if (params.status)   query.status   = params.status;
-    if (params.role)     query.role     = params.role;
-
     const response = await apiClient.get<ApiResponse<Staff[]>>(
       "/staff/all-staff",
-      { params: query }
+      { params: buildQueryParams({ page: params.page ?? 1, limit: params.limit ?? 10, ...params }) }
     );
     return response.data;
   }

@@ -8,7 +8,7 @@ interface SpecialtyState {
   error: string | null;
   isSubmitting: boolean;
   submitError: string | null;
-  fetchSpecialties: () => Promise<void>;
+  fetchSpecialties: (search?: string) => Promise<void>;
   createSpecialty: (data: CreateSpecialtyRequest) => Promise<boolean>;
   updateSpecialty: (id: string, data: CreateSpecialtyRequest) => Promise<boolean>;
   deleteSpecialty: (id: string) => Promise<boolean>;
@@ -20,10 +20,10 @@ export const useSpecialtyStore = create<SpecialtyState>((set) => ({
   error: null,
   isSubmitting: false,
   submitError: null,
-  fetchSpecialties: async () => {
+  fetchSpecialties: async (search?: string) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await specialtyService.getSpecialties();
+      const response = await specialtyService.getSpecialties(search);
       if (response.status) {
         set({ specialties: response.data || [] });
       } else {

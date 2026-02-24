@@ -27,6 +27,7 @@ export default function SymptomsPage() {
   const [formError, setFormError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [selectedTenantId, setSelectedTenantId] = useState("");
 
   const { query: contextQuery, registerPageSearch, unregisterPageSearch } = useSearchContext();
@@ -38,7 +39,12 @@ export default function SymptomsPage() {
 
   useEffect(() => { setSearchQuery(contextQuery); }, [contextQuery]);
 
-  useEffect(() => { fetchSymptoms(selectedTenantId || undefined); }, [selectedTenantId]);
+  useEffect(() => {
+    const timer = setTimeout(() => { setDebouncedSearch(searchQuery); }, 450);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  useEffect(() => { fetchSymptoms(selectedTenantId || undefined, debouncedSearch || undefined); }, [selectedTenantId, debouncedSearch]);
 
   useEffect(() => { fetchTenants(); }, []);
 
@@ -71,11 +77,6 @@ export default function SymptomsPage() {
 
   const tenantName = (tenantId: string) =>
     tenants.find((t) => t.id === tenantId)?.province ?? tenantId;
-
-  const filtered = symptoms.filter((s: Symptom) =>
-    s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (s.description ?? "").toLowerCase().includes(searchQuery.toLowerCase())
-  );
 
   return (
     <DashboardLayout theme="admin">
@@ -203,7 +204,7 @@ export default function SymptomsPage() {
               </tbody>
             </table>
           </div>
-        ) : filtered.length === 0 ? (
+        ) : symptoms.length === 0 ? (
           <div className="flex items-center justify-center py-12">
             <p className="text-slate-600 dark:text-navy-300">No symptoms found.</p>
           </div>
@@ -222,10 +223,10 @@ export default function SymptomsPage() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((s: Symptom, index: number) => (
+                {symptoms.map((s: Symptom, index: number) => (
                   <tr
                     key={s.id}
-                    className={`border-y border-transparent ${index === filtered.length - 1 ? "" : "border-b-slate-200 dark:border-b-navy-500"}`}
+                    className={`border-y border-transparent ${index === symptoms.length - 1 ? "" : "border-b-slate-200 dark:border-b-navy-500"}`}
                   >
                     <td className="whitespace-nowrap px-4 py-3 sm:px-5">{index + 1}</td>
                     <td className="whitespace-nowrap px-3 py-3 font-medium text-slate-700 dark:text-navy-100 lg:px-5">{s.name}</td>

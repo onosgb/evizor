@@ -8,8 +8,10 @@ export interface CreateSpecialtyRequest {
 }
 
 class SpecialtyService {
-  async getSpecialties(): Promise<ApiArrayResponse<Specialty>> {
-    const response = await apiClient.get<ApiArrayResponse<Specialty>>("/specialties");
+  async getSpecialties(search?: string): Promise<ApiArrayResponse<Specialty>> {
+    const params: Record<string, string> = {};
+    if (search) params.search = search;
+    const response = await apiClient.get<ApiArrayResponse<Specialty>>("/specialties", { params });
     return response.data;
   }
 
