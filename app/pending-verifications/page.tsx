@@ -123,7 +123,7 @@ export default function PendingVerificationsPage() {
       )}
 
       <div className="card mt-3">
-        <div className="is-scrollbar-hidden min-w-full overflow-x-auto">
+        <div className="is-scrollbar-hidden overflow-x-auto">
           <table className="is-hoverable w-full text-left">
             <thead>
               <tr>
