@@ -12,9 +12,20 @@ import {
 } from "@/app/models";
 
 class AdminService {
-  async getPendingVerifications(): Promise<ApiResponse<PendingVerification[]>> {
+  async getPendingVerifications(
+    search?: string,
+    tenantId?: string,
+    page?: number,
+    limit?: number,
+  ): Promise<ApiResponse<PendingVerification[]>> {
+    const params: Record<string, string> = {};
+    if (search)   params.search   = search;
+    if (tenantId) params.tenantId = tenantId;
+    if (page)     params.page     = String(page);
+    if (limit)    params.limit    = String(limit);
     const response = await apiClient.get<ApiResponse<PendingVerification[]>>(
       "/profile/admin/pending-verifications",
+      { params },
     );
     return response.data;
   }

@@ -3,6 +3,11 @@
 import { useEffect, useState } from "react";
 import DashboardLayout from "@/app/components/DashboardLayout";
 import { usePendingVerificationStore } from "@/app/stores/pendingVerificationStore";
+import { useTenantStore } from "@/app/stores/tenantStore";
+import { useAuthStore } from "@/app/stores/authStore";
+import { isSuperAdmin } from "@/app/lib/roles";
+import { useSearchContext } from "../contexts/SearchContext";
+import { Pagination } from "../components/Pagination";
 import VerificationModal from "./_components/VerificationModal";
 import { formatDate } from "../lib/utils/dateUtils";
 
@@ -11,10 +16,31 @@ export default function PendingVerificationsPage() {
     pendingVerifications,
     isLoading,
     error,
+    search,
+    tenantId,
+    page,
+    limit,
+    total,
+    setSearch,
+    setTenantId,
+    setPage,
+    setLimit,
     fetchPendingVerifications,
     approveVerification,
     rejectVerification,
   } = usePendingVerificationStore();
+
+  const { tenants, fetchTenants } = useTenantStore();
+  const currentUser = useAuthStore((state) => state.user);
+  const userIsSuperAdmin = isSuperAdmin(currentUser);
+
+  const {
+    query: contextQuery,
+    registerPageSearch,
+    unregisterPageSearch,
+  } = useSearchContext();
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+
   const [verificationModal, setVerificationModal] = useState<{
     isOpen: boolean;
     type: "approve" | "reject";
@@ -22,9 +48,32 @@ export default function PendingVerificationsPage() {
     userName: string;
   } | null>(null);
 
+  // Register top-bar search
+  useEffect(() => {
+    registerPageSearch("Search verifications...");
+    return () => unregisterPageSearch();
+  }, [registerPageSearch, unregisterPageSearch]);
+
+  // Sync top-bar query → store
+  useEffect(() => {
+    setSearch(contextQuery);
+  }, [contextQuery, setSearch]);
+
+  // Debounce search
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 450);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  // Fetch tenants for province dropdown (super admin only)
+  useEffect(() => {
+    if (userIsSuperAdmin) fetchTenants();
+  }, [userIsSuperAdmin, fetchTenants]);
+
+  // Re-fetch whenever debounced search, province, page or limit changes
   useEffect(() => {
     fetchPendingVerifications();
-  }, [fetchPendingVerifications]);
+  }, [debouncedSearch, tenantId, page, limit, fetchPendingVerifications]);
 
   const handleOpenModal = (
     userId: string,
@@ -36,7 +85,6 @@ export default function PendingVerificationsPage() {
 
   const handleConfirmVerification = async (comment: string) => {
     if (!verificationModal) return;
-
     if (verificationModal.type === "approve") {
       await approveVerification(verificationModal.userId);
     } else {
@@ -47,10 +95,25 @@ export default function PendingVerificationsPage() {
 
   return (
     <DashboardLayout theme="admin">
-      <div className="flex items-center justify-between space-y-2 py-5 sm:flex-row sm:space-y-0 lg:py-6">
+      <div className="flex flex-col items-start justify-between gap-3 py-5 sm:flex-row sm:items-center lg:py-6">
         <h2 className="text-xl font-medium text-slate-700 line-clamp-1 dark:text-navy-50">
           Pending Verifications
         </h2>
+
+        {userIsSuperAdmin && (
+          <select
+            value={tenantId}
+            onChange={(e) => setTenantId(e.target.value)}
+            className="form-select h-9 rounded-lg border border-slate-300 bg-transparent px-3 py-1.5 text-sm dark:border-navy-450 dark:text-navy-100"
+          >
+            <option value="">All Provinces</option>
+            {tenants.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.province}
+              </option>
+            ))}
+          </select>
+        )}
       </div>
 
       {error && (
@@ -86,7 +149,7 @@ export default function PendingVerificationsPage() {
             </thead>
             <tbody>
               {isLoading ? (
-                Array.from({ length: 5 }).map((_, i) => (
+                Array.from({ length: limit }).map((_, i) => (
                   <tr
                     key={i}
                     className="border-y border-transparent border-b-slate-200 dark:border-b-navy-500 animate-pulse"
@@ -182,6 +245,14 @@ export default function PendingVerificationsPage() {
             </tbody>
           </table>
         </div>
+
+        <Pagination
+          currentPage={page}
+          totalEntries={total}
+          entriesPerPage={limit}
+          onPageChange={setPage}
+          onEntriesPerPageChange={setLimit}
+        />
       </div>
 
       <VerificationModal

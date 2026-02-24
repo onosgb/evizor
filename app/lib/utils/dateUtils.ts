@@ -12,15 +12,12 @@ export const formatDate = (date: string | Date | undefined | null, options?: Int
       return date.toString();
     }
 
-    const defaultOptions: Intl.DateTimeFormatOptions = {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-      ...options
-    };
+    // When custom options are supplied, time fields are excluded unless
+    // explicitly included in those options. Without custom options the
+    // default includes time (DD MMM YYYY HH:mm).
+    const defaultOptions: Intl.DateTimeFormatOptions = options
+      ? { hour: undefined, minute: undefined, hour12: undefined, ...options }
+      : { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false };
 
     return new Intl.DateTimeFormat('en-GB', defaultOptions).format(dateObj);
   } catch (error) {

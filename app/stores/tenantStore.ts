@@ -28,7 +28,7 @@ export const useTenantStore = create<TenantState>()((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await tenantService.getAllTenants(search);
-      set({ tenants: response, isLoading: false });
+      set({ tenants: response ?? [], isLoading: false });
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Failed to fetch tenants";
