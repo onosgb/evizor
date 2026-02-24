@@ -64,6 +64,8 @@ export default function LoginPage() {
     } catch (err) {
       if (err instanceof ApiError) {
         setError(err.message || "Login failed. Please check your credentials.");
+      } else if (err instanceof Error) {
+        setError(err.message);
       } else {
         setError("An unexpected error occurred. Please try again.");
       }

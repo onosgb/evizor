@@ -39,9 +39,11 @@ class AuthService {
       // Check if user has allowed role
       if (!isValidPortalUser(user)) {
         await this.logout();
-        throw new Error(
-          "Unauthorized: Only Doctors and Admins can access this portal",
-        );
+        const message =
+          user.role === "PATIENT"
+            ? "Patient accounts cannot access this portal. Please use the eVizor mobile app to continue."
+            : "Access denied. Only Doctors and Admins can log in to this portal.";
+        throw new Error(message);
       }
 
       // Only login to store if we have tokens (i.e. not waiting for 2FA)
