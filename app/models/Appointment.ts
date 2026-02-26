@@ -3,6 +3,7 @@ export enum AppointmentStatus {
   CANCELLED = 'cancelled',
   PROGRESS = 'progress',
   COMPLETED = 'completed',
+  CLINICAL = 'clinical'
 }
 
 export interface Appointment {
@@ -14,12 +15,12 @@ export interface Appointment {
   status: AppointmentStatus;
   description: string;
   duration: string;
-  severity: number;
+  severity?: number; // legacy global severity
   scheduledAt: string;
   createdAt: string;
   tenantId: string;
   attachments: string[];
-  symptoms: string[];
+  symptoms: any[]; // Supports both legacy strings and new `{ symptomId, severity, name }` objects
 }
 
 export interface LiveQueueResponse {

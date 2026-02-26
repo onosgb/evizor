@@ -1,16 +1,18 @@
 import { create } from "zustand";
-import { Appointment, User } from "../models";
+import { Appointment, AppointmentStatus, User } from "../models";
 import { ListQueryParams } from "../models/QueryParams";
 import { appointmentService, adminService } from "../lib/services";
 
 interface AppointmentState {
   liveQueue: Appointment[];
   assignedCases: Appointment[];
+  clinicalAlerts: Appointment[];
   assignedTotal: number;
   history: Appointment[];
   selectedPatient: User | null;
   selectedAppointment: Appointment | null;
   isLoading: boolean;
+  actionLoading: boolean;
   error: string | null;
 
   fetchLiveQueue: () => Promise<void>;
@@ -18,17 +20,46 @@ interface AppointmentState {
   fetchHistory: (patientId: string) => Promise<void>;
   fetchPatientDetails: (patientId: string) => Promise<void>;
   selectAppointment: (appointmentId: string | null) => void;
+  setClinicalAlert: (appointmentId: string) => Promise<void>;
+  fetchClinicalAlerts: () => Promise<void>;
 }
 
 export const useAppointmentStore = create<AppointmentState>((set, get) => ({
   liveQueue: [],
   assignedCases: [],
+  clinicalAlerts: [],
   assignedTotal: 0,
   history: [],
   selectedPatient: null,
   selectedAppointment: null,
   isLoading: false,
+  actionLoading: false,
   error: null,
+
+  setClinicalAlert: async (appointmentId: string) => {
+    const state = get();
+    set({ actionLoading: true, error: null });
+    try {
+      await appointmentService.setClinicalAlert(appointmentId)
+      set({ selectedAppointment: { ...state.selectedAppointment!, status: AppointmentStatus.CLINICAL } });
+    } catch (error: any) {
+      set({ error: error.message || "Failed to set clinical alert" });
+    } finally {
+      set({ actionLoading: false });
+    }
+  },
+
+  fetchClinicalAlerts: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await appointmentService.getAllAppointments({status: AppointmentStatus.CLINICAL});
+      set({ clinicalAlerts: response.data || [] });
+    } catch (error: any) {
+      set({ error: error.message || "Failed to fetch clinical alerts" });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
 
   fetchLiveQueue: async () => {
     set({ isLoading: true, error: null });
@@ -73,7 +104,6 @@ export const useAppointmentStore = create<AppointmentState>((set, get) => ({
 
   fetchPatientDetails: async (patientId: string) => {
     set({ isLoading: true, error: null });
-    console.log(patientId);
 
     const profilePromise = adminService
       .getUserProfile(patientId)

@@ -39,10 +39,18 @@ export default function PatientSymptomsPage() {
             </label>
             <label className="block">
               <span>Selected Symptoms</span>
-              <span className="relative mt-1.5 flex">
-                <span className="text-base font-medium text-slate-600 dark:text-navy-100">
-                  {selectedAppointment?.symptoms?.join(" / ") ?? "—"}
-                </span>
+              <span className="relative mt-1.5 flex flex-col gap-1">
+                {selectedAppointment?.symptoms?.length ? (
+                  selectedAppointment.symptoms.map((s: any, idx: number) => (
+                    <span key={idx} className="text-base font-medium text-slate-600 dark:text-navy-100">
+                      {typeof s === "string" 
+                        ? s 
+                        : `${s.name || s.symptomId} (Severity: ${s.severity}/10)`}
+                    </span>
+                  ))
+                ) : (
+                  <span className="text-base font-medium text-slate-600 dark:text-navy-100">—</span>
+                )}
               </span>
             </label>
             <label className="block">
@@ -50,16 +58,6 @@ export default function PatientSymptomsPage() {
               <span className="relative mt-1.5 flex">
                 <span className="text-base font-medium text-slate-600 dark:text-navy-100">
                   {selectedAppointment?.duration ?? "—"}
-                </span>
-              </span>
-            </label>
-            <label className="block">
-              <span>Severity Level</span>
-              <span className="relative mt-1.5 flex">
-                <span className="text-base font-medium text-slate-600 dark:text-navy-100">
-                  {selectedAppointment
-                    ? `${selectedAppointment.severity} / 10`
-                    : "—"}
                 </span>
               </span>
             </label>

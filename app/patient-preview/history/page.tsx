@@ -18,22 +18,26 @@ function PatientHistoryContent() {
     }
   }, [searchParams]);
 
-  const historyItems = history.map((appointment: Appointment) => ({
-    id: appointment.id,
-    title: appointment.doctorName || "Pending Assignment",
-    date: new Date(appointment.scheduledAt).toLocaleDateString("en-GB", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    }),
-    description: appointment.description,
-    details: {
-      primaryComplaint: appointment.symptoms.join(", "),
-      selectedSymptoms: appointment.symptoms.join(" / "),
-      duration: appointment.duration,
-      severityLevel: `${appointment.severity}–10 scale`,
-    },
-  }));
+  const historyItems = history.map((appointment: Appointment) => {
+    const getSymptomName = (s: any) => typeof s === "string" ? s : (s.name || s.symptomId);
+    const getSymptomWithSeverity = (s: any) => typeof s === "string" ? s : `${s.name || s.symptomId} (Severity: ${s.severity}/10)`;
+
+    return {
+      id: appointment.id,
+      title: appointment.doctorName || "Pending Assignment",
+      date: new Date(appointment.scheduledAt).toLocaleDateString("en-GB", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      }),
+      description: appointment.description,
+      details: {
+        primaryComplaint: appointment.symptoms?.map(getSymptomName).join(", ") || "",
+        selectedSymptoms: appointment.symptoms?.map(getSymptomWithSeverity).join(" / ") || "",
+        duration: appointment.duration,
+      },
+    };
+  });
 
   return (
     <div className="p-4 sm:p-5">

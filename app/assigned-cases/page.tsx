@@ -149,9 +149,6 @@ export default function AssignedCasesPage() {
                 <th className="whitespace-nowrap bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">
                   Scheduled At
                 </th>
-                <th className="whitespace-nowrap bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">
-                  Severity
-                </th>
                 <th className="whitespace-nowrap rounded-tr-lg bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5" />
               </tr>
             </thead>
@@ -178,9 +175,6 @@ export default function AssignedCasesPage() {
                       <div className="h-4 w-28 rounded bg-slate-200 dark:bg-navy-500" />
                     </td>
                     <td className="px-4 py-3 sm:px-5">
-                      <div className="h-4 w-10 rounded bg-slate-200 dark:bg-navy-500" />
-                    </td>
-                    <td className="px-4 py-3 sm:px-5">
                       <div className="size-8 rounded-full bg-slate-200 dark:bg-navy-500" />
                     </td>
                   </tr>
@@ -188,7 +182,7 @@ export default function AssignedCasesPage() {
               ) : completedCases.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={6}
+                    colSpan={5}
                     className="px-4 py-12 text-center text-slate-500 dark:text-navy-300"
                   >
                     No completed cases found.
@@ -228,9 +222,6 @@ export default function AssignedCasesPage() {
                     </td>
                     <td className="whitespace-nowrap px-4 py-3 sm:px-5 text-slate-600 dark:text-navy-100">
                       {formatDate(item.scheduledAt)}
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-3 sm:px-5 text-slate-600 dark:text-navy-100">
-                      {item.severity ?? "—"}
                     </td>
                     <td className="whitespace-nowrap px-4 py-3 sm:px-5">
                       <div className="flex justify-end">

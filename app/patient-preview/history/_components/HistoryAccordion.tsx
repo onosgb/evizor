@@ -11,7 +11,6 @@ interface HistoryItem {
     primaryComplaint?: string;
     selectedSymptoms?: string;
     duration?: string;
-    severityLevel?: string;
   };
 }
 
@@ -101,16 +100,6 @@ export default function HistoryAccordion({ items }: HistoryAccordionProps) {
                         <span className="relative mt-1.5 flex">
                           <span className="text-base font-medium text-slate-600 dark:text-navy-100">
                             {item.details.duration}
-                          </span>
-                        </span>
-                      </label>
-                    )}
-                    {item.details.severityLevel && (
-                      <label className="block">
-                        <span>Severity Level</span>
-                        <span className="relative mt-1.5 flex">
-                          <span className="text-base font-medium text-slate-600 dark:text-navy-100">
-                            {item.details.severityLevel}
                           </span>
                         </span>
                       </label>

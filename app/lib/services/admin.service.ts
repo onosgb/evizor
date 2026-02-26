@@ -149,18 +149,7 @@ class AdminService {
     return response.data;
   }
 
-  /**
-   * Get all appointments
-   */
-  async getAllAppointments(
-    queryParams: ListQueryParams,
-  ): Promise<ApiResponse<Appointment[]>> {
-    const response = await apiClient.get<ApiResponse<Appointment[]>>(
-      "/appointments/all",
-      { params: buildQueryParams(queryParams) },
-    );
-    return response.data;
-  }
+ 
 }
 
 export const adminService = new AdminService();

@@ -10,19 +10,20 @@ interface PatientInfo {
 }
 
 interface ClinicalAlertCardProps {
-  name: string;
-  procedure: string;
-  dateLabel: string;
-  time: string;
+  name?: string;
+  procedure?: string;
+  dateLabel?: string;
+  time?: string;
   avatarSrc?: string;
   patientInfo?: PatientInfo[];
+  isLoading?: boolean;
 }
 
 export default function ClinicalAlertCard({
-  name,
-  procedure,
+  name = "",
+  procedure = "",
   dateLabel = "Today",
-  time,
+  time = "",
   avatarSrc = "/images/200x200.png",
   patientInfo = [
     { label: "D.O.B.", value: "25 Jan 1998" },
@@ -31,6 +32,7 @@ export default function ClinicalAlertCard({
     { label: "Last Appointment", value: "25 May 2021" },
     { label: "Register Date", value: "16 Jun 2020" },
   ],
+  isLoading = false,
 }: ClinicalAlertCardProps) {
 
   return (
@@ -83,43 +85,67 @@ export default function ClinicalAlertCard({
           </TableActionMenu>
         </div>
       </div>
-      <div className="space-y-4">
-        <div className="flex justify-between">
-          <div className="avatar size-16">
-            <Image
-              className="rounded-full"
-              src={avatarSrc}
-              alt={name}
-              width={64}
-              height={64}
-            />
+      {isLoading ? (
+        <div className="space-y-4 animate-pulse">
+          <div className="flex justify-between">
+            <div className="size-16 rounded-full bg-slate-200 dark:bg-navy-500" />
+            <div className="space-y-2">
+              <div className="h-4 w-12 rounded bg-slate-200 dark:bg-navy-500 ml-auto" />
+              <div className="h-6 w-16 rounded bg-slate-200 dark:bg-navy-500 ml-auto" />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <div className="h-5 w-32 rounded bg-slate-200 dark:bg-navy-500" />
+            <div className="h-4 w-24 rounded bg-slate-200 dark:bg-navy-500" />
+          </div>
+          <div className="space-y-3">
+            {Array.from({ length: 5 }).map((_, j) => (
+              <div key={j} className="flex justify-between">
+                <div className="h-4 w-24 rounded bg-slate-200 dark:bg-navy-500" />
+                <div className="h-4 w-16 rounded bg-slate-200 dark:bg-navy-500" />
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          <div className="flex justify-between">
+            <div className="avatar size-16">
+              <Image
+                className="rounded-full"
+                src={avatarSrc}
+                alt={name}
+                width={64}
+                height={64}
+              />
+            </div>
+            <div>
+              <p>{dateLabel}</p>
+              <p className="text-xl font-medium text-slate-700 dark:text-navy-100">
+                {time}
+              </p>
+            </div>
           </div>
           <div>
-            <p>{dateLabel}</p>
-            <p className="text-xl font-medium text-slate-700 dark:text-navy-100">
-              {time}
+            <h3 className="text-lg font-medium text-slate-700 dark:text-navy-100">
+              {name}
+            </h3>
+            <p className="text-xs text-slate-400 dark:text-navy-300">
+              {procedure}
             </p>
           </div>
+          <div className="space-y-3 text-xs-plus">
+            {patientInfo.map((info, index) => (
+              <div key={index} className="flex justify-between">
+                <p className="font-medium text-slate-700 dark:text-navy-100">
+                  {info.label}
+                </p>
+                <p className="text-right">{info.value}</p>
+              </div>
+            ))}
+          </div>
         </div>
-        <div>
-          <h3 className="text-lg font-medium text-slate-700 dark:text-navy-100">
-            {name}
-          </h3>
-          <p className="text-xs text-slate-400 dark:text-navy-300">
-            {procedure}
-          </p>
-        </div>
-        <div className="space-y-3 text-xs-plus">
-          {patientInfo.map((info, index) => (
-            <div key={index} className="flex justify-between">
-              <p className="font-medium text-slate-700 dark:text-navy-100">
-                {info.label}
-              </p>
-              <p className="text-right">{info.value}</p>
-            </div>
-          ))}
-        </div>
-      </div>
+      )}
     </div>
   );
 }

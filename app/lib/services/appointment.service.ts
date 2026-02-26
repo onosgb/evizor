@@ -15,6 +15,25 @@ import { buildQueryParams } from "../utils/queryParams";
  */
 class AppointmentService {
   /**
+   * Get all appointments
+   */
+  async getAllAppointments(
+    queryParams: ListQueryParams,
+  ): Promise<ApiResponse<Appointment[]>> {
+    const response = await apiClient.get<ApiResponse<Appointment[]>>(
+      "/appointments/all",
+      { params: buildQueryParams(queryParams) },
+    );
+    return response.data;
+  }
+  
+  async setClinicalAlert(appointmentId: string) {
+    const response = await apiClient.put<ApiResponse<Appointment>>(
+      `/appointments/${appointmentId}/clinical-alert`,
+    );
+    return response.data;
+  }
+  /**
    * Get live queue appointments
    */
   async getLiveQueue(): Promise<ApiResponse<Appointment[]>> {

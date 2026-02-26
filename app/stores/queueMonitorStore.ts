@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { Appointment, AppointmentStatus } from "../models";
 import { ListQueryParams } from "../models/QueryParams";
-import { adminService } from "../lib/services";
+import { appointmentService } from "../lib/services";
 
 interface QueueMonitorState {
   appointments: Appointment[];
@@ -52,7 +52,7 @@ export const useQueueMonitorStore = create<QueueMonitorState>((set, get) => ({
     const { page, limit, status, tenantId, search } = get();
     set({ isLoading: true, error: null });
     try {
-      const response = await adminService.getAllAppointments({
+      const response = await appointmentService.getAllAppointments({
         page,
         limit,
         status,

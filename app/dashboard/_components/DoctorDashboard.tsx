@@ -17,11 +17,12 @@ const getGreeting = () => {
 };
 
 export default function DoctorDashboard({ user }: { user: User | null }) {
-  const { liveQueue, assignedCases, isLoading: queueLoading, fetchLiveQueue, fetchAssignedCases } = useAppointmentStore();
+  const { liveQueue, assignedCases, isLoading: queueLoading, fetchLiveQueue, fetchAssignedCases, clinicalAlerts, fetchClinicalAlerts } = useAppointmentStore();
 
   useEffect(() => {
     fetchLiveQueue();
     fetchAssignedCases({ page: 1, limit: 5 });
+    fetchClinicalAlerts();
   }, []);
 
   const waitingPatients = liveQueue.slice(0, 6);
@@ -32,9 +33,11 @@ export default function DoctorDashboard({ user }: { user: User | null }) {
     .slice(0, 5);
 
 
+  const showClinicalAlerts = queueLoading || clinicalAlerts.length > 0;
+
   return (
     <div className="mt-4 grid grid-cols-12 gap-4 sm:mt-5 sm:gap-5 lg:mt-6 lg:gap-6">
-      <div className="col-span-12 lg:col-span-8 xl:col-span-9">
+      <div className={`col-span-12 ${showClinicalAlerts ? 'lg:col-span-8 xl:col-span-9' : ''}`}>
         {/* Welcome Card */}
         <div
           className="card col-span-12 mt-12 bg-linear-to-r p-5 sm:col-span-8 sm:mt-0 sm:flex-row"
@@ -215,24 +218,27 @@ export default function DoctorDashboard({ user }: { user: User | null }) {
       </div>
 
       {/* Right Sidebar - Clinical Alerts */}
-      <div className="col-span-12 lg:col-span-4 xl:col-span-3">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-1 lg:gap-6">
-          <ClinicalAlertCard
-            name="Alfredo Elliott"
-            procedure="Checkup"
-            dateLabel="Today"
-            time="11:00"
-          />
-          <ClinicalAlertCard
-            name="Alfredo Elliott"
-            procedure="Checkup"
-            dateLabel="Today"
-            time="11:00"
-          />
+      {showClinicalAlerts && (
+        <div className="col-span-12 lg:col-span-4 xl:col-span-3">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-1 lg:gap-6">
+            {queueLoading ? (
+              Array.from({ length: 2 }).map((_, i) => (
+                <ClinicalAlertCard key={i} isLoading />
+              ))
+            ) : (
+              clinicalAlerts.map((alert) => (
+                <ClinicalAlertCard
+                  key={alert.id}
+                  name={alert.patientName}
+                  procedure={alert.description || "—"}
+                  dateLabel={formatDate(alert.scheduledAt)}
+                  time={alert.scheduledAt}
+                />
+              ))
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
-
-
