@@ -6,6 +6,8 @@ import { useAppointmentStore } from "@/app/stores/appointmentStore";
 import Link from "next/link";
 import { useState } from "react";
 import ConfirmationModal from "@/app/components/ConfirmationModal";
+import { useAuthStore } from "@/app/stores";
+import { UserRole } from "@/app/lib/roles";
 
 interface PatientInfo {
   label: string;
@@ -22,6 +24,7 @@ interface ClinicalAlertCardProps {
   isLoading?: boolean;
   id?:string;
   patientId?:string;
+  patientImageUrl?:string;
 }
 
 export default function ClinicalAlertCard({
@@ -44,6 +47,7 @@ export default function ClinicalAlertCard({
 
   const { acceptAppointment } = useAppointmentStore();
   const [open, setOpen] = useState(false);
+  const {user} = useAuthStore();
 
   return (
     <div className="rounded-lg bg-info/10 px-4 pb-5 dark:bg-navy-800 sm:px-5">
@@ -54,7 +58,7 @@ export default function ClinicalAlertCard({
         <div className="flex justify-end">
           <TableActionMenu>
             <div className="w-48">
-              <ul>
+            {user?.role === UserRole.DOCTOR &&   <ul>
                 <li>
                   <a
                     href="#"
@@ -68,8 +72,8 @@ export default function ClinicalAlertCard({
                   </a>
                 </li>
               
-              </ul>
-              <div className="my-1 h-px bg-slate-150 dark:bg-navy-500"></div>
+              </ul>}
+              {user?.role === UserRole.DOCTOR && <div className="my-1 h-px bg-slate-150 dark:bg-navy-500"></div>}
               <ul>
                 <li>
                   <Link
@@ -113,7 +117,7 @@ export default function ClinicalAlertCard({
               <Image
                 className="rounded-full"
                 src={avatarSrc}
-                alt={name}
+                alt={''}
                 width={64}
                 height={64}
               />

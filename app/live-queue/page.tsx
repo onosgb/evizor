@@ -75,6 +75,7 @@ export default function LiveQueuePage() {
               name={appointment.patientName}
               scheduledAt={appointment.scheduledAt}
               symptom={appointment.description}
+              avatarSrc={appointment.patientImageUrl}
             />
           ))}
         </div>

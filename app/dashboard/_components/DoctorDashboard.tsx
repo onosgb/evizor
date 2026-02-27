@@ -235,7 +235,15 @@ export default function DoctorDashboard({ user }: { user: User | null }) {
                     name={alert.patientName}
                     procedure={alert.description || "—"}
                     dateLabel={formatTodayOrDate(alert.scheduledAt)}
+                    avatarSrc={alert.patientImageUrl}
                     time={formatTime(alert.scheduledAt)}
+                    patientInfo={[
+                      { label: "D.O.B.", value: formatDate(alert.patientDob) || "-" },
+                      { label: "Weight", value: alert.patientWeight || "-" },
+                      { label: "Height", value: alert.patientHeight || "-" },
+                      { label: "Last Appointment", value: formatDate(alert.scheduledAt) || "-" },
+                      { label: "Registered Date", value: formatDate(alert.patientRegisteredDate) || "-" },
+                    ]}
                   />
                 );
               })

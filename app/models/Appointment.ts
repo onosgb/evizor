@@ -20,6 +20,13 @@ export interface Appointment {
   createdAt: string;
   tenantId: string;
   attachments: string[];
+  doctorSpecialty: string;
+  patientImageUrl: string;
+  doctorImageUrl: string;
+  patientRegisteredDate: string;
+  patientDob: string;
+  patientHeight: string;
+  patientWeight: string;
   symptoms: any[]; // Supports both legacy strings and new `{ symptomId, severity, name }` objects
 }
 

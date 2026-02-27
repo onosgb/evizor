@@ -1,11 +1,12 @@
 import Link from "next/link";
-
+import Image from "next/image";
 interface PatientCardProps {
   id: string | number;
   patientId: string;
   name: string;
   symptom?: string;
   scheduledAt: string;
+  avatarSrc?: string;
   onAccept?: () => void;
   onReject?: () => void;
 }
@@ -16,6 +17,7 @@ export default function PatientCard({
   name,
   symptom = "General",
   scheduledAt,
+  avatarSrc="/images/200x200.png",
   onAccept,
   onReject,
 }: PatientCardProps) {
@@ -36,18 +38,13 @@ export default function PatientCard({
       {/* Top row: avatar + name/type */}
       <div className="flex items-center gap-3">
         <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-primary/15 dark:bg-accent/15">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="size-6 text-primary dark:text-accent"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke="currentColor"
-              strokeWidth="1.5"
-              d="M5 19.111c0-2.413 1.697-4.468 4.004-4.848l.208-.035a17.134 17.134 0 015.576 0l.208.035c2.307.38 4.004 2.435 4.004 4.848C19 20.154 18.181 21 17.172 21H6.828C5.818 21 5 20.154 5 19.111zM16.083 6.938c0 2.174-1.828 3.937-4.083 3.937S7.917 9.112 7.917 6.937C7.917 4.764 9.745 3 12 3s4.083 1.763 4.083 3.938z"
-            />
-          </svg>
+         {avatarSrc && <Image
+          className="rounded-full"
+          src={avatarSrc}
+          alt={name}
+          width={64}
+          height={64}
+        />}
         </div>
         <div className="min-w-0">
           <h3 className="truncate font-semibold text-slate-700 dark:text-navy-100">
