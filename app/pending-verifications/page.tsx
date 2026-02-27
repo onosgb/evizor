@@ -205,11 +205,7 @@ export default function PendingVerificationsPage() {
                       {item.issuingAuthority}
                     </td>
                     <td className="whitespace-nowrap px-4 py-3 sm:px-5">
-                      {formatDate(item.licenseExpiryDate, {
-                        month: "2-digit",
-                        day: "2-digit",
-                        year: "numeric",
-                      })}
+                      {formatDate(item.licenseExpiryDate)}
                     </td>
                     <td className="whitespace-nowrap px-4 py-3 sm:px-5">
                       <div className="flex space-x-2">
