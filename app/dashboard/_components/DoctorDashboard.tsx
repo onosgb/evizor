@@ -111,9 +111,10 @@ export default function DoctorDashboard({ user }: { user: User | null }) {
                   key={appointment.id}
                   name={appointment.patientName}
                   procedure={appointment.description || "—"}
-                  date={appointment.scheduledAt}
-                  time=""
-                  viewLink={`/patient-preview?appointmentId=${appointment.id}&patientId=${appointment.patientId}`}
+                  date={formatDate(appointment.scheduledAt)}
+                  time={formatTime(appointment.scheduledAt)}
+                  avatarSrc={appointment.patientImageUrl?? "/images/200x200.png"}
+                  viewLink={`/patient-preview?appointmentId=${appointment.id}&userId=${appointment.patientId}`}
                 />
               ))
             )}
@@ -184,7 +185,7 @@ export default function DoctorDashboard({ user }: { user: User | null }) {
                         <td className={`whitespace-nowrap px-4 py-3 sm:px-5 ${index === recentCompletedCases.length - 1 ? "rounded-bl-lg" : ""}`}>
                           <div className="flex items-center space-x-4">
                             <div className="avatar size-9">
-                              <Image className="rounded-full" src="/images/200x200.png" alt={caseItem.patientName} width={36} height={36} />
+                              <Image className="rounded-full" src={caseItem.patientImageUrl?? "/images/200x200.png" } alt={''} width={36} height={36} />
                             </div>
                             <span className="font-medium text-slate-700 dark:text-navy-100">
                               {caseItem.patientName}

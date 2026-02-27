@@ -54,6 +54,8 @@ export default function ProfileContent() {
     location: userTenant?.province || "",
     address: user?.address || "",
     dob: formatDateForInput(user?.dob),
+    weight: user?.weight || "",
+    height: user?.height || "",
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -87,6 +89,8 @@ export default function ProfileContent() {
         location: userTenant?.province || "",
         address: viewedUser.address || "",
         dob: formatDateForInput(viewedUser.dob),
+        weight: viewedUser.weight || "",
+        height: viewedUser.height || "",
       });
     }
   }, [viewedUser, userTenant]);
@@ -102,8 +106,19 @@ export default function ProfileContent() {
   };
 
   const handleSave = async () => {
-    // Exclude email and location from submission (readonly fields)
-    const { email, location, ...dataToSubmit } = formData;
+    const { email, location, weight, height, ...rest } = formData;
+    
+    if (!height) {
+      setError("Height is required");
+      setIsSubmitting(false);
+      return;
+    }
+
+    const dataToSubmit = {
+      ...rest,
+      weight: weight ? Number(weight) : undefined,
+      height: Number(height),
+    };
 
     setIsSubmitting(true);
     setError(null);
@@ -526,6 +541,73 @@ export default function ProfileContent() {
                               strokeLinecap="round"
                               strokeLinejoin="round"
                               d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
+                            />
+                          </svg>
+                        </span>
+                      </span>
+                    </label>
+                    <label className="block">
+                      <span>Weight (kg)</span>
+                      <span className="relative mt-1.5 flex">
+                        <input
+                          name="weight"
+                          value={formData.weight}
+                          onChange={handleInputChange}
+                          readOnly={isReadOnly}
+                          className={`form-input peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 pl-9 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent ${isReadOnly ? "bg-slate-50 dark:bg-navy-900 cursor-not-allowed" : ""}`}
+                          placeholder="Enter weight"
+                          type="number"
+                          step="0.1"
+                        />
+                        <span className="pointer-events-none absolute flex h-full w-10 items-center justify-center text-slate-400 peer-focus:text-primary dark:text-navy-300 dark:peer-focus:text-accent">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="size-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M3 6l3 12h12l3-12H3z"
+                            />
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M9 6v12M15 6v12"
+                            />
+                          </svg>
+                        </span>
+                      </span>
+                    </label>
+                    <label className="block">
+                      <span>Height (cm)</span>
+                      <span className="relative mt-1.5 flex">
+                        <input
+                          name="height"
+                          value={formData.height}
+                          onChange={handleInputChange}
+                          readOnly={isReadOnly}
+                          className={`form-input peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 pl-9 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent ${isReadOnly ? "bg-slate-50 dark:bg-navy-900 cursor-not-allowed" : ""}`}
+                          placeholder="Enter height"
+                          type="number"
+                          step="0.1"
+                        />
+                        <span className="pointer-events-none absolute flex h-full w-10 items-center justify-center text-slate-400 peer-focus:text-primary dark:text-navy-300 dark:peer-focus:text-accent">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="size-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M7 17L17 7M17 7H7M17 7v10"
                             />
                           </svg>
                         </span>

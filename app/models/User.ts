@@ -18,6 +18,8 @@ export interface User {
   profilePictureUrl?: string;
   address?: string;
   healthCardNo?: string;
+  weight?: number;
+  height?: number;
 }
 
 export interface ProfessionalProfile {
@@ -37,4 +39,6 @@ export interface UpdateUser {
   gender: string;
   address: string;
   specialtyId?: string;
+  weight?: number;
+  height?: number;
 }

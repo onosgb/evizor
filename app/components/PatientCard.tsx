@@ -40,7 +40,7 @@ export default function PatientCard({
         <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-primary/15 dark:bg-accent/15">
          {avatarSrc && <Image
           className="rounded-full"
-          src={avatarSrc}
+          src={avatarSrc?? "/images/200x200.png"}
           alt={name}
           width={64}
           height={64}
