@@ -22,6 +22,7 @@ interface AppointmentState {
   selectAppointment: (appointmentId: string | null) => void;
   setClinicalAlert: (appointmentId: string) => Promise<void>;
   fetchClinicalAlerts: () => Promise<void>;
+  acceptAppointment: (appointmentId: string) => Promise<void>;
 }
 
 export const useAppointmentStore = create<AppointmentState>((set, get) => ({
@@ -35,6 +36,19 @@ export const useAppointmentStore = create<AppointmentState>((set, get) => ({
   isLoading: false,
   actionLoading: false,
   error: null,
+
+  acceptAppointment: async (appointmentId: string) => {
+    const state = get();
+    set({ actionLoading: true, error: null });
+    try {
+      await appointmentService.acceptAppointment(appointmentId)
+      set({ selectedAppointment: { ...state.selectedAppointment!, status: AppointmentStatus.PROGRESS } });
+    } catch (error: any) {
+      set({ error: error.message || "Failed to accept appointment" });
+    } finally {
+      set({ actionLoading: false });
+    }
+  },
 
   setClinicalAlert: async (appointmentId: string) => {
     const state = get();

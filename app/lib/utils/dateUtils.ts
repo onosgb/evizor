@@ -1,48 +1,42 @@
-/**
- * Formats a date string or Date object into a readable format.
- * Default format is DD/MM/YYYY HH:mm
- */
-export const formatDate = (date: string | Date | undefined | null, options?: Intl.DateTimeFormatOptions) => {
-  if (!date) return "—";
-  
-  try {
-    const dateObj = typeof date === 'string' ? new Date(date) : date;
-    
-    if (isNaN(dateObj.getTime())) {
-      return date.toString();
-    }
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import 'dayjs/locale/en';
 
-    // When custom options are supplied, time fields are excluded unless
-    // explicitly included in those options. Without custom options the
-    // default includes time (DD MMM YYYY HH:mm).
-    const defaultOptions: Intl.DateTimeFormatOptions = options
-      ? { hour: undefined, minute: undefined, hour12: undefined, ...options }
-      : { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false };
+// Extend dayjs with required plugins
+dayjs.extend(utc);
+dayjs.extend(timezone);
+dayjs.extend(relativeTime);
 
-    return new Intl.DateTimeFormat('en-GB', defaultOptions).format(dateObj);
-  } catch (error) {
-    console.error("Error formatting date:", error);
-    return date.toString();
+// Set the default timezone (you can make this configurable if needed)
+dayjs.tz.setDefault(dayjs.tz.guess());
+
+// Re-export dayjs as the default
+export default dayjs;
+
+// Helper functions for common date operations
+export const formatDate = (date: string | Date, format = 'MMM D, YYYY'): string => {
+  return dayjs(date).format(format);
+};
+
+export const formatDateTime = (date: string | Date, format = 'MMM D, YYYY, hh:mm A'): string => {
+  return dayjs(date).format(format);
+};
+
+export const formatTime = (date: string | Date, format = 'h:mm A'): string => {
+  return dayjs(date).format(format);
+};
+
+export const fromNow = (date: string | Date): string => {
+  return dayjs(date).fromNow();
+};
+
+export const formatTodayOrDate = (date: string | Date, format = 'MMM D, YYYY'): string => {
+  const d = dayjs(date);
+  const now = dayjs();
+  if (d.isSame(now, 'day')) {
+    return 'Today';
   }
-};
-
-/**
- * Formats a date to just the date part (e.g., 23 Feb 2026)
- */
-export const formatJustDate = (date: string | Date | undefined | null) => {
-  return formatDate(date, { hour: undefined, minute: undefined });
-};
-
-/**
- * Formats a date to just the time part (e.g., 18:16)
- */
-export const formatJustTime = (date: string | Date | undefined | null) => {
-  return formatDate(date, { 
-    day: undefined, 
-    month: undefined, 
-    year: undefined,
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false
-  });
+  return d.format(format);
 };

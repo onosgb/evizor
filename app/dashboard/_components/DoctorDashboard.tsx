@@ -7,7 +7,7 @@ import Link from "next/link";
 import { useEffect } from "react";
 import { User } from "@/app/models";
 import { useAppointmentStore } from "@/app/stores/appointmentStore";
-import { formatDate } from "@/app/lib/utils/dateUtils";
+import { formatDate, formatTime, formatTodayOrDate } from "@/app/lib/utils/dateUtils";
 
 const getGreeting = () => {
   const hour = new Date().getHours();
@@ -223,18 +223,22 @@ export default function DoctorDashboard({ user }: { user: User | null }) {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-1 lg:gap-6">
             {queueLoading ? (
               Array.from({ length: 2 }).map((_, i) => (
-                <ClinicalAlertCard key={i} isLoading />
+                <ClinicalAlertCard key={i} isLoading id="" patientId="" />
               ))
             ) : (
-              clinicalAlerts.map((alert) => (
-                <ClinicalAlertCard
-                  key={alert.id}
-                  name={alert.patientName}
-                  procedure={alert.description || "—"}
-                  dateLabel={formatDate(alert.scheduledAt)}
-                  time={alert.scheduledAt}
-                />
-              ))
+              clinicalAlerts.map((alert) => {
+                return (
+                  <ClinicalAlertCard
+                    key={alert.id}
+                    id={alert.id}
+                    patientId={alert.patientId}
+                    name={alert.patientName}
+                    procedure={alert.description || "—"}
+                    dateLabel={formatTodayOrDate(alert.scheduledAt)}
+                    time={formatTime(alert.scheduledAt)}
+                  />
+                );
+              })
             )}
           </div>
         </div>

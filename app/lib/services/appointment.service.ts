@@ -14,6 +14,12 @@ import { buildQueryParams } from "../utils/queryParams";
  * Handles all appointment-related API endpoints
  */
 class AppointmentService {
+  async acceptAppointment(appointmentId: string) {
+    const response = await apiClient.put<ApiResponse<Appointment>>(
+      `/appointments/${appointmentId}/accept`,
+    );
+    return response.data;
+  }
   /**
    * Get all appointments
    */
@@ -26,13 +32,14 @@ class AppointmentService {
     );
     return response.data;
   }
-  
+
   async setClinicalAlert(appointmentId: string) {
     const response = await apiClient.put<ApiResponse<Appointment>>(
       `/appointments/${appointmentId}/clinical-alert`,
     );
     return response.data;
   }
+
   /**
    * Get live queue appointments
    */
@@ -42,6 +49,8 @@ class AppointmentService {
     );
     return response.data;
   }
+
+  
   /**
    * Get patient appointment history
    */

@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { User, AppointmentStatus } from "@/app/models";
 import { useQueueMonitorStore } from "@/app/stores/queueMonitorStore";
-import { formatDate } from "@/app/lib/utils/dateUtils";
+import { formatTodayOrDate } from "@/app/lib/utils/dateUtils";
 
 const getGreeting = () => {
   const hour = new Date().getHours();
@@ -434,7 +434,7 @@ export default function AdminDashboard({ user }: { user: User | null }) {
                         {item.doctorName}
                       </td>
                       <td className="whitespace-nowrap px-4 py-3 font-medium text-slate-600 dark:text-navy-100 sm:px-5">
-                        {formatDate(item.scheduledAt)}
+                        {formatTodayOrDate(item.scheduledAt)}
                       </td>
                       <td className="whitespace-nowrap px-4 py-3 sm:px-5">
                         {getStatusBadge(item.status)}

@@ -13,6 +13,8 @@
     "@radix-ui/react-tooltip": "^1.2.8",
     "aos": "^2.3.4",
     "axios": "^1.13.2",
+    "date-fns": "^4.1.0",
+    "dayjs": "^1.11.19",
     "next": "16.1.1",
     "react": "19.2.3",
     "react-dom": "19.2.3",

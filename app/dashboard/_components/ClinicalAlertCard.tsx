@@ -1,8 +1,11 @@
 ﻿"use client";
 
 import Image from "next/image";
-import { useState, useRef, useEffect } from "react";
 import TableActionMenu from "@/app/components/TableActionMenu";
+import { useAppointmentStore } from "@/app/stores/appointmentStore";
+import Link from "next/link";
+import { useState } from "react";
+import ConfirmationModal from "@/app/components/ConfirmationModal";
 
 interface PatientInfo {
   label: string;
@@ -17,23 +20,30 @@ interface ClinicalAlertCardProps {
   avatarSrc?: string;
   patientInfo?: PatientInfo[];
   isLoading?: boolean;
+  id?:string;
+  patientId?:string;
 }
 
 export default function ClinicalAlertCard({
   name = "",
+  id,
+  patientId,
   procedure = "",
   dateLabel = "Today",
   time = "",
   avatarSrc = "/images/200x200.png",
   patientInfo = [
-    { label: "D.O.B.", value: "25 Jan 1998" },
-    { label: "Weight", value: "56 kg" },
-    { label: "Height", value: "164 cm" },
-    { label: "Last Appointment", value: "25 May 2021" },
-    { label: "Register Date", value: "16 Jun 2020" },
+    { label: "D.O.B.", value: "-" },
+    { label: "Weight", value: "-" },
+    { label: "Height", value: "-" },
+    { label: "Last Appointment", value: "-" },
+    { label: "Register Date", value: "-" },
   ],
   isLoading = false,
 }: ClinicalAlertCardProps) {
+
+  const { acceptAppointment } = useAppointmentStore();
+  const [open, setOpen] = useState(false);
 
   return (
     <div className="rounded-lg bg-info/10 px-4 pb-5 dark:bg-navy-800 sm:px-5">
@@ -49,36 +59,25 @@ export default function ClinicalAlertCard({
                   <a
                     href="#"
                     className="flex h-8 items-center whitespace-nowrap px-3 pr-8 font-medium tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
-                  >
-                    Action
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setOpen(true);
+                    }}
+                 >
+                    Accept
                   </a>
                 </li>
-                <li>
-                  <a
-                    href="#"
-                    className="flex h-8 items-center whitespace-nowrap px-3 pr-8 font-medium tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
-                  >
-                    Another Action
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="#"
-                    className="flex h-8 items-center whitespace-nowrap px-3 pr-8 font-medium tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
-                  >
-                    Something else
-                  </a>
-                </li>
+              
               </ul>
               <div className="my-1 h-px bg-slate-150 dark:bg-navy-500"></div>
               <ul>
                 <li>
-                  <a
-                    href="#"
+                  <Link
+                    href={`/patient-preview?appointmentId=${id}&userId=${patientId}`}
                     className="flex h-8 items-center whitespace-nowrap px-3 pr-8 font-medium tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
                   >
-                    Separated Link
-                  </a>
+                   View patient
+                  </Link>
                 </li>
               </ul>
             </div>
@@ -146,7 +145,20 @@ export default function ClinicalAlertCard({
           </div>
         </div>
       )}
+      <ConfirmationModal
+        isOpen={open}
+        onClose={() => setOpen(false)}
+        onConfirm={ async () => {
+          await acceptAppointment(id!);
+          setOpen(false);
+        }}
+        title="Accept Appointment"
+        message="Are you sure you want to accept this appointment?"
+        confirmText="Accept"
+        cancelText="Cancel"
+      />
     </div>
+
   );
 }
 
