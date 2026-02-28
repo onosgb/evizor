@@ -5,3 +5,4 @@ export { useTenantStore } from "./tenantStore";
 export { useQualificationStore } from "./qualificationStore";
 export { useProfessionalProfileStore } from "./professionalProfileStore";
 export { useProfileStore } from "./profileStore";
+export { useUserStore } from "./userStore";

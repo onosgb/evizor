@@ -11,8 +11,7 @@ import { userService } from "../lib/services";
 import { ApiError } from "../models";
 import { Pagination } from "../components/Pagination";
 import TableActionMenu from "../components/TableActionMenu";
-import { useAuthStore } from "../stores/authStore";
-import { useTenantStore } from "../stores/tenantStore";
+import { useAuthStore, useTenantStore, useUserStore } from "../stores";
 import { isSuperAdmin } from "../lib/roles";
 import { useSearchContext } from "../contexts/SearchContext";
 
@@ -77,17 +76,24 @@ export default function UserManagementPage() {
     id: string;
     name: string;
   } | null>(null);
-  const [users, setUsers] = useState<Staff[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [limit, setLimit] = useState(10);
+  
   const [page, setPage] = useState(1);
-  const [total, setTotal] = useState(0);
-
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formError, setFormError] = useState<string | null>(null);
+  const [limit, setLimit] = useState(10);
   const [toggleTarget, setToggleTarget] = useState<Staff | null>(null);
   const [toggleNewStatus, setToggleNewStatus] = useState<string>("");
+
+  const {
+    users,
+    total,
+    isLoading,
+    error,
+    isSubmitting,
+    formError,
+    fetchUsers,
+    createUser,
+    toggleUserStatus,
+    resetFormError
+  } = useUserStore();
 
   // Register top-bar search for this page
   useEffect(() => {
@@ -111,37 +117,14 @@ export default function UserManagementPage() {
 
   // Re-fetch whenever page, page size, search query, province or role filter changes
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        const response = await userService.getAllUsers({
-          page,
-          limit,
-          search: debouncedSearch || undefined,
-          tenantId: selectedProvince || undefined,
-          role: selectedRole || undefined,
-        });
-        if (response.status && response.data) {
-          setUsers(response.data);
-          setTotal(response.total ?? 0);
-        } else {
-          setError(response.message || "Failed to fetch users");
-        }
-      } catch (err) {
-        if (err instanceof ApiError) {
-          setError(err.message || "Failed to fetch users");
-        } else {
-          setError("An unexpected error occurred");
-        }
-        console.error("Error fetching users:", err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchUsers();
-  }, [page, limit, debouncedSearch, selectedProvince, selectedRole]);
+    fetchUsers({
+      page,
+      limit,
+      search: debouncedSearch || undefined,
+      tenantId: selectedProvince || undefined,
+      role: selectedRole || undefined,
+    });
+  }, [page, limit, debouncedSearch, selectedProvince, selectedRole, fetchUsers]);
 
   useEffect(() => { if (userIsSuperAdmin) fetchTenants(); }, [userIsSuperAdmin]);
 
@@ -149,69 +132,20 @@ export default function UserManagementPage() {
   const startIndex = (page - 1) * limit;
   const paginatedData = users;
 
-  const toggleUserStatus = async (id: string, currentStatus: string) => {
-    try {
-      // ACTIVE → SUSPENDED; everything else → ACTIVE
-      const newStatus = isActiveStatus(currentStatus) ? "SUSPENDED" : "ACTIVE";
-      const response = await userService.toggleUserStatus(id, newStatus);
-      if (response.status && response.data) {
-        setUsers(
-          users.map((member) => (member.id === id ? response.data : member)),
-        );
-      } else {
-        setError(response.message || "Failed to update user status");
-      }
-    } catch (err) {
-      if (err instanceof ApiError) {
-        setError(err.message || "Failed to update user status");
-      } else {
-        setError("An unexpected error occurred");
-      }
-      console.error("Error updating user status:", err);
-    }
-  };
-
   const confirmToggleUserStatus = async () => {
     if (!toggleTarget || !toggleNewStatus) return;
-    try {
-      const response = await userService.toggleUserStatus(toggleTarget.id, toggleNewStatus);
-      if (response.status && response.data) {
-        setUsers(users.map((m) => (m.id === toggleTarget.id ? response.data : m)));
-      } else {
-        setError(response.message || "Failed to update user status");
-      }
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : "An unexpected error occurred");
-    } finally {
-      setToggleTarget(null);
-      setToggleNewStatus("");
-    }
+    await toggleUserStatus(toggleTarget.id, toggleNewStatus);
+    setToggleTarget(null);
+    setToggleNewStatus("");
   };
 
   const handleCreateUser = async (data: CreateStaffRequest) => {
-    setIsSubmitting(true);
-    setFormError(null);
-    setError(null);
-
-    try {
-      const response = await userService.createUser(data);
-      if (response.status && response.data) {
-        setUsers([...users, response.data]);
-        setShowModal(false);
-      } else {
-        setFormError(response.message || "Failed to create user");
-      }
-    } catch (err) {
-      if (err instanceof ApiError) {
-        setFormError(err.message || "Failed to create user");
-      } else {
-        setFormError("An unexpected error occurred");
-      }
-      console.error("Error creating user:", err);
-    } finally {
-      setIsSubmitting(false);
+    const success = await createUser(data);
+    if (success) {
+      setShowModal(false);
     }
   };
+
 
   const handleOpenSchedule = (userId: string, userName: string) => {
     setSelectedUserForSchedule({ id: userId, name: userName });
@@ -262,7 +196,7 @@ export default function UserManagementPage() {
         isOpen={showModal}
         onClose={() => {
           setShowModal(false);
-          setFormError(null);
+          resetFormError();
         }}
         onSubmit={handleCreateUser}
         error={formError}
@@ -423,7 +357,7 @@ export default function UserManagementPage() {
                               <div className="avatar flex size-10">
                                 <Image
                                   className="mask is-squircle"
-                                  src="/images/200x200.png"
+                                  src={member.profilePictureUrl??"/images/200x200.png"}
                                   alt="avatar"
                                   width={40}
                                   height={40}

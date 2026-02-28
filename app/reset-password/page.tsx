@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -23,7 +22,6 @@ function ResetPasswordForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [isResending, setIsResending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   
   const [timerSeconds, setTimerSeconds] = useState(60);
   const [canResend, setCanResend] = useState(false);
@@ -49,7 +47,6 @@ function ResetPasswordForm() {
     
     setIsResending(true);
     setError(null);
-    setSuccessMessage(null);
     
     try {
       await authService.resendPasswordReset(email);
@@ -70,7 +67,6 @@ function ResetPasswordForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    setSuccessMessage(null);
 
     if (!email) {
       setError("Email is missing");

@@ -23,6 +23,7 @@ export interface Staff {
   phoneNumber: string;
   firstName: string;
   lastName: string;
+  profilePictureUrl: string;
   role: string;
   status: string;
   tenantId: string;

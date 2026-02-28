@@ -214,7 +214,7 @@ export default function QueueMonitorPage() {
                           <div className="avatar size-9">
                             <Image
                               className="rounded-full"
-                              src={item.patientImageUrl}
+                              src={item.patientImageUrl??"/images/200x200.png"}
                               alt="avatar"
                               width={36}
                               height={36}
