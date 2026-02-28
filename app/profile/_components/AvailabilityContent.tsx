@@ -6,6 +6,9 @@ import { createPortal } from "react-dom";
 import { useSearchParams } from "next/navigation";
 import { adminService, appointmentService } from "@/app/lib/services";
 import ProfileSidebar from "./ProfileSidebar";
+import { useProfileStore } from "@/app/stores/profileStore";
+import ScheduleManagementModal from "@/app/user-management/_components/ScheduleManagementModal";
+import { isAdmin } from "@/app/lib/roles";
 
 interface Schedule {
   id: string;
@@ -32,6 +35,8 @@ export default function AvailabilityContent() {
     null,
   );
   const [schedules, setSchedules] = useState<Schedule[]>([]);
+  const { viewedUser } = useProfileStore();
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
 
   useEffect(() => {
     const fetchAvailability = async () => {
@@ -162,6 +167,14 @@ export default function AvailabilityContent() {
               <h2 className="text-lg font-medium tracking-wide text-slate-700 dark:text-navy-100">
                 Availability & Schedule
               </h2>
+              {isAdmin(user) && !!userId && (
+                <button
+                  onClick={() => setShowScheduleModal(true)}
+                  className="btn min-w-28 rounded-full bg-success font-medium text-white hover:bg-success-focus focus:bg-success-focus active:bg-success-focus/90"
+                >
+                  Add Schedule
+                </button>
+              )}
             </div>
             <div className="p-4 sm:p-5">
               <div className="is-scrollbar-hidden min-w-full overflow-x-auto">
@@ -416,6 +429,41 @@ export default function AvailabilityContent() {
           </div>,
           document.body,
         )}
+      {!!userId && viewedUser && (
+        <ScheduleManagementModal
+          isOpen={showScheduleModal}
+          onClose={() => {
+            setShowScheduleModal(false);
+            // Refresh schedules after adding
+            const fetchAvailability = async () => {
+              setIsLoadingAvailability(true);
+              try {
+                const response = await adminService.getUserAvailability(userId);
+                if (response.status && response.data) {
+                  const mapped: Schedule[] = (response.data as any[]).map((item) => ({
+                    id: item.id,
+                    doctorId: item.doctorId,
+                    dateScheduled: item.date,
+                    startTime: item.startTime,
+                    endTime: item.endTime,
+                    timeSlot: `${item.startTime} – ${item.endTime}`,
+                    isAvailable: item.isAvailable ?? false,
+                  }));
+                  setSchedules(mapped);
+                }
+              } catch (error) {
+                console.error("Failed to fetch availability:", error);
+              } finally {
+                setIsLoadingAvailability(false);
+              }
+            };
+            fetchAvailability();
+          }}
+          userId={userId}
+          userName={viewedUser.fullName || `${viewedUser.firstName} ${viewedUser.lastName}`}
+          theme="admin"
+        />
+      )}
     </>
   );
 }
