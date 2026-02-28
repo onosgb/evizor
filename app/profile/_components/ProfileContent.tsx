@@ -40,10 +40,13 @@ export default function ProfileContent() {
 
   const isReadOnly = !!userId;
   const theme = getTheme(user);
+  const fetchTenants = useTenantStore((state) => state.fetchTenants);
+  const tenants = useTenantStore((state) => state.tenants);
   const getTenantById = useTenantStore((state) => state.getTenantById);
 
-  // Get user's tenant/location
-  const userTenant = user?.tenantId ? getTenantById(user.tenantId) : null;
+  // Get display user's tenant/location
+  const displayUser = viewedUser || user;
+  const userTenant = displayUser?.tenantId ? getTenantById(displayUser.tenantId) : null;
 
   const [formData, setFormData] = useState({
     firstName: user?.firstName || "",
@@ -51,7 +54,7 @@ export default function ProfileContent() {
     email: user?.email || "",
     phoneNumber: user?.phoneNumber || "",
     gender: user?.gender || "",
-    location: userTenant?.province || "",
+    location: user?.tenantId || "",
     address: user?.address || "",
     dob: formatDateForInput(user?.dob),
     weight: user?.weight || "",
@@ -76,6 +79,13 @@ export default function ProfileContent() {
     });
     return () => clearViewedUser();
   }, [userId, user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch tenants if not loaded
+  useEffect(() => {
+    if (tenants.length === 0) {
+      fetchTenants();
+    }
+  }, [fetchTenants, tenants.length]);
 
   // Update form data when viewedUser changes
   useEffect(() => {

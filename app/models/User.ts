@@ -20,6 +20,7 @@ export interface User {
   healthCardNo?: string;
   weight?: number;
   height?: number;
+  profileCompleted?: boolean;
 }
 
 export interface ProfessionalProfile {

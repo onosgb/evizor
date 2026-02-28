@@ -94,7 +94,7 @@ export default function ProfileSidebar({ theme }: ProfileSidebarProps) {
           <div className="avatar size-14">
             <Image
               className="rounded-full"
-              src={displayUser?.profilePictureUrl || "/images/200x200.png"}
+              src={displayUser?.profilePictureUrl?? "/images/200x200.png"}
               alt="avatar"
               width={56}
               height={56}
@@ -112,6 +112,12 @@ export default function ProfileSidebar({ theme }: ProfileSidebarProps) {
                 : displayUser?.role || "Role"}
               {displayUser?.licenseNo ? ` | ${displayUser.licenseNo}` : ""}
             </p>
+            {displayUser?.role === "DOCTOR" && !displayUser?.profileCompleted && (
+              <div className="mt-2 inline-flex items-center space-x-1 badge bg-warning/10 text-warning rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">
+                <span className="size-1.5 rounded-full bg-warning"></span>
+                <span>Pending Approval</span>
+              </div>
+            )}
           </div>
         </div>
         <ul className="mt-6 space-y-1.5 font-inter font-medium">

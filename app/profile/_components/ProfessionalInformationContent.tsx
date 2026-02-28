@@ -5,10 +5,12 @@ import { useAuthStore } from "@/app/stores/authStore";
 import { getTheme, isAdmin } from "@/app/lib/roles";
 import { useSpecialtyStore } from "@/app/stores/specialtyStore";
 import { useProfessionalProfileStore } from "@/app/stores/professionalProfileStore";
+import { useProfileStore } from "@/app/stores/profileStore";
 import ProfileSidebar from "./ProfileSidebar";
 import { ProfessionalProfile } from "@/app/models";
 
 import { useSearchParams } from "next/navigation";
+import ConfirmationModal from "@/app/components/ConfirmationModal";
 
 export default function ProfessionalInformationContent() {
   const user = useAuthStore((state) => state.user);
@@ -27,10 +29,15 @@ export default function ProfessionalInformationContent() {
     clearMessages,
     approveProfile,
   } = useProfessionalProfileStore();
+  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+  const viewedUser = useProfileStore((state) => state.viewedUser);
   const theme = getTheme(user);
   
-  const isReadOnly = !!userId; // Readonly if viewing another user
-  const showApproveButton = !!userId && (isAdmin(user));
+  const displayUser = viewedUser || user;
+  const isProfileCompleted = !!displayUser?.profileCompleted;
+  
+  const isReadOnly = (!!userId && String(userId) !== String(user?.id)) || isProfileCompleted; // Readonly if viewing another user OR if profile is completed
+  const showApproveButton = !!userId && (isAdmin(user)) && !isProfileCompleted;
 
   const [formData, setFormData] = useState({
     specialtyId: "",
@@ -133,9 +140,19 @@ export default function ProfessionalInformationContent() {
                     Cancel
                   </button>
                 )}
+                {isProfileCompleted && !userId && (
+                  <div className="badge bg-success/10 text-success rounded-full px-4 py-1.5 font-medium">
+                    <div className="flex items-center space-x-1">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>Approved</span>
+                    </div>
+                  </div>
+                )}
                 {(!isReadOnly || showApproveButton) && (
                   <button
-                    onClick={handleSave}
+                    onClick={() => setShowConfirmationModal(true)}
                     disabled={isSaving}
                     className={`btn min-w-28 rounded-full font-medium text-white disabled:opacity-50 disabled:cursor-not-allowed ${
                       theme === "admin"
@@ -143,7 +160,7 @@ export default function ProfessionalInformationContent() {
                         : "bg-primary hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
                     }`}
                   >
-                    {isSaving ? (showApproveButton ? "Approving..." : "Saving...") : (showApproveButton ? "Approve" : "Save")}
+                   {showApproveButton ? "Approve" : "Save"}
                   </button>
                 )}
               </div>
@@ -277,6 +294,16 @@ export default function ProfessionalInformationContent() {
           </div>
         </div>
       </div>
+      <ConfirmationModal
+        isOpen={showConfirmationModal}
+        onClose={() => setShowConfirmationModal(false)}
+        onConfirm={async () => {
+          await approveProfile(userId!);
+          setShowConfirmationModal(false);
+        }}
+        title="Approve Professional Information"
+        message="Are you sure you want to approve this professional information?"
+      />
     </>
   );
 }

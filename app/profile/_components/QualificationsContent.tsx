@@ -6,6 +6,7 @@ import { getTheme } from "@/app/lib/roles";
 import { createPortal } from "react-dom";
 import ProfileSidebar from "./ProfileSidebar";
 import { useQualificationStore } from "@/app/stores/qualificationStore";
+import { useProfileStore } from "@/app/stores/profileStore";
 import { Qualification } from "@/app/models";
 
 import { useSearchParams } from "next/navigation";
@@ -15,9 +16,12 @@ export default function QualificationsContent() {
   const user = useAuthStore((state) => state.user);
   const searchParams = useSearchParams();
   const paramUserId = searchParams.get("userId");
-  // If userId param exists, it's read-only UNLESS it matches the logged-in user's ID
-  // If userId param is missing, we are viewing our own profile (not read-only)
+  const viewedUser = useProfileStore((state) => state.viewedUser);
   const isReadOnly = !!paramUserId && String(paramUserId) !== String(user?.id);
+  
+  const displayUser = viewedUser || user;
+  const isProfileCompleted = !!displayUser?.profileCompleted;
+  const canModify = !isReadOnly && !isProfileCompleted;
 
   // The actual userId to fetch data for (either from params or current user)
   const userId = paramUserId;
@@ -153,7 +157,17 @@ export default function QualificationsContent() {
               <h2 className="text-lg font-medium tracking-wide text-slate-700 dark:text-navy-100">
                 Qualifications & Documents
               </h2>
-              <div className="flex justify-center space-x-2">
+              <div className="flex justify-center flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-2">
+                {isProfileCompleted && !paramUserId && (
+                   <div className="badge bg-success/10 text-success rounded-full px-4 py-1.5 font-medium mr-2">
+                    <div className="flex items-center space-x-1">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>Approved</span>
+                    </div>
+                  </div>
+                )}
                 {!isReadOnly && (
                   <button
                     onClick={() => setShowModal(true)}
@@ -272,10 +286,10 @@ export default function QualificationsContent() {
                               </button>
                               <button
                                 onClick={() =>
-                                  !isReadOnly && confirmDeleteDocument(doc.id)
+                                  canModify && confirmDeleteDocument(doc.id)
                                 }
-                                disabled={isReadOnly}
-                                className={`btn size-8 p-0 text-error hover:bg-error/20 focus:bg-error/20 active:bg-error/25 ${isReadOnly ? "opacity-50 cursor-not-allowed" : ""}`}
+                                disabled={!canModify}
+                                className={`btn size-8 p-0 text-error hover:bg-error/20 focus:bg-error/20 active:bg-error/25 ${!canModify ? "opacity-50 cursor-not-allowed" : ""}`}
                               >
                                 <svg
                                   xmlns="http://www.w3.org/2000/svg"
