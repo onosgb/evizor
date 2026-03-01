@@ -37,7 +37,7 @@ export default function ProfessionalInformationContent() {
   const isProfileCompleted = !!displayUser?.profileCompleted;
   
   const isReadOnly = (!!userId && String(userId) !== String(user?.id)) || isProfileCompleted; // Readonly if viewing another user OR if profile is completed
-  const showApproveButton = !!userId && (isAdmin(user)) && !isProfileCompleted;
+  const showApproveButton = !!userId && (isAdmin(user)) && displayUser?.profileCompleted && !displayUser?.profileVerified;
 
   const [formData, setFormData] = useState({
     specialtyId: "",
@@ -89,7 +89,7 @@ export default function ProfessionalInformationContent() {
   };
 
   const handleSave = async () => {
-
+   
     if (showApproveButton && userId) {
       // Admin approving profile
       await approveProfile(userId);
@@ -133,27 +133,15 @@ export default function ProfessionalInformationContent() {
                 Professional Information
               </h2>
               <div className="flex justify-center space-x-2">
-                {!isReadOnly && (
+                {(!isReadOnly || showApproveButton) && (
                   <button
-                    onClick={handleCancel}
-                    className="btn min-w-28 rounded-full border border-slate-300 font-medium text-slate-700 hover:bg-slate-150 focus:bg-slate-150 active:bg-slate-150/80 dark:border-navy-450 dark:text-navy-100 dark:hover:bg-navy-500 dark:focus:bg-navy-500 dark:active:bg-navy-500/90"
-                  >
-                    Cancel
-                  </button>
-                )}
-                {isProfileCompleted && !userId && (
-                  <div className="badge bg-success/10 text-success rounded-full px-4 py-1.5 font-medium">
-                    <div className="flex items-center space-x-1">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                      </svg>
-                      <span>Approved</span>
-                    </div>
-                  </div>
-                )}
-                {/* {(!isReadOnly || showApproveButton && isProfileCompleted && !)&& (
-                  <button
-                    onClick={() => setShowConfirmationModal(true)}
+                    onClick={() => {
+                      if(showApproveButton){
+                        setShowConfirmationModal(true)
+                      }else{
+                        handleSave()
+                      }
+                    }}
                     disabled={isSaving}
                     className={`btn min-w-28 rounded-full font-medium text-white disabled:opacity-50 disabled:cursor-not-allowed ${
                       theme === "admin"
@@ -162,19 +150,6 @@ export default function ProfessionalInformationContent() {
                     }`}
                   >
                    {showApproveButton ? "Approve" : "Save"}
-                  </button>
-                )} */}
-                 {!isReadOnly && (
-                  <button
-                    onClick={() => handleSave()}
-                    disabled={isSaving}
-                    className={`btn min-w-28 rounded-full font-medium text-white disabled:opacity-50 disabled:cursor-not-allowed ${
-                      theme === "admin"
-                        ? "bg-success hover:bg-success-focus focus:bg-success-focus active:bg-success-focus/90 dark:bg-success dark:hover:bg-success-focus dark:focus:bg-success-focus dark:active:bg-success/90"
-                        : "bg-primary hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
-                    }`}
-                  >
-                  Save
                   </button>
                 )}
               </div>
@@ -256,7 +231,7 @@ export default function ProfessionalInformationContent() {
                         readOnly={isReadOnly}
                         className={`form-input peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent ${isReadOnly ? 'bg-slate-50 dark:bg-navy-900 cursor-not-allowed' : ''}`}
                         placeholder="Enter Years of Experience"
-                        type="text"
+                        type="number"
                       />
                     </span>
                   </label>
