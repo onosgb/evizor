@@ -89,6 +89,7 @@ export default function ProfessionalInformationContent() {
   };
 
   const handleSave = async () => {
+
     if (showApproveButton && userId) {
       // Admin approving profile
       await approveProfile(userId);
@@ -150,7 +151,7 @@ export default function ProfessionalInformationContent() {
                     </div>
                   </div>
                 )}
-                {(!isReadOnly || showApproveButton) && (
+                {(!isReadOnly || showApproveButton) && isProfileCompleted && (
                   <button
                     onClick={() => setShowConfirmationModal(true)}
                     disabled={isSaving}
@@ -298,7 +299,7 @@ export default function ProfessionalInformationContent() {
         isOpen={showConfirmationModal}
         onClose={() => setShowConfirmationModal(false)}
         onConfirm={async () => {
-          await approveProfile(userId!);
+          await handleSave();
           setShowConfirmationModal(false);
         }}
         title="Approve Professional Information"
