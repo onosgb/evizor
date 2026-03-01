@@ -164,7 +164,7 @@ export default function ProfessionalInformationContent() {
                    {showApproveButton ? "Approve" : "Save"}
                   </button>
                 )} */}
-                 {!isReadOnly&& (
+                 {!isReadOnly && (
                   <button
                     onClick={() => handleSave()}
                     disabled={isSaving}
