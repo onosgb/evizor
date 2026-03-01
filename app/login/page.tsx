@@ -45,11 +45,12 @@ export default function LoginPage() {
 
         // Standard login (if tokens are present)
         if (accessToken && refreshToken) {
+          const newUser = { ...user, profileVerified: response.data.profileVerified, profileCompleted: response.data.profileCompleted };
+
           login(
             accessToken,
             refreshToken,
-            user,
-            response.data.profileCompleted,
+            newUser,
             rememberMe,
           );
           // Redirect to dashboard
@@ -80,9 +81,9 @@ export default function LoginPage() {
   };
 
   const handle2FASuccess = (response: LoginResponse) => {
-    const { user, accessToken, refreshToken, profileCompleted } = response.data;
+    const { user, accessToken, refreshToken } = response.data;
     if (accessToken && refreshToken) {
-      login(accessToken, refreshToken, user, profileCompleted, rememberMe);
+      login(accessToken, refreshToken, user, rememberMe);
       setTwoFactorAuth(null);
       router.push("/");
     } else {

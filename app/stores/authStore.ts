@@ -2,6 +2,10 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { User } from "../models";
 
+type ProfileStatus = {
+  profileCompleted: boolean;
+  profileVerified: boolean;
+}
 /**
  * Custom storage that uses localStorage when rememberMe is true,
  * and sessionStorage otherwise. The decision is based on whatever
@@ -41,19 +45,19 @@ interface AuthState {
   user: User | null;
   rememberMe: boolean;
   profileCompleted: boolean;
+  profileVerified: boolean;
 
   login: (
     accessToken: string,
     refreshToken: string,
     user: User,
-    profileCompleted: boolean,
     rememberMe?: boolean
   ) => void;
   logout: () => void;
   setLoading: (loading: boolean) => void;
   setTokens: (accessToken: string, refreshToken: string) => void;
   setUser: (user: User) => void;
-  setProfileStatus: (completed: boolean) => void;
+  setProfileStatus: (profileStatus: ProfileStatus) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -66,15 +70,17 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       rememberMe: false,
       profileCompleted: false,
+      profileVerified: false,
 
-      login: (accessToken, refreshToken, user, profileCompleted, rememberMe = false) => {
+      login: (accessToken, refreshToken, user, rememberMe = false) => {
         set({
           isAuthenticated: true,
           accessToken,
           refreshToken,
           user,
-          profileCompleted,
           rememberMe,
+          profileCompleted: user.profileCompleted,
+          profileVerified: user.profileVerified,
         });
       },
 
@@ -86,6 +92,7 @@ export const useAuthStore = create<AuthState>()(
           user: null,
           rememberMe: false,
           profileCompleted: false,
+          profileVerified: false
         });
       },
 
@@ -103,8 +110,8 @@ export const useAuthStore = create<AuthState>()(
         set({ user });
       },
 
-      setProfileStatus: (completed) => {
-        set({ profileCompleted: completed });
+      setProfileStatus: (profileStatus: ProfileStatus ) => {
+        set({ profileCompleted: profileStatus.profileCompleted, profileVerified: profileStatus.profileVerified });
       },
     }),
     {
@@ -117,6 +124,7 @@ export const useAuthStore = create<AuthState>()(
         user: state.user,
         rememberMe: state.rememberMe,
         profileCompleted: state.profileCompleted,
+        profileVerified: state.profileVerified,
       }),
     }
   )
