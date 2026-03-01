@@ -112,7 +112,7 @@ export default function ProfileSidebar({ theme }: ProfileSidebarProps) {
                 : displayUser?.role || "Role"}
               {displayUser?.licenseNo ? ` | ${displayUser.licenseNo}` : ""}
             </p>
-            {displayUser?.role === "DOCTOR" && !displayUser?.profileCompleted && (
+            {displayUser?.role === "DOCTOR" && displayUser?.profileCompleted && !displayUser?.profileVerified && (
               <div className="mt-2 inline-flex items-center space-x-1 badge bg-warning/10 text-warning rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">
                 <span className="size-1.5 rounded-full bg-warning"></span>
                 <span>Pending Approval</span>

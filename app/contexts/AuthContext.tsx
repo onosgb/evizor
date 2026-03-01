@@ -48,6 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const publicRoutes = ["/login", "/", "/forgot-password", "/reset-password"];
       const isPublicRoute = publicRoutes.includes(pathname || "");
       const isProfileRoute = pathname?.startsWith("/profile");
+      const isDashboard = pathname === "/";
 
       // Check profile completion status
       const { profileCompleted, user } = useAuthStore.getState();
@@ -57,6 +58,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Enforce profile completion (skip for ADMIN)
         if (!profileCompleted && !isProfileRoute && !isAdmin(user)) {
           router.push("/profile");
+          return;
+        }
+
+        // If doctor is not yet verified, restrict all routes except dashboard and profile
+        const isDoctor = user?.role === "DOCTOR";
+        if (isDoctor && !user?.profileVerified && !isProfileRoute && !isDashboard) {
+          router.push("/");
           return;
         }
 
@@ -86,7 +94,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       // Clear local state before redirecting
       logoutStore();
-      window.location.href = "https://evizor.vercel.app";
+      router.push("/login");
     }
   };
 

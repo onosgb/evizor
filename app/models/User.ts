@@ -21,6 +21,7 @@ export interface User {
   weight?: number;
   height?: number;
   profileCompleted?: boolean;
+  profileVerified?: boolean;
 }
 
 export interface ProfessionalProfile {

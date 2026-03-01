@@ -35,6 +35,13 @@ export default function Sidebar({
   const isAdmin = checkIsAdmin(user);
   const isDoctor = checkIsDoctor(user);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [restrictedToast, setRestrictedToast] = useState<string | null>(null);
+
+  // A doctor whose account hasn't been verified yet is restricted to dashboard + profile
+  const isRestrictedDoctor = isDoctor && !user?.profileVerified;
+  const restrictedMessage = user?.profileCompleted
+    ? "Profile pending approval. You cannot access this section yet."
+    : "Account not verified. Please complete your profile to gain full access.";
 
   // Safely get logout function from auth context
   let logout: (() => Promise<void>) | undefined;
@@ -169,6 +176,13 @@ export default function Sidebar({
     }
   };
 
+  // Show a toast and hide it automatically
+  const showRestrictedToast = () => {
+    setRestrictedToast(restrictedMessage);
+    setTimeout(() => setRestrictedToast(null), 4000);
+  };
+
+  // Wrapper that intercepts click for restricted doctors
   // Tooltip wrapper component
   const TooltipWrapper = ({
     text,
@@ -194,8 +208,50 @@ export default function Sidebar({
     );
   };
 
+  const NavItem = ({
+    href,
+    children,
+    tooltipText,
+  }: {
+    href: string;
+    children: React.ReactNode;
+    tooltipText: string;
+  }) => {
+    const isAllowed = !isRestrictedDoctor || href === "/" || href.startsWith("/profile");
+    const activeClass = isActive(href) ? "bg-primary/10 dark:bg-navy-600 dark:text-accent-light" : "";
+    const baseClass = `flex size-11 items-center justify-center rounded-lg text-white outline-hidden transition-colors duration-200 hover:bg-white/20 focus:bg-white/20 active:bg-white/25 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25 ${activeClass}`;
+
+    return (
+      <TooltipWrapper text={tooltipText}>
+        {isAllowed ? (
+          <Link href={href} onClick={handleLinkClick} className={baseClass}>
+            {children}
+          </Link>
+        ) : (
+          <button
+            type="button"
+            onClick={showRestrictedToast}
+            className={`${baseClass} opacity-50 cursor-not-allowed`}
+          >
+            {children}
+          </button>
+        )}
+      </TooltipWrapper>
+    );
+  };
+
   return (
     <Tooltip.Provider delayDuration={200}>
+      {/* Toast notification for restricted routes */}
+      {restrictedToast && typeof window !== "undefined" && createPortal(
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-99999 flex items-center space-x-2 rounded-lg bg-slate-800 dark:bg-navy-600 px-4 py-3 text-white shadow-xl text-sm max-w-xs">
+          <svg xmlns="http://www.w3.org/2000/svg" className="size-5 shrink-0 text-warning" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+          </svg>
+          <span>{restrictedToast}</span>
+        </div>,
+        document.body
+      )}
       <div
         className={` 
           fixed left-0 top-0 h-screen z-50
@@ -226,110 +282,80 @@ export default function Sidebar({
             {/* Main Sections Links */}
             <div className="is-scrollbar-hidden flex grow flex-col space-y-4 overflow-y-auto pt-6">
               {/* Dashboard */}
-              <TooltipWrapper text="Dashboard">
-                <Link
-                  href="/"
-                  onClick={handleLinkClick}
-                  className={`flex size-11 items-center justify-center rounded-lg text-white outline-hidden transition-colors duration-200 hover:bg-white/20 focus:bg-white/20 active:bg-white/25 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25 ${
-                    isActive("/")
-                      ? "bg-primary/10 dark:bg-navy-600 dark:text-accent-light"
-                      : ""
-                  }`}
+              <NavItem href="/" tooltipText="Dashboard">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="size-8"
+                  viewBox="0 0 24 24"
                 >
+                  <path
+                    fill="currentColor"
+                    fillOpacity=".25"
+                    d="M5 14.059c0-1.01 0-1.514.222-1.945c.221-.43.632-.724 1.453-1.31l4.163-2.974c.56-.4.842-.601 1.162-.601c.32 0 .601.2 1.162.601l4.163 2.973c.821.587 1.232.88 1.453 1.311c.222.43.222.935.222 1.944V19c0 .943 0 1.414-.293 1.707C18.414 21 17.943 21 17 21H7c-.943 0-1.414 0-1.707-.293C5 20.414 5 19.943 5 19z"
+                  />
+                  <path
+                    fill="currentColor"
+                    d="M3 12.387c0 .266 0 .4.084.441c.084.041.19-.04.4-.205l7.288-5.668c.59-.459.885-.688 1.228-.688c.343 0 .638.23 1.228.688l7.288 5.668c.21.164.316.246.4.205c.084-.041.084-.175.084-.441v-.409c0-.48 0-.72-.102-.928c-.101-.208-.291-.356-.67-.65l-7-5.445c-.59-.459-.885-.688-1.228-.688c-.343 0-.638.23-1.228.688l-7 5.445c-.379.294-.569.442-.67.65c-.102.208-.102.448-.102.928zM12.5 15h-1a2 2 0 0 0-2 2v3.85c0 .083.067.15.15.15h4.7a.15.15 0 0 0 .15-.15V17a2 2 0 0 0-2-2"
+                  />
+                  <rect
+                    width="2"
+                    height="4"
+                    x="16"
+                    y="5"
+                    fill="currentColor"
+                    rx=".5"
+                  />
+                </svg>
+              </NavItem>
+
+              {/* Live Queue - Doctor Only */}
+              {isDoctor && (
+                <NavItem href="/live-queue" tooltipText="Live Queue">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="size-8"
                     viewBox="0 0 24 24"
                   >
-                    <path
-                      fill="currentColor"
-                      fillOpacity=".25"
-                      d="M5 14.059c0-1.01 0-1.514.222-1.945c.221-.43.632-.724 1.453-1.31l4.163-2.974c.56-.4.842-.601 1.162-.601c.32 0 .601.2 1.162.601l4.163 2.973c.821.587 1.232.88 1.453 1.311c.222.43.222.935.222 1.944V19c0 .943 0 1.414-.293 1.707C18.414 21 17.943 21 17 21H7c-.943 0-1.414 0-1.707-.293C5 20.414 5 19.943 5 19z"
-                    />
-                    <path
-                      fill="currentColor"
-                      d="M3 12.387c0 .266 0 .4.084.441c.084.041.19-.04.4-.205l7.288-5.668c.59-.459.885-.688 1.228-.688c.343 0 .638.23 1.228.688l7.288 5.668c.21.164.316.246.4.205c.084-.041.084-.175.084-.441v-.409c0-.48 0-.72-.102-.928c-.101-.208-.291-.356-.67-.65l-7-5.445c-.59-.459-.885-.688-1.228-.688c-.343 0-.638.23-1.228.688l-7 5.445c-.379.294-.569.442-.67.65c-.102.208-.102.448-.102.928zM12.5 15h-1a2 2 0 0 0-2 2v3.85c0 .083.067.15.15.15h4.7a.15.15 0 0 0 .15-.15V17a2 2 0 0 0-2-2"
-                    />
-                    <rect
-                      width="2"
-                      height="4"
-                      x="16"
-                      y="5"
-                      fill="currentColor"
-                      rx=".5"
-                    />
+                    <g fill="none" stroke="currentColor" strokeWidth="1.2">
+                      <circle
+                        cx="12"
+                        cy="13"
+                        r="7"
+                        fill="currentColor"
+                        fillOpacity=".25"
+                      />
+                      <path
+                        strokeLinecap="round"
+                        d="M5 5L3 7m16-2l2 2M9 11l2.81 1.873a.25.25 0 0 0 .333-.052L14 10.5"
+                      />
+                    </g>
                   </svg>
-                </Link>
-              </TooltipWrapper>
-
-              {/* Live Queue - Doctor Only */}
-              {isDoctor && (
-                <TooltipWrapper text="Live Queue">
-                  <Link
-                    href="/live-queue"
-                    onClick={handleLinkClick}
-                    className={`flex size-11 items-center justify-center rounded-lg text-white outline-hidden transition-colors duration-200 hover:bg-white/20 focus:bg-white/20 active:bg-white/25 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25 ${
-                      isActive("/live-queue")
-                        ? "bg-primary/10 dark:bg-navy-600 dark:text-accent-light"
-                        : ""
-                    }`}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="size-8"
-                      viewBox="0 0 24 24"
-                    >
-                      <g fill="none" stroke="currentColor" strokeWidth="1.2">
-                        <circle
-                          cx="12"
-                          cy="13"
-                          r="7"
-                          fill="currentColor"
-                          fillOpacity=".25"
-                        />
-                        <path
-                          strokeLinecap="round"
-                          d="M5 5L3 7m16-2l2 2M9 11l2.81 1.873a.25.25 0 0 0 .333-.052L14 10.5"
-                        />
-                      </g>
-                    </svg>
-                  </Link>
-                </TooltipWrapper>
+                </NavItem>
               )}
 
               {/* Assigned Cases - Doctor Only */}
               {isDoctor && (
-                <TooltipWrapper text="Assigned Cases">
-                  <Link
-                    href="/assigned-cases"
-                    onClick={handleLinkClick}
-                    className={`flex size-11 items-center justify-center rounded-lg text-white outline-hidden transition-colors duration-200 hover:bg-white/20 focus:bg-white/20 active:bg-white/25 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25 ${
-                      isActive("/assigned-cases")
-                        ? "bg-primary/10 dark:bg-navy-600 dark:text-accent-light"
-                        : ""
-                    }`}
+                <NavItem href="/assigned-cases" tooltipText="Assigned Cases">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="size-8"
+                    viewBox="0 0 24 24"
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="size-8"
-                      viewBox="0 0 24 24"
-                    >
-                      <rect
-                        width="12"
-                        height="10"
-                        x="6"
-                        y="3"
-                        fill="currentColor"
-                        fillOpacity=".25"
-                        rx="2"
-                      />
-                      <path
-                        fill="currentColor"
-                        d="M3 10h14.8c1.12 0 1.68 0 2.108.218a2 2 0 0 1 .874.874C21 11.52 21 12.08 21 13.2v4.6c0 1.12 0 1.68-.218 2.108a2 2 0 0 1-.874.874C19.48 21 18.92 21 17.8 21H6.2c-1.12 0-1.68 0-2.108-.218a2 2 0 0 1-.874-.874C3 19.48 3 18.92 3 17.8zm0 0c0-.932 0-1.398.152-1.765a2 2 0 0 1 1.083-1.083C4.602 7 5.068 7 6 7h2.343c.818 0 1.226 0 1.594.152c.368.152.657.442 1.235 1.02L13 10z"
-                      />
-                    </svg>
-                  </Link>
-                </TooltipWrapper>
+                    <rect
+                      width="12"
+                      height="10"
+                      x="6"
+                      y="3"
+                      fill="currentColor"
+                      fillOpacity=".25"
+                      rx="2"
+                    />
+                    <path
+                      fill="currentColor"
+                      d="M3 10h14.8c1.12 0 1.68 0 2.108.218a2 2 0 0 1 .874.874C21 11.52 21 12.08 21 13.2v4.6c0 1.12 0 1.68-.218 2.108a2 2 0 0 1-.874.874C19.48 21 18.92 21 17.8 21H6.2c-1.12 0-1.68 0-2.108-.218a2 2 0 0 1-.874-.874C3 19.48 3 18.92 3 17.8zm0 0c0-.932 0-1.398.152-1.765a2 2 0 0 1 1.083-1.083C4.602 7 5.068 7 6 7h2.343c.818 0 1.226 0 1.594.152c.368.152.657.442 1.235 1.02L13 10z"
+                    />
+                  </svg>
+                </NavItem>
               )}
 
               {/* User Management - Admin Only */}
@@ -497,30 +523,24 @@ export default function Sidebar({
             {/* Bottom Links */}
             <div className="flex flex-col items-center space-y-3 py-3">
               {/* Settings */}
-              <TooltipWrapper text="Settings">
-                <Link
-                  href="/profile/security"
-                  onClick={handleLinkClick}
-                  className="flex size-11 items-center justify-center text-white rounded-lg outline-hidden transition-colors duration-200 hover:bg-white/20 focus:bg-white/20 active:bg-white/25 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25"
+              <NavItem href="/profile/security" tooltipText="Settings">
+                <svg
+                  className="size-7"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
                 >
-                  <svg
-                    className="size-7"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      fillOpacity="0.4"
-                      fill="currentColor"
-                      d="M2 12.947v-1.771c0-1.047.85-1.913 1.899-1.913 1.81 0 2.549-1.288 1.64-2.868a1.919 1.919 0 0 1 .699-2.607l1.729-.996c.79-.474 1.81-.192 2.279.603l.11.192c.9 1.58 2.379 1.58 3.288 0l.11-.192c.47-.795 1.49-1.077 2.279-.603l1.73.996a1.92 1.92 0 0 1 .699 2.607c-.91 1.58-.17 2.868 1.639 2.868 1.04 0 1.899.856 1.899 1.912v1.772c0 1.047-.85 1.912-1.9 1.912-1.808 0-2.548 1.288-1.638 2.869.52.915.21 2.083-.7 2.606l-1.729.997c-.79.473-1.81.191-2.279-.604l-.11-.191c-.9-1.58-2.379-1.58-3.288 0l-.11.19c-.47.796-1.49 1.078-2.279.605l-1.73-.997a1.919 1.919 0 0 1-.699-2.606c.91-1.58.17-2.869-1.639-2.869A1.911 1.911 0 0 1 2 12.947Z"
-                    />
-                    <path
-                      fill="currentColor"
-                      d="M11.995 15.332c1.794 0 3.248-1.464 3.248-3.27 0-1.807-1.454-3.272-3.248-3.272-1.794 0-3.248 1.465-3.248 3.271 0 1.807 1.454 3.271 3.248 3.271Z"
-                    />
-                  </svg>
-                </Link>
-              </TooltipWrapper>
+                  <path
+                    fillOpacity="0.4"
+                    fill="currentColor"
+                    d="M2 12.947v-1.771c0-1.047.85-1.913 1.899-1.913 1.81 0 2.549-1.288 1.64-2.868a1.919 1.919 0 0 1 .699-2.607l1.729-.996c.79-.474 1.81-.192 2.279.603l.11.192c.9 1.58 2.379 1.58 3.288 0l.11-.192c.47-.795 1.49-1.077 2.279-.603l1.73.996a1.92 1.92 0 0 1 .699 2.607c-.91 1.58-.17 2.868 1.639 2.868 1.04 0 1.899.856 1.899 1.912v1.772c0 1.047-.85 1.912-1.9 1.912-1.808 0-2.548 1.288-1.638 2.869.52.915.21 2.083-.7 2.606l-1.729.997c-.79.473-1.81.191-2.279-.604l-.11-.191c-.9-1.58-2.379-1.58-3.288 0l-.11.19c-.47.796-1.49 1.078-2.279.605l-1.73-.997a1.919 1.919 0 0 1-.699-2.606c.91-1.58.17-2.869-1.639-2.869A1.911 1.911 0 0 1 2 12.947Z"
+                  />
+                  <path
+                    fill="currentColor"
+                    d="M11.995 15.332c1.794 0 3.248-1.464 3.248-3.27 0-1.807-1.454-3.272-3.248-3.272-1.794 0-3.248 1.465-3.248 3.271 0 1.807 1.454 3.271 3.248 3.271Z"
+                  />
+                </svg>
+              </NavItem>
 
               {/* Profile */}
               <div className="flex relative">
