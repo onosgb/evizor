@@ -132,7 +132,7 @@ class AdminService {
     scheduleId: string,
   ): Promise<ApiResponse<any>> {
     const response = await apiClient.delete<ApiResponse<any>>(
-      `/doctor-availability/admin/${scheduleId}`,
+      `/doctor-availability/${scheduleId}/admin`,
     );
     return response.data;
   }

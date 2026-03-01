@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { adminService } from "@/app/lib/services";
 import { CreateScheduleRequest } from "@/app/models";
+import ConfirmationModal from "@/app/components/ConfirmationModal";
+import { useToast } from "@/app/contexts/ToastContext";
 
 interface Schedule {
   id: string;
@@ -27,9 +29,12 @@ export default function ScheduleManagementModal({
   userName,
 }: ScheduleManagementModalProps) {
   const [schedules, setSchedules] = useState<Schedule[]>([]);
+  const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
+  const [selectedScheduleId, setSelectedScheduleId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { showToast } = useToast();
 
   // New Schedule Form State
   const [newSchedule, setNewSchedule] = useState({
@@ -135,18 +140,21 @@ export default function ScheduleManagementModal({
   };
 
   const handleDeleteSchedule = async (scheduleId: string) => {
-    if (!confirm("Are you sure you want to remove this time slot?")) return;
 
     try {
+      setIsSubmitting(true);
       const response = await adminService.removeUserAvailabilitySchedule(scheduleId);
       if (response.status) {
         setSchedules(schedules.filter(s => s.id !== scheduleId));
       } else {
-        setError(response.message || "Failed to remove schedule.");
+        showToast(response.message || "Failed to remove schedule.", "error");
       }
+      setOpenConfirmDialog(false);
     } catch (err) {
-      console.error("Failed to remove schedule:", err);
+      showToast("Failed to remove schedule.", "error");
       // Optimistic update fallback or error message
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -276,7 +284,10 @@ export default function ScheduleManagementModal({
                                         </td>
                                         <td className="px-4 py-3 text-right">
                                             <button 
-                                                onClick={() => handleDeleteSchedule(schedule.id)}
+                                                onClick={() => {
+                                                    setSelectedScheduleId(schedule.id);
+                                                    setOpenConfirmDialog(true);
+                                                }}
                                                 className="btn size-7 rounded-full p-0 text-error hover:bg-error/10 focus:bg-error/10 active:bg-error/20"
                                             >
                                                 <svg xmlns="http://www.w3.org/2000/svg" className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -302,7 +313,20 @@ export default function ScheduleManagementModal({
             </button>
         </div>
       </div>
+        openConfirmDialog && (
+      <ConfirmationModal
+        isLoading={isSubmitting}
+        isOpen={openConfirmDialog}
+        onClose={() => setOpenConfirmDialog(false)}
+        onConfirm={() => handleDeleteSchedule(selectedScheduleId!)}
+        title="Confirm Delete"
+        message="Are you sure you want to delete this schedule?"
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
+    ),
     </div>,
+  
     document.body
   );
 }

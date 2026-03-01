@@ -17,7 +17,7 @@ const getGreeting = () => {
 };
 
 export default function DoctorDashboard({ user }: { user: User | null }) {
-  const { liveQueue, assignedCases, isLoading: queueLoading, fetchLiveQueue, fetchAssignedCases, clinicalAlerts, fetchClinicalAlerts } = useAppointmentStore();
+  const { liveQueue, assignedCases, isLoading: queueLoading, alertsLoading, fetchLiveQueue, fetchAssignedCases, clinicalAlerts, fetchClinicalAlerts } = useAppointmentStore();
 
   useEffect(() => {
     fetchLiveQueue();
@@ -33,7 +33,7 @@ export default function DoctorDashboard({ user }: { user: User | null }) {
     .slice(0, 5);
 
 
-  const showClinicalAlerts = queueLoading || clinicalAlerts.length > 0;
+  const showClinicalAlerts = alertsLoading || clinicalAlerts.length > 0;
 
   return (
     <div className="mt-4 grid grid-cols-12 gap-4 sm:mt-5 sm:gap-5 lg:mt-6 lg:gap-6">
@@ -222,7 +222,7 @@ export default function DoctorDashboard({ user }: { user: User | null }) {
       {showClinicalAlerts && (
         <div className="col-span-12 lg:col-span-4 xl:col-span-3">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-1 lg:gap-6">
-            {queueLoading ? (
+            {alertsLoading ? (
               Array.from({ length: 2 }).map((_, i) => (
                 <ClinicalAlertCard key={i} isLoading id="" patientId="" />
               ))

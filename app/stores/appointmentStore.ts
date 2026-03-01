@@ -12,6 +12,7 @@ interface AppointmentState {
   selectedPatient: User | null;
   selectedAppointment: Appointment | null;
   isLoading: boolean;
+  alertsLoading: boolean;
   actionLoading: boolean;
   error: string | null;
 
@@ -34,6 +35,7 @@ export const useAppointmentStore = create<AppointmentState>((set, get) => ({
   selectedPatient: null,
   selectedAppointment: null,
   isLoading: false,
+  alertsLoading: true,
   actionLoading: false,
   error: null,
 
@@ -64,14 +66,14 @@ export const useAppointmentStore = create<AppointmentState>((set, get) => ({
   },
 
   fetchClinicalAlerts: async () => {
-    set({ isLoading: true, error: null });
+    set({ alertsLoading: true, clinicalAlerts: [], error: null });
     try {
       const response = await appointmentService.getAllAppointments({status: AppointmentStatus.CLINICAL});
       set({ clinicalAlerts: response.data || [] });
     } catch (error: any) {
       set({ error: error.message || "Failed to fetch clinical alerts" });
     } finally {
-      set({ isLoading: false });
+      set({ alertsLoading: false });
     }
   },
 

@@ -78,9 +78,7 @@ export const useAuthStore = create<AuthState>()(
           accessToken,
           refreshToken,
           user,
-          rememberMe,
-          profileCompleted: user.profileCompleted,
-          profileVerified: user.profileVerified,
+          rememberMe
         });
       },
 

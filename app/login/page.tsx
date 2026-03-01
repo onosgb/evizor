@@ -13,6 +13,7 @@ import TwoFactorModal from "./_components/TwoFactorModal";
 export default function LoginPage() {
   const router = useRouter();
   const login = useAuthStore((state) => state.login);
+  const setProfileStatus = useAuthStore((state) => state.setProfileStatus);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -46,7 +47,7 @@ export default function LoginPage() {
         // Standard login (if tokens are present)
         if (accessToken && refreshToken) {
           const newUser = { ...user, profileVerified: response.data.profileVerified, profileCompleted: response.data.profileCompleted };
-
+          setProfileStatus({ profileCompleted: response.data.profileCompleted, profileVerified: response.data.profileVerified });
           login(
             accessToken,
             refreshToken,

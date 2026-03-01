@@ -50,15 +50,20 @@ export default function ClinicalAlertCard({
   const {user} = useAuthStore();
 
   return (
-    <div className="rounded-lg bg-info/10 px-4 pb-5 dark:bg-navy-800 sm:px-5">
+    <div className={`rounded-lg px-4 pb-5 sm:px-5 ${isLoading ? "bg-white dark:bg-navy-800" : "bg-info/10 dark:bg-navy-800"}`}>
       <div className="flex items-center justify-between py-3">
-        <h2 className="font-medium tracking-wide text-slate-700 dark:text-navy-100">
-          Clinical Alerts
-        </h2>
-        <div className="flex justify-end">
+        {isLoading ? (
+          <div className="h-4 w-28 rounded bg-slate-200 dark:bg-navy-500 animate-pulse" />
+        ) : (
+          <h2 className="font-medium tracking-wide text-slate-700 dark:text-navy-100">
+            Clinical Alerts
+          </h2>
+        )}
+        {!isLoading && (
+          <div className="flex justify-end">
           <TableActionMenu>
             <div className="w-48">
-            {user?.role === UserRole.DOCTOR &&   <ul>
+            {user?.role === UserRole.DOCTOR && <ul>
                 <li>
                   <a
                     href="#"
@@ -86,7 +91,8 @@ export default function ClinicalAlertCard({
               </ul>
             </div>
           </TableActionMenu>
-        </div>
+          </div>
+        )}
       </div>
       {isLoading ? (
         <div className="space-y-4 animate-pulse">
