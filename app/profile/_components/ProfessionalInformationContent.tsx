@@ -151,7 +151,7 @@ export default function ProfessionalInformationContent() {
                     </div>
                   </div>
                 )}
-                {(!isReadOnly || showApproveButton) && isProfileCompleted && (
+                {/* {(!isReadOnly || showApproveButton && isProfileCompleted && !)&& (
                   <button
                     onClick={() => setShowConfirmationModal(true)}
                     disabled={isSaving}
@@ -162,6 +162,19 @@ export default function ProfessionalInformationContent() {
                     }`}
                   >
                    {showApproveButton ? "Approve" : "Save"}
+                  </button>
+                )} */}
+                 {!isReadOnly&& (
+                  <button
+                    onClick={() => handleSave()}
+                    disabled={isSaving}
+                    className={`btn min-w-28 rounded-full font-medium text-white disabled:opacity-50 disabled:cursor-not-allowed ${
+                      theme === "admin"
+                        ? "bg-success hover:bg-success-focus focus:bg-success-focus active:bg-success-focus/90 dark:bg-success dark:hover:bg-success-focus dark:focus:bg-success-focus dark:active:bg-success/90"
+                        : "bg-primary hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
+                    }`}
+                  >
+                  Save
                   </button>
                 )}
               </div>
