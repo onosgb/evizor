@@ -55,7 +55,6 @@ class AuthService {
             accessToken,
             newRefreshToken,
             user,
-            profileCompleted,
             rememberMe,
           );
       }
@@ -100,7 +99,6 @@ class AuthService {
           accessToken,
           newRefreshToken,
           user,
-          profileCompleted,
           rememberMe,
         );
     }
@@ -130,7 +128,6 @@ class AuthService {
       accessToken,
       refreshToken: newRefreshToken,
       user,
-      profileCompleted,
     } = response.data.data;
 
     // Check if user has allowed role
@@ -149,7 +146,6 @@ class AuthService {
           accessToken,
           newRefreshToken,
           user,
-          profileCompleted,
           rememberMe,
         );
     }
