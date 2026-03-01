@@ -285,6 +285,7 @@ export default function ProfessionalInformationContent() {
       </div>
       <ConfirmationModal
         isOpen={showConfirmationModal}
+        isLoading={isSaving}
         onClose={() => setShowConfirmationModal(false)}
         onConfirm={async () => {
           await handleSave();

@@ -74,8 +74,11 @@ class AdminService {
    * Approve professional profile update (admin only)
    */
   async approveProfessionalProfile(userId: string): Promise<ApiResponse<any>> {
-    const response = await apiClient.post<ApiResponse<any>>(
-      `/profile/professional/${userId}/approve`,
+    const response = await apiClient.put<ApiResponse<any>>(
+      `/profile/admin/verify-profile/${userId}`,
+      {
+        approved: true,
+      }
     );
     return response.data;
   }
