@@ -1,14 +1,11 @@
 import apiClient from "../api-client";
 import { ApiResponse } from "@/app/models/ApiResponse";
-import { buildQueryParams } from "../utils/queryParams";
 import { PendingVerification } from "@/app/models/PendingVerification";
 import {
   User,
   ProfessionalProfile,
   Qualification,
-  Appointment,
   CreateScheduleRequest,
-  ListQueryParams,
 } from "@/app/models";
 
 class AdminService {

@@ -59,7 +59,7 @@ export default function DoctorDashboard({ user }: { user: User | null }) {
               {getGreeting()}, <span className="font-semibold">Dr. {user?.firstName || "Doctor"}</span>
             </h3>
             <p className="mt-2 leading-relaxed">
-              Have a great day at work. Your progress is excellent.
+              {user?.profileVerified ? "Have a great day at work. Your progress is excellent." : "Your profile is currently under review. You'll gain full access once it's approved."}
             </p>
             <Link href="/profile/availability" className="btn mt-6 border border-white/10 bg-white/20 text-white hover:bg-white/30 focus:bg-white/30">
               View Schedule
