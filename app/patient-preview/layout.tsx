@@ -17,6 +17,8 @@ function PatientPreviewContent({ children }: { children: React.ReactNode }) {
   const {
     selectedAppointment,
     selectedPatient,
+    videoMeetingToken,
+    endVideoCall,
     selectAppointment,
     fetchPatientDetails,
   } = useAppointmentStore();

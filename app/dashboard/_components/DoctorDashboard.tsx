@@ -8,6 +8,8 @@ import { useEffect } from "react";
 import { User } from "@/app/models";
 import { useAppointmentStore } from "@/app/stores/appointmentStore";
 import { formatDate, formatTime, formatTodayOrDate } from "@/app/lib/utils/dateUtils";
+import ConfirmationModal from "@/app/components/ConfirmationModal";
+import { useState } from "react";
 
 const getGreeting = () => {
   const hour = new Date().getHours();
@@ -17,13 +19,54 @@ const getGreeting = () => {
 };
 
 export default function DoctorDashboard({ user }: { user: User | null }) {
-  const { liveQueue, assignedCases, isLoading: queueLoading, alertsLoading, fetchLiveQueue, fetchAssignedCases, clinicalAlerts, fetchClinicalAlerts } = useAppointmentStore();
+  const { liveQueue, assignedCases, isLoading: queueLoading, alertsLoading, fetchLiveQueue, fetchAssignedCases, clinicalAlerts, fetchClinicalAlerts, startVideoCall, rejectAppointment, isVideoLoading, isRejecting } = useAppointmentStore();
+  const [modalConfig, setModalConfig] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+    type?: "info" | "success" | "danger";
+    confirmText?: string;
+  }>({
+    isOpen: false,
+    title: "",
+    message: "",
+    onConfirm: () => {},
+  });
 
   useEffect(() => {
     fetchLiveQueue();
     fetchAssignedCases({ page: 1, limit: 5 });
     fetchClinicalAlerts();
   }, []);
+
+  const handleAcceptClick = (appointmentId: string, patientName: string) => {
+    setModalConfig({
+      isOpen: true,
+      title: "Accept Appointment",
+      message: `Are you sure you want to accept the appointment with ${patientName} and start the video call?`,
+      type: "success",
+      confirmText: "Accept & Start",
+      onConfirm: async () => {
+        await startVideoCall(appointmentId);
+        setModalConfig((prev) => ({ ...prev, isOpen: false }));
+      },
+    });
+  };
+
+  const handleRejectClick = (appointmentId: string, patientName: string) => {
+    setModalConfig({
+      isOpen: true,
+      title: "Reject Appointment",
+      message: `Are you sure you want to reject the appointment with ${patientName}? This action cannot be undone.`,
+      type: "danger",
+      confirmText: "Reject",
+      onConfirm: async () => {
+        await rejectAppointment(appointmentId);
+        setModalConfig((prev) => ({ ...prev, isOpen: false }));
+      },
+    });
+  };
 
   const waitingPatients = liveQueue.slice(0, 6);
 
@@ -115,6 +158,8 @@ export default function DoctorDashboard({ user }: { user: User | null }) {
                   time={formatTime(appointment.scheduledAt)}
                   avatarSrc={appointment.patientImageUrl?? "/images/200x200.png"}
                   viewLink={`/patient-preview?appointmentId=${appointment.id}&userId=${appointment.patientId}`}
+                  onAccept={() => handleAcceptClick(appointment.id, appointment.patientName)}
+                  onReject={() => handleRejectClick(appointment.id, appointment.patientName)}
                 />
               ))
             )}
@@ -252,6 +297,16 @@ export default function DoctorDashboard({ user }: { user: User | null }) {
           </div>
         </div>
       )}
+      <ConfirmationModal
+        isOpen={modalConfig.isOpen}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        onConfirm={modalConfig.onConfirm}
+        onClose={() => setModalConfig((prev) => ({ ...prev, isOpen: false }))}
+        type={modalConfig.type}
+        confirmText={modalConfig.confirmText}
+        isLoading={isVideoLoading || isRejecting}
+      />
     </div>
   );
 }

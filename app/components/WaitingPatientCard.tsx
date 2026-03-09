@@ -54,7 +54,7 @@ export default function WaitingPatientCard({
         <div className="flex space-x-2">
           <button
             onClick={onAccept}
-            className="btn size-7 rounded-full bg-success/10 p-0 text-success hover:bg-success/20 focus:bg-success/20 active:bg-success/25"
+            className="btn size-7 cursor-pointer rounded-full bg-success/10 p-0 text-success hover:bg-success/20 focus:bg-success/20 active:bg-success/25"
             aria-label="Accept"
           >
             <svg
@@ -74,7 +74,7 @@ export default function WaitingPatientCard({
           </button>
           <button
             onClick={onReject}
-            className="btn size-7 rounded-full bg-error/10 p-0 text-error hover:bg-error/20 focus:bg-error/20 active:bg-error/25"
+            className="btn size-7 cursor-pointer rounded-full bg-error/10 p-0 text-error hover:bg-error/20 focus:bg-error/20 active:bg-error/25"
             aria-label="Reject"
           >
             <svg

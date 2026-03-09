@@ -4,6 +4,7 @@ import "./globals.css";
 import AuthProvider from "./components/AuthProvider";
 import DataProvider from "./components/DataProvider";
 import { SearchProvider } from "./contexts/SearchContext";
+import { SocketProvider } from "./contexts/SocketContext";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -57,7 +58,9 @@ export default function RootLayout({
       >
         <AuthProvider>
           <SearchProvider>
-            <DataProvider>{children}</DataProvider>
+            <SocketProvider>
+              <DataProvider>{children}</DataProvider>
+            </SocketProvider>
           </SearchProvider>
         </AuthProvider>
       </body>

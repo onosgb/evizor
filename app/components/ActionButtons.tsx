@@ -6,12 +6,15 @@ import { getTheme, UserRole } from "../lib/roles";
 import { AppointmentStatus } from "../models";
 import { useAppointmentStore } from "../stores/appointmentStore";
 import ConfirmationModal from "./ConfirmationModal";
+import { useRouter } from "next/navigation";
 
 export default function ActionButtons() {
   const user = useAuthStore((state) => state.user);
+  const router = useRouter();
   const selectedAppointment = useAppointmentStore((state) => state.selectedAppointment);
   const setClinicalAlert = useAppointmentStore((state) => state.setClinicalAlert);
   const actionLoading = useAppointmentStore((state) => state.actionLoading);
+  const startVideoCall = useAppointmentStore((state) => state.startVideoCall);
   const theme = getTheme(user);
   const [acceptModalOpen, setAcceptModalOpen] = useState(false);
   const [clinicalAlertModalOpen, setClinicalAlertModalOpen] = useState(false);
@@ -85,9 +88,21 @@ confirmText="Accept"
 cancelText="Cancel"
 isLoading={actionLoading}
 message="Are you sure you want to accept this patient?"
-onConfirm={() => {
+onConfirm={async () => {
+  if (selectedAppointment) {
+    try {
+      await startVideoCall(selectedAppointment.id);
+      const token = useAppointmentStore.getState().videoMeetingToken;
+      if (token) {
+        router.push(`/consultation/${selectedAppointment.id}?token=${token}`);
+      } else {
+        console.error("No video token generated");
+      }
+    } catch (err) {
+      console.error("Failed to accept or start call:", err);
+    }
+  }
   setAcceptModalOpen(false);
-  // Handle accept logic here
 }}
 />
 

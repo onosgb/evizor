@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  transpilePackages: ['@dytesdk/react-ui-kit', '@dytesdk/web-core'],
   images: {
     remotePatterns: [
       {

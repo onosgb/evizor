@@ -14,7 +14,12 @@ interface AppointmentState {
   isLoading: boolean;
   alertsLoading: boolean;
   actionLoading: boolean;
+  isRejecting: boolean;
   error: string | null;
+
+  videoMeetingToken: string | null;
+  videoMeetingId: string | null;
+  isVideoLoading: boolean;
 
   fetchLiveQueue: () => Promise<void>;
   fetchAssignedCases: (params?: ListQueryParams) => Promise<void>;
@@ -23,7 +28,12 @@ interface AppointmentState {
   selectAppointment: (appointmentId: string | null) => void;
   setClinicalAlert: (appointmentId: string) => Promise<void>;
   fetchClinicalAlerts: () => Promise<void>;
-  acceptAppointment: (appointmentId: string) => Promise<void>;
+  startVideoCall: (appointmentId: string) => Promise<void>;
+  rejectAppointment: (appointmentId: string) => Promise<void>;
+  completeAppointment: (appointmentId: string, data: any) => Promise<void>;
+  endVideoCall: () => void;
+  addLiveQueueItem: (appointment: Appointment) => void;
+  updateAppointmentStatus: (appointmentId: string, status: AppointmentStatus) => void;
 }
 
 export const useAppointmentStore = create<AppointmentState>((set, get) => ({
@@ -37,19 +47,79 @@ export const useAppointmentStore = create<AppointmentState>((set, get) => ({
   isLoading: false,
   alertsLoading: true,
   actionLoading: false,
+  isRejecting: false,
   error: null,
+  videoMeetingToken: null,
+  videoMeetingId: null,
+  isVideoLoading: false,
 
-  acceptAppointment: async (appointmentId: string) => {
+  
+
+  startVideoCall: async (appointmentId: string) => {
     const state = get();
+    set({ isVideoLoading: true, error: null });
+    try {
+      const data = await appointmentService.requestVideoToken(appointmentId);
+      console.log('data: ', data)
+      set({ 
+        videoMeetingToken: data.authToken,
+        videoMeetingId: data.meetingId,
+        selectedAppointment: state.selectedAppointment 
+          ? { ...state.selectedAppointment, status: AppointmentStatus.PROGRESS } 
+          : null 
+      });
+    } catch (error: any) {
+      set({ error: error.message || "Failed to start video call" });
+    } finally {
+      set({ isVideoLoading: false });
+    }
+  },
+
+  rejectAppointment: async (appointmentId: string) => {
+    set({ isRejecting: true, error: null });
+    try {
+      // If there's no backend endpoint for reject yet, we just update local state
+      // await appointmentService.rejectAppointment(appointmentId);
+      
+      // Update local state to reflect rejection
+      const { liveQueue, assignedCases, selectedAppointment } = get();
+      const updateInList = (list: Appointment[]) => 
+        list.filter((a) => a.id !== appointmentId);
+
+      set({
+        liveQueue: updateInList(liveQueue),
+        assignedCases: updateInList(assignedCases),
+        selectedAppointment: selectedAppointment?.id === appointmentId 
+          ? null 
+          : selectedAppointment
+      });
+    } catch (error: any) {
+      set({ error: error.message || "Failed to reject appointment" });
+    } finally {
+      set({ isRejecting: false });
+    }
+  },
+
+  completeAppointment: async (appointmentId: string, data: any) => {
     set({ actionLoading: true, error: null });
     try {
-      await appointmentService.acceptAppointment(appointmentId)
-      set({ selectedAppointment: { ...state.selectedAppointment!, status: AppointmentStatus.PROGRESS } });
+      await appointmentService.completeAppointment(appointmentId, data);
+      const state = get();
+      set({ 
+        selectedAppointment: state.selectedAppointment?.id === appointmentId 
+          ? { ...state.selectedAppointment, status: AppointmentStatus.COMPLETED } 
+          : state.selectedAppointment 
+      });
     } catch (error: any) {
-      set({ error: error.message || "Failed to accept appointment" });
+      set({ error: error.message || "Failed to complete appointment" });
+      throw error;
     } finally {
       set({ actionLoading: false });
     }
+  },
+
+  endVideoCall: () => {
+    set({ videoMeetingToken: null, videoMeetingId: null });
   },
 
   setClinicalAlert: async (appointmentId: string) => {
@@ -171,5 +241,25 @@ export const useAppointmentStore = create<AppointmentState>((set, get) => ({
     } finally {
       set({ isLoading: false });
     }
+  },
+  addLiveQueueItem: (appointment: Appointment) => {
+    const { liveQueue } = get();
+    // Avoid duplicates
+    if (liveQueue.some((a) => a.id === appointment.id)) return;
+    set({ liveQueue: [appointment, ...liveQueue] });
+  },
+  updateAppointmentStatus: (appointmentId: string, status: AppointmentStatus) => {
+    const { liveQueue, assignedCases, selectedAppointment } = get();
+    
+    const updateInList = (list: Appointment[]) => 
+      list.map((a) => (a.id === appointmentId ? { ...a, status } : a));
+
+    set({
+      liveQueue: updateInList(liveQueue),
+      assignedCases: updateInList(assignedCases),
+      selectedAppointment: selectedAppointment?.id === appointmentId 
+        ? { ...selectedAppointment, status } 
+        : selectedAppointment
+    });
   },
 }));

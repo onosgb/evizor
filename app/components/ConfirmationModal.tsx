@@ -12,6 +12,7 @@ interface ConfirmationModalProps {
   confirmText?: string;
   cancelText?: string;
   confirmButtonClass?: string;
+  type?: "success" | "danger" | "info";
   isLoading?: boolean;
   loadingText?: string;
 }

@@ -9,6 +9,9 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@dytesdk/react-ui-kit": "^3.0.8",
+    "@dytesdk/react-web-core": "^3.1.11",
+    "@dytesdk/web-core": "^3.1.11",
     "@radix-ui/react-popover": "^1.1.15",
     "@radix-ui/react-tooltip": "^1.2.8",
     "aos": "^2.3.4",
@@ -18,6 +21,7 @@
     "next": "16.1.1",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "socket.io-client": "^4.8.3",
     "zustand": "^5.0.10"
   },
   "devDependencies": {

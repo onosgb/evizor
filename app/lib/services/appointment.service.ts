@@ -18,6 +18,7 @@ class AppointmentService {
     const response = await apiClient.put<ApiResponse<Appointment>>(
       `/appointments/${appointmentId}/accept`,
     );
+    console.log(response.data);
     return response.data;
   }
   /**
@@ -109,6 +110,29 @@ class AppointmentService {
     );
     return response.data.data;
   }
+
+  /**
+   * Request a Dyte video auth token for a given appointment.
+   * The backend creates/retrieves the meeting and returns a participant auth token.
+   */
+  async requestVideoToken(appointmentId: string): Promise<{ authToken: string; meetingId: string; roomName: string }> {
+    const response = await apiClient.post<ApiResponse<{ authToken: string; meetingId: string; roomName: string }>>(
+      `/appointments/${appointmentId}/start`,
+    );
+    return response.data.data;
+  }
+
+  /**
+   * Complete an appointment with notes and prescriptions
+   */
+  async completeAppointment(appointmentId: string, data: any): Promise<ApiResponse<Appointment>> {
+    const response = await apiClient.put<ApiResponse<Appointment>>(
+      `/appointments/${appointmentId}/complete`,
+      data
+    );
+    return response.data;
+  }
 }
 
 export const appointmentService = new AppointmentService();
+
