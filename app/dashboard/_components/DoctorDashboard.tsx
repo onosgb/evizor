@@ -3,6 +3,7 @@
 import WaitingPatientCard from "@/app/components/WaitingPatientCard";
 import ClinicalAlertCard from "./ClinicalAlertCard";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useEffect } from "react";
 import { User } from "@/app/models";
@@ -19,6 +20,7 @@ const getGreeting = () => {
 };
 
 export default function DoctorDashboard({ user }: { user: User | null }) {
+  const router = useRouter();
   const { liveQueue, assignedCases, isLoading: queueLoading, alertsLoading, fetchLiveQueue, fetchAssignedCases, clinicalAlerts, fetchClinicalAlerts, startVideoCall, rejectAppointment, isVideoLoading, isRejecting } = useAppointmentStore();
   const [modalConfig, setModalConfig] = useState<{
     isOpen: boolean;
@@ -49,6 +51,10 @@ export default function DoctorDashboard({ user }: { user: User | null }) {
       confirmText: "Accept & Start",
       onConfirm: async () => {
         await startVideoCall(appointmentId);
+        const token = useAppointmentStore.getState().videoMeetingToken;
+        if (token) {
+          router.push(`/consultation/${appointmentId}?token=${token}`);
+        }
         setModalConfig((prev) => ({ ...prev, isOpen: false }));
       },
     });

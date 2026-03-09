@@ -2,12 +2,14 @@
 
 import { useEffect, useState } from "react";
 import DashboardLayout from "../components/DashboardLayout";
+import { useRouter } from "next/navigation";
 import PatientCard from "../components/PatientCard";
 import { useAppointmentStore } from "../stores/appointmentStore";
 import { useSearchContext } from "../contexts/SearchContext";
 import ConfirmationModal from "../components/ConfirmationModal";
 
 export default function LiveQueuePage() {
+  const router = useRouter();
   const { liveQueue: appointments, isLoading: loading, error, fetchLiveQueue, startVideoCall, rejectAppointment, isVideoLoading, isRejecting } = useAppointmentStore();
   const { query: contextQuery, registerPageSearch, unregisterPageSearch } = useSearchContext();
   const [searchQuery, setSearchQuery] = useState("");
@@ -49,6 +51,10 @@ export default function LiveQueuePage() {
       confirmText: "Accept & Start",
       onConfirm: async () => {
         await startVideoCall(appointmentId);
+        const token = useAppointmentStore.getState().videoMeetingToken;
+        if (token) {
+          router.push(`/consultation/${appointmentId}?token=${token}`);
+        }
         setModalConfig((prev) => ({ ...prev, isOpen: false }));
       },
     });

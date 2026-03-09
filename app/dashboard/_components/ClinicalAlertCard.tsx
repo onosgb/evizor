@@ -8,6 +8,7 @@ import { useState } from "react";
 import ConfirmationModal from "@/app/components/ConfirmationModal";
 import { useAuthStore } from "@/app/stores";
 import { UserRole } from "@/app/lib/roles";
+import { useRouter } from "next/navigation";
 
 interface PatientInfo {
   label: string;
@@ -45,7 +46,8 @@ export default function ClinicalAlertCard({
   isLoading = false,
 }: ClinicalAlertCardProps) {
 
-  const { acceptAppointment } = useAppointmentStore();
+  const { startVideoCall } = useAppointmentStore();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const {user} = useAuthStore();
 
@@ -159,7 +161,11 @@ export default function ClinicalAlertCard({
         isOpen={open}
         onClose={() => setOpen(false)}
         onConfirm={ async () => {
-          await acceptAppointment(id!);
+          await startVideoCall(id!);
+          const token = useAppointmentStore.getState().videoMeetingToken;
+          if (token) {
+            router.push(`/consultation/${id}?token=${token}`);
+          }
           setOpen(false);
         }}
         title="Accept Appointment"
