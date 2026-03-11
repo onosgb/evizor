@@ -23,7 +23,8 @@
     "zustand": "^5.0.10"
   },
   "optionalDependencies": {
-    "lightningcss-linux-x64-gnu": "*"
+    "lightningcss": "1.30.2",
+    "lightningcss-linux-x64-gnu": "1.30.2"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
