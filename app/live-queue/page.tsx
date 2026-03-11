@@ -12,8 +12,21 @@ import { formatTime } from "../lib/utils/dateUtils";
 
 export default function LiveQueuePage() {
   const router = useRouter();
-  const { liveQueue: appointments, isLoading: loading, error, fetchLiveQueue, startVideoCall, rejectAppointment, isVideoLoading, isRejecting } = useAppointmentStore();
-  const { query: contextQuery, registerPageSearch, unregisterPageSearch } = useSearchContext();
+  const {
+    liveQueue: appointments,
+    isLoading: loading,
+    error,
+    fetchLiveQueue,
+    startVideoCall,
+    rejectAppointment,
+    isVideoLoading,
+    isRejecting,
+  } = useAppointmentStore();
+  const {
+    query: contextQuery,
+    registerPageSearch,
+    unregisterPageSearch,
+  } = useSearchContext();
   const [searchQuery, setSearchQuery] = useState("");
   const [modalConfig, setModalConfig] = useState<{
     isOpen: boolean;
@@ -34,14 +47,16 @@ export default function LiveQueuePage() {
     return () => unregisterPageSearch();
   }, [registerPageSearch, unregisterPageSearch]);
 
-  useEffect(() => { setSearchQuery(contextQuery); }, [contextQuery]);
+  useEffect(() => {
+    setSearchQuery(contextQuery);
+  }, [contextQuery]);
 
   useEffect(() => {
     fetchLiveQueue();
-  }, []);
+  }, [fetchLiveQueue]);
 
   const filteredAppointments = appointments.filter((a) =>
-    a.patientName.toLowerCase().includes(searchQuery.toLowerCase())
+    a.patientName.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const handleAcceptClick = (appointmentId: string, patientName: string) => {
@@ -84,14 +99,27 @@ export default function LiveQueuePage() {
             Live Patient Queue
           </h2>
         </div>
-
       </div>
 
       {/* Toast Error Notification */}
       {error && (
-        <div className="fixed bottom-4 right-4 z-100 flex items-center p-4 mb-4 text-sm text-error rounded-lg bg-error/10 shadow-lg border border-error/20 animate-fade-in dark:bg-error/20" role="alert">
-          <svg className="shrink-0 inline w-5 h-5 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        <div
+          className="fixed bottom-4 right-4 z-100 flex items-center p-4 mb-4 text-sm text-error rounded-lg bg-error/10 shadow-lg border border-error/20 animate-fade-in dark:bg-error/20"
+          role="alert"
+        >
+          <svg
+            className="shrink-0 inline w-5 h-5 mr-3"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+            />
           </svg>
           <span className="font-medium mr-1">Error:</span> {error}
         </div>
@@ -123,16 +151,20 @@ export default function LiveQueuePage() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 lg:gap-6 xl:grid-cols-4">
           {filteredAppointments.map((appointment) => (
             <WaitingPatientCard
-                              key={appointment.id}
-                              name={appointment.patientName}
-                              procedure={appointment.description || "—"}
-                              date={formatDate(appointment.scheduledAt, "dd MMM yyyy")}
-                              time={formatTime(appointment.scheduledAt, "hh:mm a")}
-                              avatarSrc={appointment.patientImageUrl?? "/images/200x200.png"}
-                              viewLink={`/patient-preview?appointmentId=${appointment.id}&userId=${appointment.patientId}`}
-                              onAccept={() => handleAcceptClick(appointment.id, appointment.patientName)}
-                              onReject={() => handleRejectClick(appointment.id, appointment.patientName)}
-                            />
+              key={appointment.id}
+              name={appointment.patientName}
+              procedure={appointment.description || "—"}
+              date={formatDate(appointment.scheduledAt, "dd MMM yyyy")}
+              time={formatTime(appointment.scheduledAt, "hh:mm a")}
+              avatarSrc={appointment.patientImageUrl ?? "/images/200x200.png"}
+              viewLink={`/patient-preview?appointmentId=${appointment.id}&userId=${appointment.patientId}`}
+              onAccept={() =>
+                handleAcceptClick(appointment.id, appointment.patientName)
+              }
+              onReject={() =>
+                handleRejectClick(appointment.id, appointment.patientName)
+              }
+            />
           ))}
         </div>
       )}

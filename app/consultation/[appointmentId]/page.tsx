@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useState, useCallback } from "react";
+import { use, useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
   RealtimeKitProvider,
@@ -187,7 +187,7 @@ export default function ConsultationPage({
         setError((prev) =>
           prev
             ? prev
-            : "Connecting is taking longer than expected. Check your connection (try a different network) and try again."
+            : "Connecting is taking longer than expected. Check your connection (try a different network) and try again.",
         );
       }, 30000);
     } catch (err: any) {
@@ -204,22 +204,33 @@ export default function ConsultationPage({
   useEffect(() => {
     if (meeting) {
       setError((prev) =>
-        prev?.includes("Connecting is taking longer") ? null : prev
+        prev?.includes("Connecting is taking longer") ? null : prev,
       );
     }
   }, [meeting]);
 
+  // Tracks whether we initiated the leave ourselves, so the "roomLeft"
+  // event listener doesn't trigger a second navigation.
+  const isLeavingRef = useRef(false);
+
   const handleEndCall = useCallback(async () => {
+    if (isLeavingRef.current) return; // prevent double-execution
+    isLeavingRef.current = true;
     if (meeting) {
       try {
         await meeting.leave();
       } catch (e) {
         console.warn("Error leaving meeting", e);
+        showToast(
+          `Error while ending session: ${(e as Error)?.message || "Please try again."}`,
+          "error",
+        );
       }
     }
     endVideoCall();
-    router.push("/live-queue");
-  }, [meeting, endVideoCall, router]);
+    showToast("Session ended. Redirecting to dashboard.", "success");
+    router.push("/");
+  }, [meeting, endVideoCall, router, showToast]);
 
   const handleRetryJoin = useCallback(async () => {
     setError(null);
@@ -227,8 +238,11 @@ export default function ConsultationPage({
       try {
         await meeting.join();
       } catch (err: any) {
+        const message =
+          err?.message || "Failed to join meeting. Try again or go back.";
         console.error("Failed to join meeting (retry)", err);
-        setError("Failed to join meeting. Try again or go back.");
+        setError(message);
+        showToast(message, "error");
       }
       return;
     }
@@ -267,12 +281,21 @@ export default function ConsultationPage({
 
     // Join the room now that we are initialized
     meeting.join().catch((err: any) => {
+      const message =
+        err?.message ||
+        "Failed to join meeting. Check your connection and try again.";
       console.error("Failed to join meeting", err);
-      setError("Failed to join meeting.");
+      setError(message);
+      showToast(message, "error");
     });
 
     const handleRoomLeft = () => {
-      handleEndCall();
+      // Only navigate if the room was closed externally (e.g. doctor on another
+      // device ended the call). If we initiated the leave ourselves,
+      // handleEndCall already pushed to /live-queue.
+      if (!isLeavingRef.current) {
+        handleEndCall();
+      }
     };
 
     meeting.self.on("roomLeft", handleRoomLeft);
@@ -325,13 +348,13 @@ export default function ConsultationPage({
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-navy-900 overflow-hidden font-inter">
-      <main className="main-content w-full h-screen flex p-4 lg:p-6">
-        <div className="flex flex-1 gap-6 h-full">
-          {/* VIDEO SECTION */}
-          <section className="flex flex-col flex-2 bg-white rounded-2xl shadow-md p-6 relative h-full">
+    <div className="min-h-screen scrollbar-hide flex flex-col bg-slate-50 dark:bg-navy-900 overflow-hidden font-inter">
+      <main className="main-content w-full h-screen flex pt-1 pb-4 px-4 lg:pt-1 lg:pb-6 lg:px-6 overflow-hidden">
+        <div className="flex w-full min-w-0 h-full gap-3 lg:gap-4 overflow-hidden">
+          {/* VIDEO SECTION - capped so right panel always has room */}
+          <section className="flex flex-col flex-1 min-w-0 w-full lg:max-w-[55%] bg-white rounded-2xl shadow-md pt-2 pb-4 px-4 lg:pt-3 lg:pb-6 lg:px-6 relative h-full min-h-0 overflow-hidden">
             {/* Top Bar */}
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex justify-between items-center mb-1.5">
               <div>
                 <h2 className="text-xl font-semibold">
                   Consultation with {patientDisplayName}
@@ -354,24 +377,51 @@ export default function ConsultationPage({
             </div>
 
             {/* Video Container */}
-            <div className="relative flex-1 bg-slate-900 rounded-2xl overflow-hidden flex items-center justify-center">
+            <div className="relative flex-1 min-h-0 bg-slate-900 rounded-2xl overflow-hidden flex items-center justify-center">
               {error ? (
-                <div className="flex flex-col items-center text-white gap-4">
-                  <p className="text-lg text-red-500 mb-2">{error}</p>
-                  <div className="flex flex-wrap items-center justify-center gap-3">
+                <div className="w-full px-5 py-6 max-w-lg rounded-2xl bg-red-900/70 border border-red-500/30 shadow-lg backdrop-blur">
+                  <div className="flex items-start gap-3">
+                    <div className="mt-1 rounded-full bg-red-500/20 p-2 text-red-100">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                        className="h-5 w-5"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M8.257 3.099c.366-.746 1.4-.746 1.766 0l6.523 13.307c.35.714-.232 1.594-.883 1.594H2.617c-.651 0-1.233-.88-.883-1.594L8.257 3.1zM10 12a1 1 0 100 2 1 1 0 000-2zm-.75-4a.75.75 0 011.5 0v3a.75.75 0 01-1.5 0V8z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </div>
+                    <div className="text-left">
+                      <p className="text-base font-semibold text-red-100">
+                        Call session error
+                      </p>
+                      <p className="mt-1 text-sm text-red-200">{error}</p>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 grid grid-cols-2 gap-3">
                     <button
                       onClick={handleRetryJoin}
-                      className="px-4 py-2 bg-[#2a27c2] text-white rounded-xl hover:bg-indigo-700 text-sm font-medium transition-colors"
+                      className="w-full px-3 py-2 bg-white text-slate-900 rounded-lg font-medium hover:bg-slate-100 transition"
                     >
-                      Try again
+                      Retry
                     </button>
                     <button
-                      onClick={() => router.push("/live-queue")}
-                      className="px-4 py-2 border border-white/40 text-white rounded-xl hover:bg-white/10 text-sm font-medium transition-colors"
+                      onClick={handleEndCall}
+                      className="w-full cursor-pointer px-3 py-2 bg-transparent border border-white/60 text-white rounded-lg hover:bg-white/10 transition"
                     >
-                      Go back
+                      End Meeting
                     </button>
                   </div>
+
+                  <p className="mt-3 text-xs cursor-pointer text-red-200 opacity-80">
+                    If the issue persists, refresh the page or check your
+                    network.
+                  </p>
                 </div>
               ) : !meeting ? (
                 <div className="flex flex-col items-center text-white space-y-4">
@@ -411,15 +461,15 @@ export default function ConsultationPage({
             </div>
 
             {/* Transcript (Mocked as per template) */}
-            <div className="mt-4 p-3 bg-gray-50 rounded-xl text-sm text-gray-600">
+            <div className="mt-2 p-3 bg-gray-50 rounded-xl text-sm text-gray-600">
               Doctor: “Can you describe the pain you’re experiencing?”
             </div>
           </section>
 
           {/* RIGHT PANEL */}
-          <aside className="w-1/3 min-w-87.5 bg-white rounded-2xl shadow-md p-6 flex flex-col h-full">
+          <section className="flex flex-col shrink-0 w-[35%] min-w-0 bg-white rounded-2xl shadow-md pt-2 pb-4 px-4 lg:pt-3 lg:pb-6 lg:px-6 h-full min-h-0 overflow-hidden">
             {/* Tabs */}
-            <div className="flex space-x-6 border-b pb-3 mb-4 text-sm font-medium overflow-x-auto is-scrollbar-hidden">
+            <div className="flex flex-wrap gap-3 border-b pb-3 mb-4 text-sm font-medium min-w-0">
               <button
                 onClick={() => setActiveTab("info")}
                 className={
@@ -462,10 +512,10 @@ export default function ConsultationPage({
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto is-scrollbar-hidden pb-4">
+            <div className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden is-scrollbar-hidden pb-4">
               {/* PATIENT INFO */}
               {activeTab === "info" && (
-                <div className="space-y-4 animate-fade-in">
+                <div className="space-y-4 animate-fade-in min-w-0">
                   <div className="bg-gray-50 p-4 rounded-xl text-sm space-y-2">
                     <p>
                       <strong>Age:</strong>{" "}
@@ -504,7 +554,7 @@ export default function ConsultationPage({
 
               {/* NOTES */}
               {activeTab === "notes" && (
-                <div className="space-y-4 animate-fade-in h-full flex flex-col">
+                <div className="space-y-4 animate-fade-in h-full flex flex-col min-w-0">
                   <h4 className="font-semibold">Consultation Notes</h4>
                   <textarea
                     value={notes}
@@ -523,7 +573,7 @@ export default function ConsultationPage({
 
               {/* PRESCRIPTION */}
               {activeTab === "prescription" && (
-                <div className="space-y-4 animate-fade-in">
+                <div className="space-y-4 animate-fade-in min-w-0">
                   <div className="grid grid-cols-2 gap-3 text-sm">
                     <input
                       value={drug}
@@ -593,7 +643,7 @@ export default function ConsultationPage({
 
               {/* LAB */}
               {activeTab === "lab" && (
-                <div className="space-y-4 text-sm animate-fade-in">
+                <div className="space-y-4 text-sm animate-fade-in min-w-0">
                   <div>
                     <label className="block mb-1.5 font-medium text-gray-700">
                       Select Test
@@ -635,10 +685,10 @@ export default function ConsultationPage({
             </div>
 
             {/* Sticky Bottom Actions */}
-            <div className="pt-4 mt-auto border-t border-gray-100 flex justify-between gap-3">
+            <div className="pt-4 mt-auto border-t border-gray-100 flex justify-between gap-3 min-w-0 shrink-0">
               <button
                 onClick={() => showToast("Draft saved locally", "info")}
-                className="flex-1 py-2.5 bg-gray-100 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-200 transition-colors"
+                className="flex-1 min-w-0 py-2.5 bg-gray-100 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-200 transition-colors overflow-hidden text-ellipsis whitespace-nowrap"
               >
                 Save Draft
               </button>
@@ -648,12 +698,12 @@ export default function ConsultationPage({
                   actionLoading ||
                   (activeTab === "prescription" && medications.length === 0)
                 }
-                className="flex-2 py-2.5 bg-[#2a27c2] text-white rounded-xl text-sm font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 min-w-0 py-2.5 bg-[#2a27c2] text-white rounded-xl text-sm font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden text-ellipsis whitespace-nowrap"
               >
                 {actionLoading ? "Processing..." : "Finalize & Close Case"}
               </button>
             </div>
-          </aside>
+          </section>
         </div>
       </main>
 
