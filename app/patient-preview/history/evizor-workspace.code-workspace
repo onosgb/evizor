@@ -5,6 +5,9 @@
 		},
 		{
 			"path": "../../../../evizor-mobile"
+		},
+		{
+			"path": "../../../../evizor_app"
 		}
 	],
 	"settings": {

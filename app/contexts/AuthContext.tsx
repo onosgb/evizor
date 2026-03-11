@@ -45,7 +45,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // Protect routes - redirect based on authentication status
     if (!isLoading) {
-      const publicRoutes = ["/login", "/", "/forgot-password", "/reset-password"];
+      const publicRoutes = [
+        "/login",
+        "/",
+        "/forgot-password",
+        "/reset-password",
+      ];
       const isPublicRoute = publicRoutes.includes(pathname || "");
       const isProfileRoute = pathname?.startsWith("/profile");
       const isDashboard = pathname === "/";
@@ -63,16 +68,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         // If doctor is not yet verified, restrict all routes except dashboard and profile
         const isDoctor = user?.role === "DOCTOR";
-        if (isDoctor && !user?.profileVerified && !isProfileRoute && !isDashboard) {
+        if (
+          isDoctor &&
+          !user?.profileVerified &&
+          !isProfileRoute &&
+          !isDashboard
+        ) {
           router.push("/");
           return;
         }
 
         // If authenticated and on login or root, redirect to root (only if profile is complete)
-        if (
-          profileCompleted &&
-          (pathname === "/login" || pathname === "/")
-        ) {
+        if (profileCompleted && (pathname === "/login" || pathname === "/")) {
           router.push("/");
           return;
         }
@@ -94,7 +101,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       // Clear local state before redirecting
       logoutStore();
-      router.push("/login");
+      // router.push("/login");
     }
   };
 
