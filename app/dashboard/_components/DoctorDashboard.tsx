@@ -53,7 +53,7 @@ export default function DoctorDashboard({ user }: { user: User | null }) {
         await startVideoCall(appointmentId);
         const token = useAppointmentStore.getState().videoMeetingToken;
         if (token) {
-          router.push(`/consultation/${appointmentId}?token=${token}`);
+          router.push(`/consultation/${appointmentId}`);
         }
         setModalConfig((prev) => ({ ...prev, isOpen: false }));
       },
@@ -79,7 +79,7 @@ export default function DoctorDashboard({ user }: { user: User | null }) {
   const recentCompletedCases = assignedCases
     .filter((item) => item.status === "completed")
     .sort((a, b) => new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime())
-    .slice(0, 5);
+    .slice(0, 6);
 
 
   const showClinicalAlerts = alertsLoading || clinicalAlerts.length > 0;

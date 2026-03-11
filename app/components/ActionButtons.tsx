@@ -94,7 +94,7 @@ onConfirm={async () => {
       await startVideoCall(selectedAppointment.id);
       const token = useAppointmentStore.getState().videoMeetingToken;
       if (token) {
-        router.push(`/consultation/${selectedAppointment.id}?token=${token}`);
+        router.push(`/consultation/${selectedAppointment.id}`);
       } else {
         console.error("No video token generated");
       }

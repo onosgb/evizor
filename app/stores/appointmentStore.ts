@@ -29,6 +29,7 @@ interface AppointmentState {
   setClinicalAlert: (appointmentId: string) => Promise<void>;
   fetchClinicalAlerts: () => Promise<void>;
   startVideoCall: (appointmentId: string) => Promise<void>;
+  fetchVideoToken: (appointmentId: string) => Promise<void>;
   rejectAppointment: (appointmentId: string) => Promise<void>;
   completeAppointment: (appointmentId: string, data: any) => Promise<void>;
   endVideoCall: () => void;
@@ -60,16 +61,39 @@ export const useAppointmentStore = create<AppointmentState>((set, get) => ({
     set({ isVideoLoading: true, error: null });
     try {
       const data = await appointmentService.requestVideoToken(appointmentId);
-      console.log('data: ', data)
+
+      const { liveQueue, assignedCases } = get();
+      const appointment = 
+        liveQueue.find(a => a.id === appointmentId) || 
+        assignedCases.find(a => a.id === appointmentId) ||
+        state.selectedAppointment;
+
       set({ 
-        videoMeetingToken: data.authToken,
-        videoMeetingId: data.meetingId,
-        selectedAppointment: state.selectedAppointment 
-          ? { ...state.selectedAppointment, status: AppointmentStatus.PROGRESS } 
+        videoMeetingToken: data.dyteToken,
+        selectedAppointment: appointment 
+          ? { ...appointment, status: AppointmentStatus.PROGRESS } 
           : null 
       });
+
+      if (appointment?.patientId) {
+        get().fetchPatientDetails(appointment.patientId);
+      }
     } catch (error: any) {
       set({ error: error.message || "Failed to start video call" });
+    } finally {
+      set({ isVideoLoading: false });
+    }
+  },
+  
+  fetchVideoToken: async (appointmentId: string) => {
+    set({ isVideoLoading: true, error: null });
+    try {
+      const data = await appointmentService.fetchAppointmentToken(appointmentId);
+      set({ 
+        videoMeetingToken: data.dyteToken,
+      });
+    } catch (error: any) {
+      set({ error: error.message || "Failed to fetch video token" });
     } finally {
       set({ isVideoLoading: false });
     }
@@ -246,7 +270,7 @@ export const useAppointmentStore = create<AppointmentState>((set, get) => ({
     const { liveQueue } = get();
     // Avoid duplicates
     if (liveQueue.some((a) => a.id === appointment.id)) return;
-    set({ liveQueue: [appointment, ...liveQueue] });
+    set({ liveQueue: [...liveQueue, appointment] });
   },
   updateAppointmentStatus: (appointmentId: string, status: AppointmentStatus) => {
     const { liveQueue, assignedCases, selectedAppointment } = get();

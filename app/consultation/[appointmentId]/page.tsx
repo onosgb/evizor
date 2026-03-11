@@ -2,10 +2,91 @@
 
 import { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useDyteClient, DyteProvider } from "@dytesdk/react-web-core";
-import { DyteMeeting } from "@dytesdk/react-ui-kit";
+import { RealtimeKitProvider, useRealtimeKitClient, useRealtimeKitMeeting, useRealtimeKitSelector } from "@cloudflare/realtimekit-react";
+
 import { useAppointmentStore } from "@/app/stores/appointmentStore";
 import { useToast } from "@/app/contexts/ToastContext";
+
+// Local video container
+const LocalVideo = () => {
+  const { meeting } = useRealtimeKitMeeting();
+  const videoTrack = useRealtimeKitSelector((m) => m.self.videoTrack);
+  const audioTrack = useRealtimeKitSelector((m) => m.self.audioTrack);
+
+  useEffect(() => {
+    const videoElement = document.getElementById("rtk-local-video") as HTMLVideoElement;
+    if (videoElement && videoTrack) {
+      const stream = new MediaStream();
+      stream.addTrack(videoTrack);
+      if (audioTrack) {
+        stream.addTrack(audioTrack);
+      }
+      videoElement.srcObject = stream;
+    }
+  }, [videoTrack, audioTrack]);
+
+  return (
+    <div className="absolute bottom-4 right-4 w-40 h-56 bg-black rounded-lg overflow-hidden border-2 border-slate-700 shadow-xl z-20">
+      <video
+        id="rtk-local-video"
+        autoPlay
+        playsInline
+        muted
+        className="w-full h-full object-cover mirror"
+      />
+      <div className="absolute bottom-2 left-2 bg-black/60 px-2 py-0.5 rounded text-xs text-white">
+        You
+      </div>
+    </div>
+  );
+};
+
+// Remote participants container
+const RemoteVideos = () => {
+  const { meeting } = useRealtimeKitMeeting();
+  const participants = useRealtimeKitSelector((m) => m.participants.joined);
+  const participantsArray = Array.from(participants.values());
+
+  useEffect(() => {
+    participantsArray.forEach((p) => {
+      const videoElement = document.getElementById(`rtk-remote-video-${p.id}`) as HTMLVideoElement;
+      if (videoElement) {
+        const stream = new MediaStream();
+        if (p.videoTrack) stream.addTrack(p.videoTrack);
+        if (p.audioTrack) stream.addTrack(p.audioTrack);
+        if (stream.getTracks().length > 0) {
+           videoElement.srcObject = stream;
+        }
+      }
+    });
+  }, [participantsArray]);
+
+  if (participantsArray.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full w-full text-white/50">
+        <p>Waiting for others to join...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 align-center justify-center h-full w-full">
+      {participantsArray.map((p) => (
+        <div key={p.id} className="relative w-full h-full flex items-center justify-center">
+          <video
+            id={`rtk-remote-video-${p.id}`}
+            autoPlay
+            playsInline
+            className="max-w-full max-h-full object-contain"
+          />
+          <div className="absolute bottom-4 left-4 bg-black/60 px-3 py-1.5 rounded-lg text-sm text-white font-medium">
+            {p.name || "Participant"}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
 
 type Tab = "info" | "notes" | "prescription" | "lab";
 
@@ -17,15 +98,13 @@ interface Medication {
   duration: string;
 }
 
-export default function ConsultationPage({ params, searchParams }: { params: Promise<{ appointmentId: string }>, searchParams: Promise<{ token?: string }> }) {
+export default function ConsultationPage({ params }: { params: Promise<{ appointmentId: string }> }) {
   const router = useRouter();
   const { showToast } = useToast();
   const unwrappedParams = use(params);
-  const unwrappedSearchParams = use(searchParams);
   const appointmentId = unwrappedParams.appointmentId;
-  const tokenFromUrl = unwrappedSearchParams.token;
 
-  const [meeting, initMeeting] = useDyteClient();
+  const [meeting, initMeeting] = useRealtimeKitClient();
   const [error, setError] = useState<string | null>(null);
   const { 
     selectedAppointment, 
@@ -35,6 +114,7 @@ export default function ConsultationPage({ params, searchParams }: { params: Pro
     selectAppointment,
     fetchPatientDetails,
     completeAppointment,
+    fetchVideoToken,
     actionLoading
   } = useAppointmentStore();
 
@@ -60,29 +140,41 @@ export default function ConsultationPage({ params, searchParams }: { params: Pro
     }
   }, [selectedAppointment?.patientId, selectedPatient?.id, fetchPatientDetails]);
 
-  // Initialize Dyte meeting when component mounts
+  // Fetch token if missing (Session Recovery)
   useEffect(() => {
-    const activeToken = tokenFromUrl || videoMeetingToken;
+    if (!videoMeetingToken && appointmentId) {
+      fetchVideoToken(appointmentId);
+    }
+  }, [appointmentId, videoMeetingToken, fetchVideoToken]);
+
+  // Initialize RealtimeKit meeting when component mounts
+  useEffect(() => {
+    const activeToken = videoMeetingToken;
     if (!activeToken) {
-      setError("No active meeting token found.");
       return;
     }
 
-    initMeeting({
-      authToken: activeToken,
-      defaults: {
-        audio: true,
-        video: true,
-      },
-    }).catch((err: any) => {
-      console.error("Failed to initialize Dyte meeting:", err);
+    try {
+      initMeeting({
+        authToken: activeToken,
+        defaults: {
+          audio: true,
+          video: true,
+        },
+      });
+    } catch (err: any) {
+      console.error("Failed to initialize RealtimeKit meeting:", err);
       setError("Failed to connect to the video server.");
-    });
-  }, [videoMeetingToken, tokenFromUrl, initMeeting]);
+    }
+  }, [videoMeetingToken, initMeeting]);
 
   const handleEndCall = async () => {
     if (meeting) {
-      await meeting.leaveRoom();
+      try {
+        await meeting.leave();
+      } catch (e) {
+         console.warn("Error leaving meeting", e);
+      }
     }
     endVideoCall();
     router.push("/live-queue");
@@ -101,9 +193,18 @@ export default function ConsultationPage({ params, searchParams }: { params: Pro
     }
   };
 
+
+
+
   useEffect(() => {
     if (!meeting) return;
     
+    // Join the room now that we are initialized
+    meeting.join().catch((err: any) => {
+      console.error("Failed to join meeting", err);
+      setError("Failed to join meeting.");
+    });
+
     const handleRoomLeft = () => {
       handleEndCall();
     };
@@ -111,7 +212,7 @@ export default function ConsultationPage({ params, searchParams }: { params: Pro
     meeting.self.on("roomLeft", handleRoomLeft);
 
     return () => {
-      meeting.self.removeListener("roomLeft", handleRoomLeft);
+      meeting.self.off("roomLeft", handleRoomLeft);
     };
   }, [meeting]);
 
@@ -140,12 +241,14 @@ export default function ConsultationPage({ params, searchParams }: { params: Pro
     setMedications(medications.filter((m: Medication) => m.id !== id));
   };
 
-  // Mock patient data for the UI
-  const patientName = selectedPatient ? `${selectedPatient.firstName} ${selectedPatient.lastName}` : "John Doe";
-  const patientId = selectedPatient?.id || selectedAppointment?.patientId || "#PT-2048";
+  // Patient data from store
+  const patientDisplayName = selectedPatient 
+    ? `${selectedPatient.firstName} ${selectedPatient.lastName}` 
+    : selectedAppointment?.patientName || "Loading...";
+  const displayPatientId = selectedPatient?.id || selectedAppointment?.patientId || "...";
 
 
-  const activeToken = tokenFromUrl || videoMeetingToken;
+  const activeToken = videoMeetingToken;
 
   if (!activeToken && !error) {
     return (
@@ -165,8 +268,8 @@ export default function ConsultationPage({ params, searchParams }: { params: Pro
             {/* Top Bar */}
             <div className="flex justify-between items-center mb-4">
               <div>
-                <h2 className="text-xl font-semibold">Consultation with {patientName}</h2>
-                <p className="text-sm text-gray-500">Patient ID: {patientId}</p>
+                <h2 className="text-xl font-semibold">Consultation with {patientDisplayName}</h2>
+                <p className="text-sm text-gray-500">Patient ID: {displayPatientId}</p>
               </div>
               <div className="flex items-center space-x-4">
                 <span className="px-3 py-1 text-sm bg-green-100 text-green-600 rounded-full animate-pulse">Live</span>
@@ -192,9 +295,15 @@ export default function ConsultationPage({ params, searchParams }: { params: Pro
                   <p>Starting video feed...</p>
                 </div>
               ) : (
-                <DyteProvider value={meeting}>
-                  <DyteMeeting meeting={meeting} mode="fill" />
-                </DyteProvider>
+                <RealtimeKitProvider value={meeting}>
+                  <div className="relative flex-1 w-full h-full bg-slate-900 overflow-hidden rounded-2xl">
+                    {/* Render remote participants (Patient) */}
+                    <RemoteVideos />
+                    
+                    {/* Render local participant (Doctor) */}
+                    <LocalVideo />
+                  </div>
+                </RealtimeKitProvider>
               )}
             </div>
 
@@ -388,6 +497,9 @@ export default function ConsultationPage({ params, searchParams }: { params: Pro
         }
         .animate-fade-in {
           animation: fadeIn 0.3s ease-in-out;
+        }
+        .mirror {
+          transform: scaleX(-1);
         }
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(5px); }

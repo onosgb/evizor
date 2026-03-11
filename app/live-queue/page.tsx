@@ -3,10 +3,12 @@
 import { useEffect, useState } from "react";
 import DashboardLayout from "../components/DashboardLayout";
 import { useRouter } from "next/navigation";
-import PatientCard from "../components/PatientCard";
 import { useAppointmentStore } from "../stores/appointmentStore";
 import { useSearchContext } from "../contexts/SearchContext";
 import ConfirmationModal from "../components/ConfirmationModal";
+import WaitingPatientCard from "../components/WaitingPatientCard";
+import { formatDate } from "date-fns";
+import { formatTime } from "../lib/utils/dateUtils";
 
 export default function LiveQueuePage() {
   const router = useRouter();
@@ -120,17 +122,17 @@ export default function LiveQueuePage() {
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 lg:gap-6 xl:grid-cols-4">
           {filteredAppointments.map((appointment) => (
-            <PatientCard
-              key={appointment.id}
-              id={appointment.id}
-              patientId={appointment.patientId}
-              name={appointment.patientName}
-              scheduledAt={appointment.scheduledAt}
-              symptom={appointment.description}
-              avatarSrc={appointment.patientImageUrl?? "/images/200x200.png"}
-              onAccept={() => handleAcceptClick(appointment.id, appointment.patientName)}
-              onReject={() => handleRejectClick(appointment.id, appointment.patientName)}
-            />
+            <WaitingPatientCard
+                              key={appointment.id}
+                              name={appointment.patientName}
+                              procedure={appointment.description || "—"}
+                              date={formatDate(appointment.scheduledAt, "dd MMM yyyy")}
+                              time={formatTime(appointment.scheduledAt, "hh:mm a")}
+                              avatarSrc={appointment.patientImageUrl?? "/images/200x200.png"}
+                              viewLink={`/patient-preview?appointmentId=${appointment.id}&userId=${appointment.patientId}`}
+                              onAccept={() => handleAcceptClick(appointment.id, appointment.patientName)}
+                              onReject={() => handleRejectClick(appointment.id, appointment.patientName)}
+                            />
           ))}
         </div>
       )}

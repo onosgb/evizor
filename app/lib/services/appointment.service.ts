@@ -14,13 +14,7 @@ import { buildQueryParams } from "../utils/queryParams";
  * Handles all appointment-related API endpoints
  */
 class AppointmentService {
-  async acceptAppointment(appointmentId: string) {
-    const response = await apiClient.put<ApiResponse<Appointment>>(
-      `/appointments/${appointmentId}/accept`,
-    );
-    console.log(response.data);
-    return response.data;
-  }
+ 
   /**
    * Get all appointments
    */
@@ -115,10 +109,11 @@ class AppointmentService {
    * Request a Dyte video auth token for a given appointment.
    * The backend creates/retrieves the meeting and returns a participant auth token.
    */
-  async requestVideoToken(appointmentId: string): Promise<{ authToken: string; meetingId: string; roomName: string }> {
-    const response = await apiClient.post<ApiResponse<{ authToken: string; meetingId: string; roomName: string }>>(
+  async requestVideoToken(appointmentId: string): Promise<{ dyteToken: string; meetingUrl: string; }> {
+    const response = await apiClient.post<ApiResponse<{ dyteToken: string; meetingUrl: string; }>>(
       `/appointments/${appointmentId}/start`,
     );
+    console.log('requestVideoToken', response.data);
     return response.data.data;
   }
 
@@ -131,6 +126,16 @@ class AppointmentService {
       data
     );
     return response.data;
+  }
+
+  /**
+   * Fetch a Dyte auth token for an active appointment (Session Recovery)
+   */
+  async fetchAppointmentToken(appointmentId: string): Promise<{ dyteToken: string; meetingUrl?: string }> {
+    const response = await apiClient.get<ApiResponse<{ dyteToken: string; meetingUrl?: string }>>(
+      `/appointments/${appointmentId}/token`,
+    );
+    return response.data.data;
   }
 }
 
