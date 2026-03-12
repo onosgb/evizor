@@ -65,24 +65,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           router.push("/profile");
           return;
         }
-
-        // If doctor is not yet verified, restrict all routes except dashboard and profile
-        const isDoctor = user?.role === "DOCTOR";
-        if (
-          isDoctor &&
-          !user?.profileVerified &&
-          !isProfileRoute &&
-          !isDashboard
-        ) {
-          router.push("/");
-          return;
-        }
-
-        // If authenticated and on login or root, redirect to root (only if profile is complete)
-        if (profileCompleted && (pathname === "/login" || pathname === "/")) {
-          router.push("/");
-          return;
-        }
       }
 
       // If not authenticated and trying to access protected routes
@@ -101,7 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       // Clear local state before redirecting
       logoutStore();
-      // router.push("/login");
+      router.push("/login");
     }
   };
 
