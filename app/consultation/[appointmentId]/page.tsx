@@ -7,6 +7,10 @@ import {
   useRealtimeKitClient,
   useRealtimeKitSelector,
 } from "@cloudflare/realtimekit-react";
+import type {
+  Message as RTKMessage,
+  ChatUpdateParams,
+} from "@cloudflare/realtimekit";
 
 import { useAppointmentStore } from "@/app/stores/appointmentStore";
 import { useToast } from "@/app/contexts/ToastContext";
@@ -55,6 +59,30 @@ const RemoteVideos = () => {
   const participantsArray = Array.from(participants.values()).filter(
     (p) => p.id !== selfId,
   );
+
+  // Log when someone joins the room (for debugging same-meeting issues)
+  const prevIdsRef = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    const ids = new Set(participantsArray.map((p) => p.id));
+    const prev = prevIdsRef.current;
+    if (ids.size !== prev.size || [...ids].some((id) => !prev.has(id))) {
+      console.log(
+        "[Consultation] [WEB] Remote participants:",
+        participantsArray.length,
+        participantsArray.map((p) => `${p.name ?? "?"} (id=${p.id})`),
+      );
+      participantsArray.forEach((p) => {
+        if (!prev.has(p.id)) {
+          console.log(
+            "[Consultation] [WEB] Someone joined the room:",
+            p.name ?? "Participant",
+            `(id=${p.id})`,
+          );
+        }
+      });
+      prevIdsRef.current = ids;
+    }
+  }, [participantsArray]);
 
   useEffect(() => {
     participantsArray.forEach((p) => {
@@ -114,7 +142,9 @@ const VideoSection = memo(function VideoSection({
   onEndCall,
   onRetry,
 }: {
-  meeting: ReturnType<typeof import('@cloudflare/realtimekit-react').useRealtimeKitClient>[0];
+  meeting: ReturnType<
+    typeof import("@cloudflare/realtimekit-react").useRealtimeKitClient
+  >[0];
   error: string | null;
   patientDisplayName: string;
   displayPatientId: string;
@@ -129,7 +159,9 @@ const VideoSection = memo(function VideoSection({
           <h2 className="text-xl font-semibold">
             Consultation with {patientDisplayName}
           </h2>
-          <p className="text-sm text-gray-500">Patient ID: {displayPatientId}</p>
+          <p className="text-sm text-gray-500">
+            Patient ID: {displayPatientId}
+          </p>
         </div>
         <div className="flex items-center space-x-4">
           <span className="px-3 py-1 text-sm bg-green-100 text-green-600 rounded-full animate-pulse">
@@ -150,26 +182,65 @@ const VideoSection = memo(function VideoSection({
           <div className="w-full px-5 py-6 max-w-lg rounded-2xl bg-red-900/70 border border-red-500/30 shadow-lg backdrop-blur">
             <div className="flex items-start gap-3">
               <div className="mt-1 rounded-full bg-red-500/20 p-2 text-red-100">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5">
-                  <path fillRule="evenodd" d="M8.257 3.099c.366-.746 1.4-.746 1.766 0l6.523 13.307c.35.714-.232 1.594-.883 1.594H2.617c-.651 0-1.233-.88-.883-1.594L8.257 3.1zM10 12a1 1 0 100 2 1 1 0 000-2zm-.75-4a.75.75 0 011.5 0v3a.75.75 0 01-1.5 0V8z" clipRule="evenodd" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  className="h-5 w-5"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M8.257 3.099c.366-.746 1.4-.746 1.766 0l6.523 13.307c.35.714-.232 1.594-.883 1.594H2.617c-.651 0-1.233-.88-.883-1.594L8.257 3.1zM10 12a1 1 0 100 2 1 1 0 000-2zm-.75-4a.75.75 0 011.5 0v3a.75.75 0 01-1.5 0V8z"
+                    clipRule="evenodd"
+                  />
                 </svg>
               </div>
               <div className="text-left">
-                <p className="text-base font-semibold text-red-100">Call session error</p>
+                <p className="text-base font-semibold text-red-100">
+                  Call session error
+                </p>
                 <p className="mt-1 text-sm text-red-200">{error}</p>
               </div>
             </div>
             <div className="mt-4 grid grid-cols-2 gap-3">
-              <button onClick={onRetry} className="w-full px-3 py-2 bg-white text-slate-900 rounded-lg font-medium hover:bg-slate-100 transition">Retry</button>
-              <button onClick={onEndCall} className="w-full cursor-pointer px-3 py-2 bg-transparent border border-white/60 text-white rounded-lg hover:bg-white/10 transition">End Meeting</button>
+              <button
+                onClick={onRetry}
+                className="w-full px-3 py-2 bg-white text-slate-900 rounded-lg font-medium hover:bg-slate-100 transition"
+              >
+                Retry
+              </button>
+              <button
+                onClick={onEndCall}
+                className="w-full cursor-pointer px-3 py-2 bg-transparent border border-white/60 text-white rounded-lg hover:bg-white/10 transition"
+              >
+                End Meeting
+              </button>
             </div>
-            <p className="mt-3 text-xs cursor-pointer text-red-200 opacity-80">If the issue persists, refresh the page or check your network.</p>
+            <p className="mt-3 text-xs cursor-pointer text-red-200 opacity-80">
+              If the issue persists, refresh the page or check your network.
+            </p>
           </div>
         ) : !meeting ? (
           <div className="flex flex-col items-center text-white space-y-4">
-            <svg className="w-10 h-10 animate-spin text-white opacity-80" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            <svg
+              className="w-10 h-10 animate-spin text-white opacity-80"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              ></circle>
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
             </svg>
             <p>Starting video feed...</p>
           </div>
@@ -191,7 +262,7 @@ const VideoSection = memo(function VideoSection({
   );
 });
 
-type Tab = "info" | "notes" | "prescription" | "lab";
+type Tab = "info" | "notes" | "prescription" | "lab" | "chat";
 
 interface Medication {
   id: string;
@@ -225,8 +296,12 @@ export default function ConsultationPage({
     actionLoading,
   } = useAppointmentStore();
 
-  const [activeTab, setActiveTab] = useState<Tab>("info");
+  const [activeTab, setActiveTab] = useState<Tab>("chat");
   const [notes, setNotes] = useState("");
+  const [chatMessages, setChatMessages] = useState<RTKMessage[]>([]);
+  const [chatInput, setChatInput] = useState("");
+  const chatEndRef = useRef<HTMLDivElement>(null);
+  const connectionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [medications, setMedications] = useState<Medication[]>([]);
   const [drug, setDrug] = useState("");
   const [dosage, setDosage] = useState("");
@@ -265,6 +340,19 @@ export default function ConsultationPage({
       return;
     }
 
+    // Log meeting ID from token so you can compare with mobile (must be same meeting)
+    try {
+      const payload = JSON.parse(
+        atob(activeToken.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))
+      );
+      const meetingId = payload.meetingId ?? payload.meeting_id;
+      if (meetingId) {
+        console.log("[Consultation] [WEB] Token meeting ID:", meetingId);
+      }
+    } catch {
+      // ignore decode errors
+    }
+
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
     try {
@@ -284,6 +372,7 @@ export default function ConsultationPage({
             : "Connecting is taking longer than expected. Check your connection (try a different network) and try again.",
         );
       }, 30000);
+      connectionTimeoutRef.current = timeoutId;
     } catch (err: any) {
       console.error("Failed to initialize RealtimeKit meeting:", err);
       setError("Failed to connect to the video server.");
@@ -291,12 +380,17 @@ export default function ConsultationPage({
 
     return () => {
       if (timeoutId) clearTimeout(timeoutId);
+      connectionTimeoutRef.current = null;
     };
   }, [videoMeetingToken, initMeeting]);
 
-  // Clear connection-timeout error once meeting is available
+  // Clear connection-timeout error and cancel the 30s timer once meeting is available
   useEffect(() => {
     if (meeting) {
+      if (connectionTimeoutRef.current) {
+        clearTimeout(connectionTimeoutRef.current);
+        connectionTimeoutRef.current = null;
+      }
       setError((prev) =>
         prev?.includes("Connecting is taking longer") ? null : prev,
       );
@@ -357,6 +451,41 @@ export default function ConsultationPage({
     }
   }, [meeting, videoMeetingToken, initMeeting]);
 
+  useEffect(() => {
+    if (!meeting?.chat) return;
+
+    setChatMessages(meeting.chat.messages || []);
+
+    const handleChatUpdate = (payload: ChatUpdateParams) => {
+      // SDK sends full list in payload.messages; use it to avoid duplicates and ordering issues
+      if (Array.isArray(payload.messages)) {
+        setChatMessages([...payload.messages]);
+        return;
+      }
+      if (payload.action === "add" && payload.message) {
+        setChatMessages((prev) => [...prev, payload.message!]);
+      } else if (payload.action === "edit" && payload.message) {
+        setChatMessages((prev) =>
+          prev.map((m) => (m.id === payload.message!.id ? payload.message! : m))
+        );
+      } else if (payload.action === "delete" && payload.message) {
+        setChatMessages((prev) =>
+          prev.filter((m) => m.id !== payload.message!.id)
+        );
+      }
+    };
+
+    meeting.chat.on("chatUpdate", handleChatUpdate);
+
+    return () => {
+      meeting.chat.off("chatUpdate", handleChatUpdate);
+    };
+  }, [meeting]);
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chatMessages]);
+
   const handleFinalize = async () => {
     try {
       await completeAppointment(appointmentId, {
@@ -370,11 +499,31 @@ export default function ConsultationPage({
     }
   };
 
+  const handleSendChatMessage = async () => {
+    const text = chatInput.trim();
+    if (!text || !meeting?.chat) return;
+
+    try {
+      await meeting.chat.sendTextMessage(text);
+      setChatInput("");
+    } catch (err: unknown) {
+      const message =
+        err && typeof err === "object" && "message" in err
+          ? (err as Error).message
+          : "Failed to send message";
+      console.error("Failed to send chat message", err);
+      showToast(message, "error");
+    }
+  };
+
   useEffect(() => {
     if (!meeting) return;
 
     // Join the room now that we are initialized
-    meeting.join().catch((err: any) => {
+    console.log("[Consultation] [WEB] Joining the room...");
+    meeting.join().then(() => {
+      console.log("[Consultation] [WEB] We have joined the room");
+    }).catch((err: any) => {
       const message =
         err?.message ||
         "Failed to join meeting. Check your connection and try again.";
@@ -459,6 +608,16 @@ export default function ConsultationPage({
           <section className="flex flex-col shrink-0 w-[35%] min-w-0 bg-white rounded-2xl shadow-md pt-2 pb-4 px-4 lg:pt-3 lg:pb-6 lg:px-6 h-full min-h-0 overflow-hidden">
             {/* Tabs */}
             <div className="flex flex-wrap gap-3 border-b pb-3 mb-4 text-sm font-medium min-w-0">
+              <button
+                onClick={() => setActiveTab("chat")}
+                className={
+                  activeTab === "chat"
+                    ? "border-b-2 border-[#2a27c2] text-[#2a27c2]"
+                    : "text-gray-500 hover:text-gray-700"
+                }
+              >
+                Chat
+              </button>
               <button
                 onClick={() => setActiveTab("info")}
                 className={
@@ -669,6 +828,67 @@ export default function ConsultationPage({
                   >
                     Send Lab Request
                   </button>
+                </div>
+              )}
+
+              {activeTab === "chat" && (
+                <div className="flex flex-col h-full animate-fade-in min-w-0">
+                  <div className="flex-1 overflow-y-auto p-2 space-y-2 border border-gray-200 rounded-xl bg-white">
+                    {chatMessages.length === 0 ? (
+                      <p className="text-sm text-gray-400 text-center py-6">
+                        No messages yet. Start the chat.
+                      </p>
+                    ) : (
+                      chatMessages.map((msg) => {
+                        const isOwn = msg.userId === meeting?.self?.id;
+                        return (
+                          <div
+                            key={msg.id}
+                            className={`rounded-xl p-2 text-sm ${
+                              isOwn
+                                ? "bg-[#2a27c2] text-white self-end"
+                                : "bg-gray-100 text-gray-800"
+                            }`}
+                          >
+                            <div className="font-medium text-xs uppercase opacity-70 mb-0.5">
+                              {isOwn ? "You" : msg.displayName || "Participant"}
+                              <span className="ml-2 text-[10px] text-gray-500">
+                                {msg.time
+                                  ? new Date(msg.time).toLocaleTimeString([], {
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    })
+                                  : ""}
+                              </span>
+                            </div>
+                            <div>{"message" in msg ? msg.message : ""}</div>
+                          </div>
+                        );
+                      })
+                    )}
+                    <div ref={chatEndRef} />
+                  </div>
+
+                  <div className="mt-2 flex items-center gap-2">
+                    <input
+                      value={chatInput}
+                      onChange={(e) => setChatInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault();
+                          handleSendChatMessage();
+                        }
+                      }}
+                      placeholder="Type a message..."
+                      className="flex-1 border border-gray-200 rounded-xl p-2 outline-none focus:ring-1 focus:ring-[#2a27c2]"
+                    />
+                    <button
+                      onClick={handleSendChatMessage}
+                      className="px-4 py-2 bg-[#2a27c2] text-white rounded-xl hover:bg-indigo-700 transition-colors"
+                    >
+                      Send
+                    </button>
+                  </div>
                 </div>
               )}
             </div>

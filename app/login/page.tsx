@@ -57,7 +57,7 @@ export default function LoginPage() {
           });
           login(accessToken, refreshToken, newUser, rememberMe);
           // Redirect to dashboard
-          // router.push("/");
+          router.push("/");
         } else if (!user.isTwoFAEnabled) {
           // Should not happen if backend logic is correct, but transparency
           setError("Login failed. Missing access token.");
