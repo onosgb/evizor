@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { Appointment, AppointmentStatus, User } from "../models";
+import { Appointment, AppointmentStatus, User, CompleteAppointmentRequest } from "../models";
 import { ListQueryParams } from "../models/QueryParams";
 import { appointmentService, adminService } from "../lib/services";
 
@@ -11,7 +11,9 @@ interface AppointmentState {
   history: Appointment[];
   selectedPatient: User | null;
   selectedAppointment: Appointment | null;
-  isLoading: boolean;
+  isQueueLoading: boolean;
+  isHistoryLoading: boolean;
+  isPatientLoading: boolean;
   alertsLoading: boolean;
   actionLoading: boolean;
   isRejecting: boolean;
@@ -21,7 +23,7 @@ interface AppointmentState {
   videoMeetingId: string | null;
   isVideoLoading: boolean;
 
-  fetchLiveQueue: () => Promise<void>;
+  fetchLiveQueue: (isBackground?: boolean) => Promise<void>;
   fetchAssignedCases: (params?: ListQueryParams) => Promise<void>;
   fetchHistory: (patientId: string) => Promise<void>;
   fetchPatientDetails: (patientId: string) => Promise<void>;
@@ -31,7 +33,7 @@ interface AppointmentState {
   startVideoCall: (appointmentId: string) => Promise<void>;
   fetchVideoToken: (appointmentId: string) => Promise<void>;
   rejectAppointment: (appointmentId: string) => Promise<void>;
-  completeAppointment: (appointmentId: string, data: any) => Promise<void>;
+  completeAppointment: (appointmentId: string, data: CompleteAppointmentRequest) => Promise<void>;
   endVideoCall: () => void;
   addLiveQueueItem: (appointment: Appointment) => void;
   updateAppointmentStatus: (appointmentId: string, status: AppointmentStatus) => void;
@@ -45,7 +47,9 @@ export const useAppointmentStore = create<AppointmentState>((set, get) => ({
   history: [],
   selectedPatient: null,
   selectedAppointment: null,
-  isLoading: false,
+  isQueueLoading: false,
+  isHistoryLoading: false,
+  isPatientLoading: false,
   alertsLoading: true,
   actionLoading: false,
   isRejecting: false,
@@ -64,8 +68,8 @@ export const useAppointmentStore = create<AppointmentState>((set, get) => ({
 
       const { liveQueue, assignedCases } = get();
       const appointment = 
-        liveQueue.find(a => a.id === appointmentId) || 
-        assignedCases.find(a => a.id === appointmentId) ||
+        liveQueue.find((a: Appointment) => a.id === appointmentId) || 
+        assignedCases.find((a: Appointment) => a.id === appointmentId) ||
         state.selectedAppointment;
 
       set({ 
@@ -78,8 +82,8 @@ export const useAppointmentStore = create<AppointmentState>((set, get) => ({
       if (appointment?.patientId) {
         get().fetchPatientDetails(appointment.patientId);
       }
-    } catch (error: any) {
-      set({ error: error.message || "Failed to start video call" });
+    } catch (error: unknown) {
+      set({ error: (error as Error).message || "Failed to start video call" });
     } finally {
       set({ isVideoLoading: false });
     }
@@ -92,8 +96,8 @@ export const useAppointmentStore = create<AppointmentState>((set, get) => ({
       set({ 
         videoMeetingToken: data.dyteToken,
       });
-    } catch (error: any) {
-      set({ error: error.message || "Failed to fetch video token" });
+    } catch (error: unknown) {
+      set({ error: (error as Error).message || "Failed to fetch video token" });
     } finally {
       set({ isVideoLoading: false });
     }
@@ -117,14 +121,14 @@ export const useAppointmentStore = create<AppointmentState>((set, get) => ({
           ? null 
           : selectedAppointment
       });
-    } catch (error: any) {
-      set({ error: error.message || "Failed to reject appointment" });
+    } catch (error: unknown) {
+      set({ error: (error as Error).message || "Failed to reject appointment" });
     } finally {
       set({ isRejecting: false });
     }
   },
 
-  completeAppointment: async (appointmentId: string, data: any) => {
+  completeAppointment: async (appointmentId: string, data: CompleteAppointmentRequest) => {
     set({ actionLoading: true, error: null });
     try {
       await appointmentService.completeAppointment(appointmentId, data);
@@ -134,8 +138,8 @@ export const useAppointmentStore = create<AppointmentState>((set, get) => ({
           ? { ...state.selectedAppointment, status: AppointmentStatus.COMPLETED } 
           : state.selectedAppointment 
       });
-    } catch (error: any) {
-      set({ error: error.message || "Failed to complete appointment" });
+    } catch (error: unknown) {
+      set({ error: (error as Error).message || "Failed to complete appointment" });
       throw error;
     } finally {
       set({ actionLoading: false });
@@ -152,8 +156,8 @@ export const useAppointmentStore = create<AppointmentState>((set, get) => ({
     try {
       await appointmentService.setClinicalAlert(appointmentId)
       set({ selectedAppointment: { ...state.selectedAppointment!, status: AppointmentStatus.CLINICAL } });
-    } catch (error: any) {
-      set({ error: error.message || "Failed to set clinical alert" });
+    } catch (error: unknown) {
+      set({ error: (error as Error).message || "Failed to set clinical alert" });
     } finally {
       set({ actionLoading: false });
     }
@@ -164,15 +168,15 @@ export const useAppointmentStore = create<AppointmentState>((set, get) => ({
     try {
       const response = await appointmentService.getAllAppointments({status: AppointmentStatus.CLINICAL});
       set({ clinicalAlerts: response.data || [] });
-    } catch (error: any) {
-      set({ error: error.message || "Failed to fetch clinical alerts" });
+    } catch (error: unknown) {
+      set({ error: (error as Error).message || "Failed to fetch clinical alerts" });
     } finally {
       set({ alertsLoading: false });
     }
   },
 
-  fetchLiveQueue: async () => {
-    set({ isLoading: true, error: null });
+  fetchLiveQueue: async (isBackground = false) => {
+    if (!isBackground) set({ isQueueLoading: true, error: null });
     try {
       const response = await appointmentService.getLiveQueue();
       console.log(response.data);
@@ -181,39 +185,41 @@ export const useAppointmentStore = create<AppointmentState>((set, get) => ({
       } else {
         set({ liveQueue: [] });
       }
-    } catch (error: any) {
-      set({ error: error.message || "Failed to fetch live queue" });
+    } catch (error: unknown) {
+      if (!isBackground) {
+        set({ error: (error as Error).message || "Failed to fetch live queue" });
+      }
     } finally {
-      set({ isLoading: false });
+      if (!isBackground) set({ isQueueLoading: false });
     }
   },
 
-  fetchAssignedCases: async (params) => {
-    set({ isLoading: true, error: null });
+  fetchAssignedCases: async (params?: ListQueryParams) => {
+    set({ isQueueLoading: true, error: null }); // Using isQueueLoading for consistency in dashboard
     try {
       const response = await appointmentService.getAssignedCases(params);
       set({ assignedCases: response.data || [], assignedTotal: response.total ?? 0 });
-    } catch (error: any) {
-      set({ error: error.message || "Failed to fetch assigned cases" });
+    } catch (error: unknown) {
+      set({ error: (error as Error).message || "Failed to fetch assigned cases" });
     } finally {
-      set({ isLoading: false });
+      set({ isQueueLoading: false });
     }
   },
 
   fetchHistory: async (patientId: string) => {
-    set({ isLoading: true, error: null });
+    set({ isHistoryLoading: true, error: null });
     try {
       const response = await appointmentService.getPatientHistory(patientId);
       set({ history: response.data || [] });
-    } catch (error: any) {
-      set({ error: error.message || "Failed to fetch history" });
+    } catch (error: unknown) {
+      set({ error: (error as Error).message || "Failed to fetch history" });
     } finally {
-      set({ isLoading: false });
+      set({ isHistoryLoading: false });
     }
   },
 
   fetchPatientDetails: async (patientId: string) => {
-    set({ isLoading: true, error: null });
+    set({ isPatientLoading: true, error: null });
 
     const profilePromise = adminService
       .getUserProfile(patientId)
@@ -222,7 +228,7 @@ export const useAppointmentStore = create<AppointmentState>((set, get) => ({
           set({ selectedPatient: userProfile.data });
         }
       })
-      .catch((error: any) => {
+      .catch((error: unknown) => {
         console.error("Failed to fetch patient details:", error);
         // Don't set global error here to avoid blocking UI, just log
       });
@@ -232,12 +238,12 @@ export const useAppointmentStore = create<AppointmentState>((set, get) => ({
       .then((data) => {
         set({ history: data.data });
       })
-      .catch((error: any) => {
-        set({ error: error.message || "Failed to fetch patient history" });
+      .catch((error: unknown) => {
+        set({ error: (error as Error).message || "Failed to fetch patient history" });
       });
 
     await Promise.all([profilePromise, historyPromise]);
-    set({ isLoading: false });
+    set({ isPatientLoading: false });
   },
   selectAppointment: async (appointmentId: string | null) => {
     if (!appointmentId) {
@@ -245,13 +251,13 @@ export const useAppointmentStore = create<AppointmentState>((set, get) => ({
       return;
     }
 
-    set({ isLoading: true, error: null });
+    set({ isQueueLoading: true, error: null });
 
     try {
       const state = useAppointmentStore.getState();
       const appointment =
-        state.history.find((a) => a.id === appointmentId) ||
-        state.liveQueue.find((a) => a.id === appointmentId) ||
+        state.history.find((a: Appointment) => a.id === appointmentId) ||
+        state.liveQueue.find((a: Appointment) => a.id === appointmentId) ||
         null;
 
       if (appointment) {
@@ -260,16 +266,16 @@ export const useAppointmentStore = create<AppointmentState>((set, get) => ({
         const data = await appointmentService.getAppointmentById(appointmentId);
         set({ selectedAppointment: data });
       }
-    } catch (error: any) {
-      set({ error: error.message || "Failed to fetch appointment details" });
+    } catch (error: unknown) {
+      set({ error: (error as Error).message || "Failed to fetch appointment details" });
     } finally {
-      set({ isLoading: false });
+      set({ isQueueLoading: false });
     }
   },
   addLiveQueueItem: (appointment: Appointment) => {
     const { liveQueue } = get();
     // Avoid duplicates
-    if (liveQueue.some((a) => a.id === appointment.id)) return;
+    if (liveQueue.some((a: Appointment) => a.id === appointment.id)) return;
     set({ liveQueue: [...liveQueue, appointment] });
   },
   updateAppointmentStatus: (appointmentId: string, status: AppointmentStatus) => {

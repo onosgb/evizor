@@ -15,3 +15,4 @@ export type { Qualification } from "./Qualification";
 export type { DoctorAvailability, CreateScheduleRequest, ProposeAvailabilityRequest, AvailabilityStatus } from "./DoctorAvailability";
 export type { Pharmacy, CreatePharmacyRequest, UpdatePharmacyRequest } from "./Pharmacy";
 export type { ListQueryParams } from "./QueryParams";
+export * from "./Prescription";

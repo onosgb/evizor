@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { CreatePharmacyRequest } from "@/app/models/Pharmacy";
 import { Tenant } from "@/app/models";
 
@@ -22,12 +22,21 @@ export default function CreatePharmacyForm({
   isOpen, onClose, onSubmit, error, isSubmitting = false,
   tenants, defaultTenantId, isSuperAdmin,
 }: CreatePharmacyFormProps) {
-  const [form, setForm] = useState<CreatePharmacyRequest>(EMPTY);
+  const [form, setForm] = useState<CreatePharmacyRequest>(() => ({
+    ...EMPTY,
+    tenantId: defaultTenantId ?? "",
+  }));
 
-  useEffect(() => {
-    if (isOpen) setForm({ ...EMPTY, tenantId: defaultTenantId ?? "" });
-    else setForm(EMPTY);
-  }, [isOpen, defaultTenantId]);
+  // Adjust state during render if isOpen changes (avoids extra commit phase)
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+  if (isOpen !== prevIsOpen) {
+    setPrevIsOpen(isOpen);
+    if (isOpen) {
+      setForm({ ...EMPTY, tenantId: defaultTenantId ?? "" });
+    } else {
+      setForm(EMPTY);
+    }
+  }
 
   const set = (field: keyof CreatePharmacyRequest) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>

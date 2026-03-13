@@ -12,8 +12,6 @@ import { useSearchContext } from "../contexts/SearchContext";
 interface HeaderProps {
   sidebarExpanded: boolean;
   setSidebarExpanded: (expanded: boolean) => void;
-  darkMode: boolean;
-  toggleDarkMode: () => void;
   monochromeMode: boolean;
   toggleMonochromeMode: () => void;
 }
@@ -21,8 +19,6 @@ interface HeaderProps {
 export default function Header({
   sidebarExpanded,
   setSidebarExpanded,
-  darkMode,
-  toggleDarkMode,
   monochromeMode,
   toggleMonochromeMode,
 }: HeaderProps) {

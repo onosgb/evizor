@@ -21,7 +21,14 @@ export default function CreateTenantForm({
 }: CreateTenantFormProps) {
   const [formData, setFormData] = useState<UpdateTenantRequest>(EMPTY);
 
-  useEffect(() => { if (!isOpen) setFormData(EMPTY); }, [isOpen]);
+  // Adjust state during render when isOpen changes
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+  if (isOpen !== prevIsOpen) {
+    setPrevIsOpen(isOpen);
+    if (!isOpen) {
+      setFormData(EMPTY);
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

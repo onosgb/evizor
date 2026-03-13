@@ -18,7 +18,7 @@ export default function AssignedCasesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
-  const { assignedCases, assignedTotal, isLoading, error, fetchAssignedCases } =
+  const { assignedCases, assignedTotal, isQueueLoading, error, fetchAssignedCases } =
     useAppointmentStore();
 
   const { query: contextQuery, registerPageSearch, unregisterPageSearch } = useSearchContext();
@@ -43,7 +43,7 @@ export default function AssignedCasesPage() {
       to: dateTo || undefined,
       search: debouncedSearch || undefined,
     });
-  }, [currentPage, entriesPerPage, dateFrom, dateTo, debouncedSearch]);
+  }, [currentPage, entriesPerPage, dateFrom, dateTo, debouncedSearch, fetchAssignedCases]);
 
   const completedCases = assignedCases.filter(
     (item) => item.status === AppointmentStatus.COMPLETED,
@@ -153,7 +153,7 @@ export default function AssignedCasesPage() {
               </tr>
             </thead>
             <tbody>
-              {isLoading ? (
+              {isQueueLoading ? (
                 Array.from({ length: 6 }).map((_, i) => (
                   <tr
                     key={i}

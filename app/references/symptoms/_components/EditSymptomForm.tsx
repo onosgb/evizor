@@ -26,15 +26,25 @@ export default function EditSymptomForm({
 }: EditSymptomFormProps) {
   const [formData, setFormData] = useState<CreateSymptomRequest>({ name: "", description: "", tenantId: "" });
 
-  useEffect(() => {
-    if (symptom) {
-      setFormData({ name: symptom.name, description: symptom.description ?? "", tenantId: symptom.tenantId });
-    }
-  }, [symptom]);
+  // Adjust state during render when symptom or isOpen changes
+  const [prevSymptomId, setPrevSymptomId] = useState(symptom?.id);
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
 
-  useEffect(() => {
-    if (!isOpen) setFormData({ name: "", description: "", tenantId: "" });
-  }, [isOpen]);
+  if (symptom?.id !== prevSymptomId || isOpen !== prevIsOpen) {
+    if (symptom?.id !== prevSymptomId) {
+      setPrevSymptomId(symptom?.id);
+      if (symptom) {
+        setFormData({ name: symptom.name, description: symptom.description ?? "", tenantId: symptom.tenantId });
+      }
+    }
+
+    if (isOpen !== prevIsOpen) {
+      setPrevIsOpen(isOpen);
+      if (!isOpen) {
+        setFormData({ name: "", description: "", tenantId: "" });
+      }
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

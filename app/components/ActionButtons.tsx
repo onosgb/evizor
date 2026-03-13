@@ -104,6 +104,7 @@ onConfirm={async () => {
   }
   setAcceptModalOpen(false);
 }}
+confirmButtonClass={applyBtnClass}
 />
 
 <ConfirmationModal 
@@ -116,9 +117,12 @@ cancelText="Cancel"
 isLoading={actionLoading}
 message="Are you sure you want to send a clinical alert?"
 onConfirm={async () => {
-  await setClinicalAlert(selectedAppointment?.id!);
+  if (selectedAppointment?.id) {
+    await setClinicalAlert(selectedAppointment.id);
+  }
   setClinicalAlertModalOpen(false);
 }}
+confirmButtonClass={applyBtnClass}
 />
     </>
   );

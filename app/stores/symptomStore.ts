@@ -30,8 +30,8 @@ export const useSymptomStore = create<SymptomState>((set) => ({
       } else {
         set({ error: response.message || "Failed to fetch symptoms" });
       }
-    } catch (error: any) {
-      set({ error: error.message || "An unexpected error occurred" });
+    } catch (error: unknown) {
+      set({ error: (error as Error).message || "An unexpected error occurred" });
     } finally {
       set({ isLoading: false });
     }
@@ -48,8 +48,8 @@ export const useSymptomStore = create<SymptomState>((set) => ({
         set({ submitError: response.message || "Failed to create symptom" });
         return false;
       }
-    } catch (error: any) {
-      set({ submitError: error.message || "An unexpected error occurred" });
+    } catch (error: unknown) {
+      set({ submitError: (error as Error).message || "An unexpected error occurred" });
       return false;
     } finally {
       set({ isSubmitting: false });
@@ -69,8 +69,8 @@ export const useSymptomStore = create<SymptomState>((set) => ({
         set({ submitError: response.message || "Failed to update symptom" });
         return false;
       }
-    } catch (error: any) {
-      set({ submitError: error.message || "An unexpected error occurred" });
+    } catch (error: unknown) {
+      set({ submitError: (error as Error).message || "An unexpected error occurred" });
       return false;
     } finally {
       set({ isSubmitting: false });
@@ -90,8 +90,8 @@ export const useSymptomStore = create<SymptomState>((set) => ({
         set({ submitError: response.message || "Failed to delete symptom" });
         return false;
       }
-    } catch (error: any) {
-      set({ submitError: error.message || "An unexpected error occurred" });
+    } catch (error: unknown) {
+      set({ submitError: (error as Error).message || "An unexpected error occurred" });
       return false;
     } finally {
       set({ isSubmitting: false });

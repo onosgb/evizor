@@ -22,17 +22,25 @@ export default function EditSpecialtyForm({
 }: EditSpecialtyFormProps) {
   const [formData, setFormData] = useState<CreateSpecialtyRequest>({ name: "", description: "" });
 
-  // Pre-fill when a specialty is selected
-  useEffect(() => {
-    if (specialty) {
-      setFormData({ name: specialty.name, description: specialty.description ?? "" });
-    }
-  }, [specialty]);
+  // Adjust state during render when specialty or isOpen changes
+  const [prevSpecialtyId, setPrevSpecialtyId] = useState(specialty?.id);
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
 
-  // Reset on close
-  useEffect(() => {
-    if (!isOpen) setFormData({ name: "", description: "" });
-  }, [isOpen]);
+  if (specialty?.id !== prevSpecialtyId || isOpen !== prevIsOpen) {
+    if (specialty?.id !== prevSpecialtyId) {
+      setPrevSpecialtyId(specialty?.id);
+      if (specialty) {
+        setFormData({ name: specialty.name, description: specialty.description ?? "" });
+      }
+    }
+
+    if (isOpen !== prevIsOpen) {
+      setPrevIsOpen(isOpen);
+      if (!isOpen) {
+        setFormData({ name: "", description: "" });
+      }
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

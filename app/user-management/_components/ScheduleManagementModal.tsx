@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { adminService } from "@/app/lib/services";
 import { CreateScheduleRequest } from "@/app/models";
@@ -43,19 +43,13 @@ export default function ScheduleManagementModal({
     endTime: "",
   });
 
-  useEffect(() => {
-    if (isOpen && userId) {
-      fetchSchedules();
-    }
-  }, [isOpen, userId]);
-
-  const fetchSchedules = async () => {
+  const fetchSchedules = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
       const response = await adminService.getUserAvailability(userId);
       if (response.status && response.data) {
-        const mapped: Schedule[] = response.data.map((item: any) => ({
+        const mapped: Schedule[] = (response.data as any[]).map((item) => ({
           id: item.id,
           dateScheduled: item.date,
           timeSlot: `${item.startTime} – ${item.endTime}`,
@@ -72,7 +66,13 @@ export default function ScheduleManagementModal({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [userId]);
+
+  useEffect(() => {
+    if (isOpen && userId) {
+      fetchSchedules();
+    }
+  }, [isOpen, userId, fetchSchedules]);
 
   const formatDate = (dateStr: string) => {
     if (!dateStr) return "—";
@@ -150,7 +150,8 @@ export default function ScheduleManagementModal({
         showToast(response.message || "Failed to remove schedule.", "error");
       }
       setOpenConfirmDialog(false);
-    } catch (err) {
+      setOpenConfirmDialog(false);
+    } catch {
       showToast("Failed to remove schedule.", "error");
       // Optimistic update fallback or error message
     } finally {
@@ -305,26 +306,26 @@ export default function ScheduleManagementModal({
         </div>
 
         <div className="flex justify-end rounded-b-lg bg-slate-50 px-4 py-3 dark:bg-navy-800 sm:px-5">
-            <button
-                onClick={onClose}
-                className="btn min-w-28 rounded-full border border-slate-300 font-medium text-slate-700 hover:bg-slate-150 focus:bg-slate-150 active:bg-slate-150/80 dark:border-navy-450 dark:text-navy-100 dark:hover:bg-navy-500 dark:focus:bg-navy-500 dark:active:bg-navy-500/90"
-            >
-                Close
-            </button>
+          <button
+            onClick={onClose}
+            className="btn min-w-28 rounded-full border border-slate-300 font-medium text-slate-700 hover:bg-slate-150 focus:bg-slate-150 active:bg-slate-150/80 dark:border-navy-450 dark:text-navy-100 dark:hover:bg-navy-500 dark:focus:bg-navy-500 dark:active:bg-navy-500/90"
+          >
+            Close
+          </button>
         </div>
+        {openConfirmDialog && (
+          <ConfirmationModal
+            isLoading={isSubmitting}
+            isOpen={openConfirmDialog}
+            onClose={() => setOpenConfirmDialog(false)}
+            onConfirm={() => handleDeleteSchedule(selectedScheduleId!)}
+            title="Confirm Delete"
+            message="Are you sure you want to delete this schedule?"
+            confirmText="Delete"
+            cancelText="Cancel"
+          />
+        )}
       </div>
-        openConfirmDialog && (
-      <ConfirmationModal
-        isLoading={isSubmitting}
-        isOpen={openConfirmDialog}
-        onClose={() => setOpenConfirmDialog(false)}
-        onConfirm={() => handleDeleteSchedule(selectedScheduleId!)}
-        title="Confirm Delete"
-        message="Are you sure you want to delete this schedule?"
-        confirmText="Delete"
-        cancelText="Cancel"
-      />
-    ),
     </div>,
   
     document.body

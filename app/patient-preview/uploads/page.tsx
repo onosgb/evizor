@@ -6,12 +6,12 @@ import AttachmentsViewer from "./_components/ImageCarousel";
 import { useAppointmentStore } from "../../stores/appointmentStore";
 
 function PatientUploadsContent() {
-  const { selectedAppointment, isLoading } = useAppointmentStore();
+  const { selectedAppointment, isPatientLoading } = useAppointmentStore();
   const attachments = selectedAppointment?.attachments ?? [];
 
   return (
     <div className="p-4 sm:p-5">
-      {isLoading ? (
+      {isPatientLoading ? (
         <div className="animate-pulse grid grid-cols-2 gap-4 sm:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
             <div

@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, } from "react";
 import { Tenant } from "@/app/models";
 import { UpdateTenantRequest } from "@/app/lib/services/tenant.service";
 
@@ -27,22 +27,30 @@ export default function EditTenantForm({
     isActive: true,
   });
 
-  useEffect(() => {
-    if (tenant) {
-      setFormData({
-        province: tenant.province,
-        slug: tenant.slug,
-        schemaName: tenant.schemaName,
-        isActive: tenant.isActive,
-      });
-    }
-  }, [tenant]);
+  // Adjust state during render when tenant or isOpen changes
+  const [prevTenantId, setPrevTenantId] = useState(tenant?.id);
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
 
-  useEffect(() => {
-    if (!isOpen) {
-      setFormData({ province: "", slug: "", schemaName: "", isActive: true });
+  if (tenant?.id !== prevTenantId || isOpen !== prevIsOpen) {
+    if (tenant?.id !== prevTenantId) {
+      setPrevTenantId(tenant?.id);
+      if (tenant) {
+        setFormData({
+          province: tenant.province,
+          slug: tenant.slug,
+          schemaName: tenant.schemaName,
+          isActive: tenant.isActive,
+        });
+      }
     }
-  }, [isOpen]);
+    
+    if (isOpen !== prevIsOpen) {
+      setPrevIsOpen(isOpen);
+      if (!isOpen) {
+        setFormData({ province: "", slug: "", schemaName: "", isActive: true });
+      }
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

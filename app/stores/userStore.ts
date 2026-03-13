@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { Staff, CreateStaffRequest, ApiResponse, ApiError } from "../models";
+import { Staff, CreateStaffRequest, ApiError } from "../models";
 import { userService } from "../lib/services";
 import { ListQueryParams } from "../models/QueryParams";
 
@@ -18,7 +18,7 @@ interface UserState {
   resetFormError: () => void;
 }
 
-export const useUserStore = create<UserState>()((set, get) => ({
+export const useUserStore = create<UserState>()((set) => ({
   users: [],
   total: 0,
   isLoading: false,

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState, useEffect } from "react";
 import { CreateStaffRequest } from "@/app/models";
 import { useTenantStore } from "@/app/stores";
@@ -52,8 +52,10 @@ export default function CreateStaffForm({
     tenantId: "",
   });
 
-  // Reset form when modal closes
-  useEffect(() => {
+  // Adjust state during render when isOpen changes
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+  if (isOpen !== prevIsOpen) {
+    setPrevIsOpen(isOpen);
     if (!isOpen) {
       setFormData({
         email: "",
@@ -62,10 +64,10 @@ export default function CreateStaffForm({
         fullName: "",
         role: "",
         status: "ACTIVE",
-        tenantId: ''
+        tenantId: '',
       });
     }
-  }, [isOpen]);
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

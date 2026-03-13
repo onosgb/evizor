@@ -50,7 +50,7 @@ export default function SpecialtiesPage() {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  useEffect(() => { fetchSpecialties(debouncedSearch || undefined); }, [debouncedSearch]);
+  useEffect(() => { fetchSpecialties(debouncedSearch || undefined); }, [debouncedSearch, fetchSpecialties]);
 
   const flash = (msg: string) => {
     setSuccessMessage(msg);

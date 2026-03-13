@@ -44,9 +44,9 @@ export default function SymptomsPage() {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  useEffect(() => { fetchSymptoms(selectedTenantId || undefined, debouncedSearch || undefined); }, [selectedTenantId, debouncedSearch]);
+  useEffect(() => { fetchSymptoms(selectedTenantId || undefined, debouncedSearch || undefined); }, [selectedTenantId, debouncedSearch, fetchSymptoms]);
 
-  useEffect(() => { fetchTenants(); }, []);
+  useEffect(() => { fetchTenants(); }, [fetchTenants]);
 
   const flash = (msg: string) => {
     setSuccessMessage(msg);

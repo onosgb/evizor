@@ -32,8 +32,11 @@ export default function ConfirmationModal({
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
-    return () => setMounted(false);
+    const handle = requestAnimationFrame(() => setMounted(true));
+    return () => {
+      cancelAnimationFrame(handle);
+      setMounted(false);
+    };
   }, []);
 
   if (!isOpen || !mounted) return null;

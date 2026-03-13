@@ -4,7 +4,7 @@ import ActionButtons from "../../components/ActionButtons";
 import { useAppointmentStore } from "../../stores/appointmentStore";
 
 export default function PatientSymptomsPage() {
-  const { selectedAppointment, isLoading } = useAppointmentStore();
+  const { selectedAppointment, isPatientLoading } = useAppointmentStore();
 
   return (
     <div className="card">
@@ -15,7 +15,7 @@ export default function PatientSymptomsPage() {
         <ActionButtons />
       </div>
 
-      {isLoading ? (
+      {isPatientLoading ? (
         <div className="animate-pulse p-4 sm:p-5">
           <div className="grid grid-cols-1 gap-6">
             {Array.from({ length: 4 }).map((_, i) => (

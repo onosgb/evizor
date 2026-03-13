@@ -39,8 +39,8 @@ export const useProfessionalProfileStore = create<ProfessionalProfileState>(
         } else {
           set({ error: response.message || "Failed to fetch professional profile" });
         }
-      } catch (error: any) {
-        set({ error: error.message || "An unexpected error occurred" });
+      } catch (error: unknown) {
+        set({ error: (error as Error).message || "An unexpected error occurred" });
       } finally {
         set({ isLoading: false });
       }
@@ -59,11 +59,11 @@ export const useProfessionalProfileStore = create<ProfessionalProfileState>(
           });
           return false;
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         set({
           saveError:
-            error?.response?.data?.message ||
-            error.message ||
+            (error as any)?.response?.data?.message ||
+            (error as Error).message ||
             "An unexpected error occurred",
         });
         return false;
@@ -87,11 +87,11 @@ export const useProfessionalProfileStore = create<ProfessionalProfileState>(
           });
           return false;
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         set({
           saveError:
-            error?.response?.data?.message ||
-            error.message ||
+            (error as any)?.response?.data?.message ||
+            (error as Error).message ||
             "An unexpected error occurred",
         });
         return false;

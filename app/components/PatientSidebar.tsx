@@ -23,7 +23,7 @@ export default function PatientSidebar({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const user = useAuthStore((state) => state.user);
-  const isLoading = useAppointmentStore((state) => state.isLoading);
+  const isPatientLoading = useAppointmentStore((state) => state.isPatientLoading);
 
   const currentTheme = theme ?? getTheme(user);
 
@@ -126,7 +126,7 @@ export default function PatientSidebar({
     },
   ];
 
-  if (isLoading) {
+  if (isPatientLoading) {
     return (
       <div className="card p-4 sm:p-5 animate-pulse">
         <div className="flex items-center space-x-4">

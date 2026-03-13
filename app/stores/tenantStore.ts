@@ -59,8 +59,8 @@ export const useTenantStore = create<TenantState>()((set, get) => ({
         set({ submitError: response.message || "Failed to update tenant" });
         return false;
       }
-    } catch (error: any) {
-      set({ submitError: error.message || "An unexpected error occurred" });
+    } catch (error: unknown) {
+      set({ submitError: (error as Error).message || "An unexpected error occurred" });
       return false;
     } finally {
       set({ isSubmitting: false });
@@ -80,8 +80,8 @@ export const useTenantStore = create<TenantState>()((set, get) => ({
         set({ submitError: response.message || "Failed to update status" });
         return false;
       }
-    } catch (error: any) {
-      set({ submitError: error.message || "An unexpected error occurred" });
+    } catch (error: unknown) {
+      set({ submitError: (error as Error).message || "An unexpected error occurred" });
       return false;
     } finally {
       set({ isSubmitting: false });
@@ -99,8 +99,8 @@ export const useTenantStore = create<TenantState>()((set, get) => ({
         set({ submitError: response.message || "Failed to create tenant" });
         return false;
       }
-    } catch (error: any) {
-      set({ submitError: error.message || "An unexpected error occurred" });
+    } catch (error: unknown) {
+      set({ submitError: (error as Error).message || "An unexpected error occurred" });
       return false;
     } finally {
       set({ isSubmitting: false });

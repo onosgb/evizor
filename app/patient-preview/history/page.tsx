@@ -9,7 +9,7 @@ import HistoryAccordion from "./_components/HistoryAccordion";
 
 function PatientHistoryContent() {
   const searchParams = useSearchParams();
-  const { history, fetchHistory, isLoading } = useAppointmentStore();
+  const { history, fetchHistory, isHistoryLoading } = useAppointmentStore();
 
   useEffect(() => {
     const patientId = searchParams.get("patientId");
@@ -41,7 +41,7 @@ function PatientHistoryContent() {
 
   return (
     <div className="p-4 sm:p-5">
-      {isLoading ? (
+      {isHistoryLoading ? (
         <div className="animate-pulse space-y-3">
           {Array.from({ length: 4 }).map((_, i) => (
             <div

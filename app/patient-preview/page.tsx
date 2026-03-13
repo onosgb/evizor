@@ -15,7 +15,7 @@ function SkeletonField({ wide = false }: { wide?: boolean }) {
 }
 
 export default function PatientPreviewPage() {
-  const { selectedPatient, selectedAppointment, isLoading } = useAppointmentStore();
+  const { selectedPatient, selectedAppointment, isPatientLoading } = useAppointmentStore();
 
   return (
     <div className="card">
@@ -26,7 +26,7 @@ export default function PatientPreviewPage() {
         <ActionButtons />
       </div>
 
-      {isLoading ? (
+      {isPatientLoading ? (
         <div className="animate-pulse p-4 sm:p-5 space-y-6">
           <div>
             <div className="h-4 w-36 rounded bg-slate-200 dark:bg-navy-500 mb-5" />

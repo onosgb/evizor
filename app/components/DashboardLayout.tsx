@@ -13,7 +13,6 @@ export default function DashboardLayout({
 }) {
   // Initialize sidebar state - always start with false to avoid hydration mismatch
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
   const [monochromeMode, setMonochromeMode] = useState(false);
   const [profilePopperOpen, setProfilePopperOpen] = useState(false);
 
@@ -24,8 +23,8 @@ export default function DashboardLayout({
 
     // Check for monochrome mode preference
     const isMono = localStorage.getItem("_x_monochrome_on") === "true";
-    setMonochromeMode(isMono);
     if (isMono) {
+      requestAnimationFrame(() => setMonochromeMode(true));
       document.documentElement.classList.add("monochrome");
     }
 
@@ -48,8 +47,6 @@ export default function DashboardLayout({
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  const toggleDarkMode = () => {};
 
   const toggleMonochromeMode = () => {
     const newMonochromeMode = !monochromeMode;
@@ -64,9 +61,7 @@ export default function DashboardLayout({
 
   return (
     <div
-      className={`min-h-screen flex grow bg-slate-50 ${
-        darkMode ? "dark:bg-navy-900" : ""
-      }`}
+      className="min-h-screen flex grow bg-slate-50"
     >
       <Sidebar
         sidebarExpanded={sidebarExpanded}
@@ -90,8 +85,6 @@ export default function DashboardLayout({
         <Header
           sidebarExpanded={sidebarExpanded}
           setSidebarExpanded={setSidebarExpanded}
-          darkMode={darkMode}
-          toggleDarkMode={toggleDarkMode}
           monochromeMode={monochromeMode}
           toggleMonochromeMode={toggleMonochromeMode}
         />

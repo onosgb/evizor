@@ -7,8 +7,6 @@ import CreateUserForm from "./_components/CreateUserForm";
 import ScheduleManagementModal from "./_components/ScheduleManagementModal";
 import Image from "next/image";
 import { Staff, CreateStaffRequest } from "../models";
-import { userService } from "../lib/services";
-import { ApiError } from "../models";
 import { Pagination } from "../components/Pagination";
 import TableActionMenu from "../components/TableActionMenu";
 import { useAuthStore, useTenantStore, useUserStore } from "../stores";
@@ -28,12 +26,6 @@ const getRoleBadgeColor = (role: string | null | undefined): string => {
     default:
       return "bg-slate-400";
   }
-};
-
-// Helper function to check if status is active
-const isActiveStatus = (status: string | null | undefined): boolean => {
-  if (!status) return false;
-  return status.toUpperCase() === "ACTIVE";
 };
 
 // Dot color for each status
@@ -126,7 +118,7 @@ export default function UserManagementPage() {
     });
   }, [page, limit, debouncedSearch, selectedProvince, selectedRole, fetchUsers]);
 
-  useEffect(() => { if (userIsSuperAdmin) fetchTenants(); }, [userIsSuperAdmin]);
+  useEffect(() => { if (userIsSuperAdmin) fetchTenants(); }, [userIsSuperAdmin, fetchTenants]);
 
   // Data is already paginated by the server
   const startIndex = (page - 1) * limit;

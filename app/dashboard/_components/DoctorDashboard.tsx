@@ -21,7 +21,7 @@ const getGreeting = () => {
 
 export default function DoctorDashboard({ user }: { user: User | null }) {
   const router = useRouter();
-  const { liveQueue, assignedCases, isLoading: queueLoading, alertsLoading, fetchLiveQueue, fetchAssignedCases, clinicalAlerts, fetchClinicalAlerts, startVideoCall, rejectAppointment, isVideoLoading, isRejecting } = useAppointmentStore();
+  const { liveQueue, assignedCases, isQueueLoading: queueLoading, alertsLoading, fetchLiveQueue, fetchAssignedCases, clinicalAlerts, fetchClinicalAlerts, startVideoCall, rejectAppointment, isVideoLoading, isRejecting } = useAppointmentStore();
   const [modalConfig, setModalConfig] = useState<{
     isOpen: boolean;
     title: string;

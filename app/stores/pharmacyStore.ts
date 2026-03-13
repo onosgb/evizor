@@ -36,8 +36,8 @@ export const usePharmacyStore = create<PharmacyState>((set, get) => ({
       } else {
         set({ error: response.message || "Failed to fetch pharmacies" });
       }
-    } catch (error: any) {
-      set({ error: error.message || "An unexpected error occurred" });
+    } catch (error: unknown) {
+      set({ error: (error as Error).message || "An unexpected error occurred" });
     } finally {
       set({ isLoading: false });
     }
@@ -53,8 +53,8 @@ export const usePharmacyStore = create<PharmacyState>((set, get) => ({
       }
       set({ submitError: response.message || "Failed to create pharmacy" });
       return false;
-    } catch (error: any) {
-      set({ submitError: error.message || "An unexpected error occurred" });
+    } catch (error: unknown) {
+      set({ submitError: (error as Error).message || "An unexpected error occurred" });
       return false;
     } finally {
       set({ isSubmitting: false });
@@ -73,8 +73,8 @@ export const usePharmacyStore = create<PharmacyState>((set, get) => ({
       }
       set({ submitError: response.message || "Failed to update pharmacy" });
       return false;
-    } catch (error: any) {
-      set({ submitError: error.message || "An unexpected error occurred" });
+    } catch (error: unknown) {
+      set({ submitError: (error as Error).message || "An unexpected error occurred" });
       return false;
     } finally {
       set({ isSubmitting: false });
@@ -91,8 +91,8 @@ export const usePharmacyStore = create<PharmacyState>((set, get) => ({
       }
       set({ submitError: response.message || "Failed to delete pharmacy" });
       return false;
-    } catch (error: any) {
-      set({ submitError: error.message || "An unexpected error occurred" });
+    } catch (error: unknown) {
+      set({ submitError: (error as Error).message || "An unexpected error occurred" });
       return false;
     } finally {
       set({ isSubmitting: false });

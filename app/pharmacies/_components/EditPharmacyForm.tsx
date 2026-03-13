@@ -26,7 +26,10 @@ export default function EditPharmacyForm({
   const [licenseNumber, setLicenseNumber] = useState("");
   const [isActive, setIsActive] = useState(true);
 
-  useEffect(() => {
+  // Adjust state during render when the pharmacy prop changes
+  const [prevPharmacyId, setPrevPharmacyId] = useState(pharmacy?.id);
+  if (pharmacy?.id !== prevPharmacyId) {
+    setPrevPharmacyId(pharmacy?.id);
     if (pharmacy) {
       setName(pharmacy.name);
       setAddress(pharmacy.address);
@@ -35,7 +38,7 @@ export default function EditPharmacyForm({
       setLicenseNumber(pharmacy.licenseNumber);
       setIsActive(pharmacy.isActive ?? true);
     }
-  }, [pharmacy]);
+  }
 
   if (!isOpen) return null;
 

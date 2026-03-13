@@ -4,6 +4,8 @@ import {
   Appointment,
   AllAppointmentsResponse,
   DoctorAvailability,
+  CompleteAppointmentRequest,
+  CreatePrescriptionRequest,
 } from "../../models";
 import type { ProposeAvailabilityRequest } from "../../models/DoctorAvailability";
 import { ListQueryParams } from "../../models/QueryParams";
@@ -113,15 +115,14 @@ class AppointmentService {
     const response = await apiClient.post<ApiResponse<{ dyteToken: string; meetingUrl: string; }>>(
       `/appointments/${appointmentId}/start`,
     );
-    console.log('requestVideoToken', response.data);
     return response.data.data;
   }
 
   /**
    * Complete an appointment with notes and prescriptions
    */
-  async completeAppointment(appointmentId: string, data: any): Promise<ApiResponse<Appointment>> {
-    const response = await apiClient.put<ApiResponse<Appointment>>(
+  async completeAppointment(appointmentId: string, data: CompleteAppointmentRequest): Promise<ApiResponse<Appointment>> {
+    const response = await apiClient.post<ApiResponse<Appointment>>(
       `/appointments/${appointmentId}/complete`,
       data
     );
@@ -136,6 +137,37 @@ class AppointmentService {
       `/appointments/${appointmentId}/token`,
     );
     return response.data.data;
+  }
+
+  /**
+   * Add a prescription to a clinical record
+   */
+  async addPrescription(clinicalRecordId: string, data: CreatePrescriptionRequest): Promise<ApiResponse<any>> {
+    const response = await apiClient.post<ApiResponse<any>>(
+      `/clinical-records/${clinicalRecordId}/prescriptions`,
+      data
+    );
+    return response.data;
+  }
+
+  /**
+   * Add an attachment to a clinical record
+   */
+  async addAttachment(clinicalRecordId: string, file: File, type: string): Promise<ApiResponse<any>> {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('type', type);
+
+    const response = await apiClient.post<ApiResponse<any>>(
+      `/clinical-records/${clinicalRecordId}/attachments`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+    return response.data;
   }
 }
 

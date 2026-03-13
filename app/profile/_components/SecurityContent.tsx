@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import ProfileSidebar from "./ProfileSidebar";
@@ -16,21 +16,6 @@ export default function SecurityContent() {
   const user = useAuthStore((state) => state.user);
   const searchParams = useSearchParams();
   const userId = searchParams.get("userId");
-
-  if (userId && user && userId !== user.id) {
-    return (
-      <div className="flex items-center justify-center h-full p-10">
-        <div className="text-center">
-          <h3 className="text-xl font-medium text-slate-700 dark:text-navy-100">
-            Access Denied
-          </h3>
-          <p className="mt-2 text-slate-500 dark:text-navy-200">
-            You do not have permission to view these security settings.
-          </p>
-        </div>
-      </div>
-    );
-  }
 
   const theme = getTheme(user);
 
@@ -66,6 +51,21 @@ export default function SecurityContent() {
       status: "Active",
     },
   ]);
+
+  if (userId && user && userId !== user.id) {
+    return (
+      <div className="flex items-center justify-center h-full p-10">
+        <div className="text-center">
+          <h3 className="text-xl font-medium text-slate-700 dark:text-navy-100">
+            Access Denied
+          </h3>
+          <p className="mt-2 text-slate-500 dark:text-navy-200">
+            You do not have permission to view these security settings.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;

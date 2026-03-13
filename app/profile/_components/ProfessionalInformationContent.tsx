@@ -59,11 +59,13 @@ export default function ProfessionalInformationContent() {
     }
   }, [fetchSpecialties, fetchProfile, userId]);
 
-  // Sync form data when profile loads from the store
-  useEffect(() => {
+  // Sync form data during render pass when profile loads from the store
+  const [prevProfile, setPrevProfile] = useState(profile);
+  if (profile !== prevProfile) {
+    setPrevProfile(profile);
     if (profile) {
       const profileData = {
-        specialtyId: profile.specialtyId ||"",
+        specialtyId: profile.specialtyId || "",
         subSpecialty: profile.subSpecialty || "",
         yearsOfExperience: profile.yearsOfExperience || "",
         licenseNumber: profile.licenseNumber || "",
@@ -75,7 +77,7 @@ export default function ProfessionalInformationContent() {
       setFormData(profileData);
       setOriginalData(profileData);
     }
-  }, [profile]);
+  }
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>

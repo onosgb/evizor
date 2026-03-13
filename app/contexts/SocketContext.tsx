@@ -4,6 +4,7 @@ import React, { createContext, useContext, useEffect, useState, ReactNode } from
 import { io, Socket } from "socket.io-client";
 import { useAuthStore } from "../stores/authStore";
 import { useAppointmentStore } from "../stores/appointmentStore";
+import { AppointmentStatus } from "../models";
 
 interface SocketContextType {
   socket: Socket | null;
@@ -54,7 +55,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
       console.log("Connected to signaling gateway");
       setIsConnected(true);
       newSocket.emit("register");
-      fetchLiveQueue();
+      fetchLiveQueue(true); // Silent/background update on connect
     });
 
     newSocket.on("registered", (data) => {
@@ -66,11 +67,11 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
       addLiveQueueItem(appointment);
     });
 
-    newSocket.on("appointment:attended", (data) => {
+    newSocket.on("appointment:attended", (data: { appointmentId: string }) => {
       console.log("Appointment attended (real-time):", data);
       // Data payload is { appointmentId: string }
       if (data.appointmentId) {
-        updateAppointmentStatus(data.appointmentId, "PROGRESS" as any);
+        updateAppointmentStatus(data.appointmentId, AppointmentStatus.PROGRESS);
       }
     });
 
@@ -88,7 +89,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     return () => {
       newSocket.disconnect();
     };
-  }, [isAuthenticated, accessToken, fetchLiveQueue]);
+  }, [isAuthenticated, accessToken, fetchLiveQueue, addLiveQueueItem, updateAppointmentStatus]);
 
   return (
     <SocketContext.Provider value={{ socket, isConnected }}>

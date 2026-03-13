@@ -37,8 +37,8 @@ export const useQualificationStore = create<QualificationState>((set, get) => ({
       } else {
         set({ error: response.message || "Failed to fetch qualifications" });
       }
-    } catch (error: any) {
-      set({ error: error.message || "An unexpected error occurred" });
+    } catch (error: unknown) {
+      set({ error: (error as Error).message || "An unexpected error occurred" });
     } finally {
       set({ isLoading: false });
     }
@@ -56,9 +56,9 @@ export const useQualificationStore = create<QualificationState>((set, get) => ({
         set({ uploadError: response.message || "Failed to upload qualification" });
         return false;
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       set({
-        uploadError: error?.response?.data?.message || error.message || "An unexpected error occurred",
+        uploadError: (error as any)?.response?.data?.message || (error as Error).message || "An unexpected error occurred",
       });
       return false;
     } finally {
@@ -81,9 +81,9 @@ export const useQualificationStore = create<QualificationState>((set, get) => ({
         set({ error: response.message || "Failed to delete qualification" });
         return false;
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       set({
-        error: error?.response?.data?.message || error.message || "An unexpected error occurred",
+        error: (error as any)?.response?.data?.message || (error as Error).message || "An unexpected error occurred",
       });
       return false;
     } finally {

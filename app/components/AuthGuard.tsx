@@ -11,7 +11,8 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    setIsClient(true);
+    const handle = requestAnimationFrame(() => setIsClient(true));
+    return () => cancelAnimationFrame(handle);
   }, []);
 
   useEffect(() => {

@@ -68,8 +68,8 @@ export const useQueueMonitorStore = create<QueueMonitorState>((set, get) => ({
       } else {
         set({ error: response.message || "Failed to fetch appointments" });
       }
-    } catch (error: any) {
-         set({ error: error.message || "An unexpected error occurred" });
+    } catch (error: unknown) {
+      set({ error: (error as Error).message || "An unexpected error occurred" });
     } finally {
       set({ isLoading: false });
     }

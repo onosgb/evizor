@@ -14,7 +14,7 @@ export default function LiveQueuePage() {
   const router = useRouter();
   const {
     liveQueue: appointments,
-    isLoading: loading,
+    isQueueLoading: loading,
     error,
     fetchLiveQueue,
     startVideoCall,

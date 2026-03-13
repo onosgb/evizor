@@ -28,13 +28,19 @@ export default function CreateSymptomForm({
 }: CreateSymptomFormProps) {
   const [formData, setFormData] = useState<CreateSymptomRequest>(EMPTY_FORM);
 
-  useEffect(() => {
+  // Adjust state during render when isOpen or defaultTenantId changes
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+  const [prevDefaultTenantId, setPrevDefaultTenantId] = useState(defaultTenantId);
+
+  if (isOpen !== prevIsOpen || defaultTenantId !== prevDefaultTenantId) {
+    setPrevIsOpen(isOpen);
+    setPrevDefaultTenantId(defaultTenantId);
     if (isOpen) {
       setFormData({ name: "", description: "", tenantId: defaultTenantId ?? "" });
     } else {
       setFormData(EMPTY_FORM);
     }
-  }, [isOpen, defaultTenantId]);
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
