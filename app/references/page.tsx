@@ -84,6 +84,26 @@ const categories: ReferenceCategory[] = [
       </svg>
     ),
   },
+  {
+    id: "lab-test-types",
+    title: "Lab Test / Diagnosis",
+    description: "Lab test / Diagnosis available for selection during consultations.",
+    href: "/references/lab-test-types",
+    adminCanView: true,
+    adminCanCreate: true,
+    color: "bg-danger/15 text-danger dark:bg-navy-600 dark:text-danger-light",
+    icon: (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        className="size-7"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+      >
+        <path fillOpacity=".25" d="M12 2l-7 12h14l-7-12z" />
+        <path d="M12 18a2 2 0 1 0 0-4 2 2 0 0 0 0 4z" />
+      </svg>
+    ),
+  },
 ];
 
 export default function ReferencesPage() {

@@ -2,7 +2,7 @@
 
 import type { Message as RTKMessage } from "@cloudflare/realtimekit";
 import RealtimeKitClient from "@cloudflare/realtimekit";
-import { Pharmacy, Appointment, User } from "@/app/models";
+import { Pharmacy, Appointment, User, LabTestType } from "@/app/models";
 import { RefObject } from "react";
 
 type Tab = "info" | "notes" | "prescription" | "lab" | "chat";
@@ -23,6 +23,9 @@ interface RightPanelProps {
   handleSendPrescription: () => void;
   labType: string;
   setLabType: (type: string) => void;
+  labTestTypeId: string;
+  setLabTestTypeId: (id: string) => void;
+  labTestTypes: LabTestType[];
   setLabFile: (file: File | null) => void;
   labFile: File | null;
   isUploadingLab: boolean;
@@ -56,6 +59,9 @@ export const RightPanel = ({
   handleSendPrescription,
   labType,
   setLabType,
+  labTestTypeId,
+  setLabTestTypeId,
+  labTestTypes,
   setLabFile,
   labFile,
   isUploadingLab,
@@ -286,6 +292,23 @@ export const RightPanel = ({
                 <option value="Lab Test">Lab Test</option>
               </select>
             </div>
+            {labType === "Lab Test" && (
+              <div className="mt-3">
+                <label className="block mb-1.5 font-medium text-gray-700">
+                  Lab Test Type
+                </label>
+                <select
+                  value={labTestTypeId}
+                  onChange={(e) => setLabTestTypeId(e.target.value)}
+                  className="w-full border border-gray-200 rounded-xl p-2.5 focus:ring-1 focus:ring-[#2a27c2] outline-none bg-white"
+                >
+                  <option value="">Select Lab Test Type</option>
+                  {labTestTypes.filter(t => t.isActive).map((t) => (
+                    <option key={t.id} value={t.id}>{t.name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
             <div>
               <label className="block mb-1.5 font-medium text-gray-700">
                 Upload File

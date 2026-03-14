@@ -16,3 +16,4 @@ export type { DoctorAvailability, CreateScheduleRequest, ProposeAvailabilityRequ
 export type { Pharmacy, CreatePharmacyRequest, UpdatePharmacyRequest } from "./Pharmacy";
 export type { ListQueryParams } from "./QueryParams";
 export * from "./Prescription";
+export type { LabTestType } from "./LabTestType";

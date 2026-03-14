@@ -12,6 +12,7 @@ import type {
 
 import { useAppointmentStore } from "@/app/stores/appointmentStore";
 import { usePharmacyStore } from "@/app/stores/pharmacyStore";
+import { useLabTestTypeStore } from "@/app/stores/labTestTypeStore";
 import { useToast } from "@/app/contexts/ToastContext";
 import { appointmentService } from "@/app/lib/services/appointment.service";
 import { VideoSection } from "./components/VideoSection";
@@ -57,6 +58,8 @@ export default function ConsultationPage({
   const [isSendingPrescription, setIsSendingPrescription] = useState(false);
   const [labFile, setLabFile] = useState<File | null>(null);
   const [labType, setLabType] = useState("Lab Test");
+  const [labTestTypeId, setLabTestTypeId] = useState("");
+  const { labTestTypes, fetchLabTestTypes } = useLabTestTypeStore();
   const [isUploadingLab, setIsUploadingLab] = useState(false);
   const [isFinalizeModalOpen, setIsFinalizeModalOpen] = useState(false);
 
@@ -86,7 +89,8 @@ export default function ConsultationPage({
 
   useEffect(() => {
     fetchPharmacies();
-  }, [fetchPharmacies]);
+    fetchLabTestTypes();
+  }, [fetchPharmacies, fetchLabTestTypes]);
 
   // Initialize RealtimeKit meeting when component mounts
   useEffect(() => {
@@ -310,10 +314,14 @@ export default function ConsultationPage({
 
     setIsUploadingLab(true);
     try {
-      await appointmentService.addAttachment(appointmentId, labFile, labType);
+      if (labType === "Lab Test" && labTestTypeId) {
+        await appointmentService.uploadLabResult(appointmentId, labTestTypeId, labFile);
+      } else {
+        await appointmentService.addAttachment(appointmentId, labFile, labType);
+      }
       showToast("Attachment uploaded successfully", "success");
       setLabFile(null);
-      // Reset file input if possible or rely on state clearing
+      setLabTestTypeId("");
     } catch (err: unknown) {
       showToast((err as Error).message || "Failed to upload attachment", "error");
     } finally {
@@ -405,6 +413,9 @@ export default function ConsultationPage({
             handleSendPrescription={handleSendPrescription}
             labType={labType}
             setLabType={setLabType}
+            labTestTypeId={labTestTypeId}
+            setLabTestTypeId={setLabTestTypeId}
+            labTestTypes={labTestTypes}
             setLabFile={setLabFile}
             labFile={labFile}
             isUploadingLab={isUploadingLab}

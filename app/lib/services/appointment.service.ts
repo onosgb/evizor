@@ -171,6 +171,27 @@ class AppointmentService {
   }
 
   /**
+   * Upload a lab result for an appointment
+   */
+  async uploadLabResult(appointmentId: string, labTestTypeId: string, file: File): Promise<ApiResponse<any>> {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('labTestTypeId', labTestTypeId);
+    formData.append('appointmentId', appointmentId);
+
+    const response = await apiClient.post<ApiResponse<any>>(
+      '/lab-upload',
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+    return response.data;
+  }
+
+  /**
    * Cancel an appointment
    * Endpoint: PUT /api/v1/appointments/{id}/cancel
    */
