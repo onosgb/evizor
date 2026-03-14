@@ -41,15 +41,28 @@ const LocalVideo = () => {
 };
 
 // Remote participants container
-const RemoteVideos = ({ patientDisplayName }: { patientDisplayName: string }) => {
-  const participants = useRealtimeKitSelector((m) => m.participants.joined);
-  const selfId = useRealtimeKitSelector((m) => m.self.id);
-  // Filter out the local participant — on slow/bad networks the SDK can
-  // briefly include self in the joined map, which splits the screen in two.
-  const participantsArray = useMemo(
-    () => Array.from(participants.values()).filter((p) => p.id !== selfId),
-    [participants, selfId]
+const RemoteVideos = ({
+  patientDisplayName,
+}: {
+  patientDisplayName: string;
+}) => {
+  // Check both active and joined — SDK sometimes populates one before the other
+  const activeParticipants = useRealtimeKitSelector(
+    (m) => m.participants.active,
   );
+  const joinedParticipants = useRealtimeKitSelector(
+    (m) => m.participants.joined,
+  );
+  const selfId = useRealtimeKitSelector((m) => m.self.id);
+
+  // Merge active + joined, deduplicate by id, exclude self
+  const participantsArray = useMemo(() => {
+    const map = new Map(joinedParticipants);
+    activeParticipants.forEach((p, id) => {
+      if (!map.has(id)) map.set(id, p);
+    });
+    return Array.from(map.values()).filter((p) => p.id !== selfId);
+  }, [activeParticipants, joinedParticipants, selfId]);
 
   // Log when someone joins the room (for debugging same-meeting issues)
   const prevIdsRef = useRef<Set<string>>(new Set());
