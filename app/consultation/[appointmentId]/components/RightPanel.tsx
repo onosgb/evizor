@@ -17,16 +17,8 @@ interface RightPanelProps {
   pharmacyId: string;
   setPharmacyId: (id: string) => void;
   pharmacies: Pharmacy[];
-  drug: string;
-  setDrug: (drug: string) => void;
-  dosage: string;
-  setDosage: (dosage: string) => void;
-  frequency: string;
-  setFrequency: (freq: string) => void;
-  duration: string;
-  setDuration: (dur: string) => void;
-  instructions: string;
-  setInstructions: (inst: string) => void;
+  medications: any[];
+  setMedications: (meds: any[]) => void;
   isSendingPrescription: boolean;
   handleSendPrescription: () => void;
   labType: string;
@@ -46,6 +38,8 @@ interface RightPanelProps {
   actionLoading: boolean;
 }
 
+import { useState } from "react";
+
 export const RightPanel = ({
   activeTab,
   setActiveTab,
@@ -56,16 +50,8 @@ export const RightPanel = ({
   pharmacyId,
   setPharmacyId,
   pharmacies,
-  drug,
-  setDrug,
-  dosage,
-  setDosage,
-  frequency,
-  setFrequency,
-  duration,
-  setDuration,
-  instructions,
-  setInstructions,
+  medications,
+  setMedications,
   isSendingPrescription,
   handleSendPrescription,
   labType,
@@ -84,6 +70,38 @@ export const RightPanel = ({
   handleFinalize,
   actionLoading,
 }: RightPanelProps) => {
+  // Local state for current drug form
+  const [currentDrug, setCurrentDrug] = useState("");
+  const [currentDosage, setCurrentDosage] = useState("");
+  const [currentFrequency, setCurrentFrequency] = useState("");
+  const [currentDuration, setCurrentDuration] = useState("");
+  const [currentInstructions, setCurrentInstructions] = useState("");
+
+  const addMedication = () => {
+    if (!currentDrug.trim()) {
+      showToast("Drug name is required", "error");
+      return;
+    }
+    const newMed = {
+      drug: currentDrug,
+      dosage: currentDosage,
+      frequency: currentFrequency,
+      duration: currentDuration,
+      instructions: currentInstructions,
+    };
+    setMedications([...medications, newMed]);
+    // Reset form
+    setCurrentDrug("");
+    setCurrentDosage("");
+    setCurrentFrequency("");
+    setCurrentDuration("");
+    setCurrentInstructions("");
+  };
+
+  const removeMedication = (index: number) => {
+    setMedications(medications.filter((_, i) => i !== index));
+  };
+
   return (
     <section className="flex flex-col shrink-0 w-[35%] min-w-0 bg-white rounded-2xl shadow-md pt-2 pb-4 px-4 lg:pt-3 lg:pb-6 lg:px-6 h-full min-h-0 overflow-hidden">
       {/* Tabs */}
@@ -171,41 +189,80 @@ export const RightPanel = ({
                   </option>
                 ))}
               </select>
-              <input
-                value={drug}
-                onChange={(e) => setDrug(e.target.value)}
-                placeholder="Drug Name"
-                className="border border-gray-200 rounded-xl p-2 focus:ring-1 focus:ring-[#2a27c2] outline-none"
-              />
-              <input
-                value={dosage}
-                onChange={(e) => setDosage(e.target.value)}
-                placeholder="Dosage"
-                className="border border-gray-200 rounded-xl p-2 focus:ring-1 focus:ring-[#2a27c2] outline-none"
-              />
-              <input
-                value={frequency}
-                onChange={(e) => setFrequency(e.target.value)}
-                placeholder="Frequency"
-                className="border border-gray-200 rounded-xl p-2 focus:ring-1 focus:ring-[#2a27c2] outline-none"
-              />
-              <input
-                value={duration}
-                onChange={(e) => setDuration(e.target.value)}
-                placeholder="Duration"
-                className="border border-gray-200 rounded-xl p-2 focus:ring-1 focus:ring-[#2a27c2] outline-none"
-              />
-              <textarea
-                value={instructions}
-                onChange={(e) => setInstructions(e.target.value)}
-                placeholder="Instructions"
-                className="col-span-2 border border-gray-200 rounded-xl p-2 focus:ring-1 focus:ring-[#2a27c2] outline-none min-h-15"
-              />
+
+              <div className="col-span-2 border border-blue-100 bg-blue-50/30 rounded-xl p-3 space-y-3">
+                <h5 className="text-xs font-bold text-gray-700 uppercase tracking-wider">Add Medication</h5>
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    value={currentDrug}
+                    onChange={(e) => setCurrentDrug(e.target.value)}
+                    placeholder="Drug Name"
+                    className="col-span-2 border border-gray-200 rounded-lg p-2 focus:ring-1 focus:ring-[#2a27c2] outline-none"
+                  />
+                  <input
+                    value={currentDosage}
+                    onChange={(e) => setCurrentDosage(e.target.value)}
+                    placeholder="Dosage"
+                    className="border border-gray-200 rounded-lg p-2 focus:ring-1 focus:ring-[#2a27c2] outline-none"
+                  />
+                  <input
+                    value={currentFrequency}
+                    onChange={(e) => setCurrentFrequency(e.target.value)}
+                    placeholder="Frequency"
+                    className="border border-gray-200 rounded-lg p-2 focus:ring-1 focus:ring-[#2a27c2] outline-none"
+                  />
+                  <input
+                    value={currentDuration}
+                    onChange={(e) => setCurrentDuration(e.target.value)}
+                    placeholder="Duration"
+                    className="border border-gray-200 rounded-lg p-2 focus:ring-1 focus:ring-[#2a27c2] outline-none"
+                  />
+                  <button
+                    onClick={addMedication}
+                    className="bg-primary text-white text-xs font-bold rounded-lg px-2 hover:bg-primary-focus transition-colors"
+                  >
+                    + ADD DRUG
+                  </button>
+                  <textarea
+                    value={currentInstructions}
+                    onChange={(e) => setCurrentInstructions(e.target.value)}
+                    placeholder="Instructions"
+                    className="col-span-2 border border-gray-200 rounded-lg p-2 focus:ring-1 focus:ring-[#2a27c2] outline-none min-h-12 text-xs"
+                  />
+                </div>
+              </div>
+
+              {/* Added Medications List */}
+              {medications.length > 0 && (
+                <div className="col-span-2 space-y-2">
+                  <h5 className="text-xs font-bold text-gray-700 uppercase tracking-wider">Medications List</h5>
+                  <div className="space-y-2">
+                    {medications.map((med, idx) => (
+                      <div key={idx} className="flex items-center justify-between bg-gray-50 border border-gray-100 p-2 rounded-lg group">
+                        <div className="min-w-0">
+                          <p className="font-bold text-primary text-xs">{med.drug}</p>
+                          <p className="text-[10px] text-gray-500">
+                            {med.dosage} - {med.frequency} ({med.duration})
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => removeMedication(idx)}
+                          className="text-red-500 hover:text-red-700 p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             <button
               onClick={handleSendPrescription}
-              disabled={isSendingPrescription}
+              disabled={isSendingPrescription || medications.length === 0}
               className="w-full py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 font-medium transition-colors disabled:opacity-50"
             >
               {isSendingPrescription ? "Sending..." : "Send Prescription"}

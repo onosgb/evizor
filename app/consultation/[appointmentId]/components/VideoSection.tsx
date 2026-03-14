@@ -36,15 +36,12 @@ const LocalVideo = () => {
         muted
         className="w-full h-full object-cover mirror"
       />
-      <div className="absolute bottom-2 left-2 bg-black/60 px-2 py-0.5 rounded text-xs text-white">
-        You
-      </div>
     </div>
   );
 };
 
 // Remote participants container
-const RemoteVideos = () => {
+const RemoteVideos = ({ patientDisplayName }: { patientDisplayName: string }) => {
   const participants = useRealtimeKitSelector((m) => m.participants.joined);
   const selfId = useRealtimeKitSelector((m) => m.self.id);
   // Filter out the local participant — on slow/bad networks the SDK can
@@ -97,7 +94,7 @@ const RemoteVideos = () => {
   if (participantsArray.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-full w-full text-white/50">
-        <p>Waiting for others to join...</p>
+        <p>Waiting for {patientDisplayName} to join...</p>
       </div>
     );
   }
@@ -115,9 +112,6 @@ const RemoteVideos = () => {
             playsInline
             className="max-w-full max-h-full object-contain"
           />
-          <div className="absolute bottom-4 left-4 bg-black/60 px-3 py-1.5 rounded-lg text-sm text-white font-medium">
-            {p.name || "Participant"}
-          </div>
         </div>
       ))}
     </div>
@@ -237,7 +231,7 @@ export const VideoSection = memo(function VideoSection({
         ) : (
           <RealtimeKitProvider value={meeting}>
             <div className="relative flex-1 w-full h-full bg-slate-900 overflow-hidden rounded-2xl">
-              <RemoteVideos />
+              <RemoteVideos patientDisplayName={patientDisplayName} />
               <LocalVideo />
             </div>
           </RealtimeKitProvider>

@@ -51,12 +51,8 @@ export default function ConsultationPage({
   const [chatInput, setChatInput] = useState("");
   const chatEndRef = useRef<HTMLDivElement>(null);
   const connectionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [drug, setDrug] = useState("");
-  const [dosage, setDosage] = useState("");
-  const [frequency, setFrequency] = useState("");
-  const [duration, setDuration] = useState("");
+  const [medications, setMedications] = useState<any[]>([]);
   const [pharmacyId, setPharmacyId] = useState("");
-  const [instructions, setInstructions] = useState("");
   const { pharmacies, fetchPharmacies } = usePharmacyStore();
   const [isSendingPrescription, setIsSendingPrescription] = useState(false);
   const [labFile, setLabFile] = useState<File | null>(null);
@@ -285,8 +281,8 @@ export default function ConsultationPage({
       showToast("Please select a pharmacy", "error");
       return;
     }
-    if (!drug.trim()) {
-      showToast("Please enter a drug name", "error");
+    if (medications.length === 0) {
+      showToast("Please add at least one medication", "error");
       return;
     }
 
@@ -295,14 +291,7 @@ export default function ConsultationPage({
       await appointmentService.addPrescription(appointmentId, {
         phamacyId: pharmacyId,
         appointmentId,
-        medications: [
-          {
-            drug,
-            dosage,
-            frequency,
-            instructions,
-          },
-        ],
+        medications,
       });
       showToast("Prescription sent successfully", "success");
       handleEndCall();
@@ -373,7 +362,7 @@ export default function ConsultationPage({
     ? `${selectedPatient.firstName} ${selectedPatient.lastName}`
     : selectedAppointment?.patientName || "Loading...";
   const displayPatientId =
-    selectedPatient?.id || selectedAppointment?.patientId || "...";
+    selectedPatient?.healthCardNo || "...";
 
   const activeToken = videoMeetingToken;
 
@@ -410,16 +399,8 @@ export default function ConsultationPage({
             pharmacyId={pharmacyId}
             setPharmacyId={setPharmacyId}
             pharmacies={pharmacies}
-            drug={drug}
-            setDrug={setDrug}
-            dosage={dosage}
-            setDosage={setDosage}
-            frequency={frequency}
-            setFrequency={setFrequency}
-            duration={duration}
-            setDuration={setDuration}
-            instructions={instructions}
-            setInstructions={setInstructions}
+            medications={medications}
+            setMedications={setMedications}
             isSendingPrescription={isSendingPrescription}
             handleSendPrescription={handleSendPrescription}
             labType={labType}

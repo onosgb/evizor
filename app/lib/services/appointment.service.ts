@@ -169,6 +169,17 @@ class AppointmentService {
     );
     return response.data;
   }
+
+  /**
+   * Cancel an appointment
+   * Endpoint: PUT /api/v1/appointments/{id}/cancel
+   */
+  async cancelAppointment(appointmentId: string): Promise<ApiResponse<any>> {
+    const response = await apiClient.put<ApiResponse<any>>(
+      `/appointments/${appointmentId}/cancel`
+    );
+    return response.data;
+  }
 }
 
 export const appointmentService = new AppointmentService();

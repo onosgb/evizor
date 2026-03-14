@@ -29,7 +29,6 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const addLiveQueueItem = useAppointmentStore((state) => state.addLiveQueueItem);
   const updateAppointmentStatus = useAppointmentStore((state) => state.updateAppointmentStatus);
-  const fetchLiveQueue = useAppointmentStore((state) => state.fetchLiveQueue);
 
   useEffect(() => {
     if (!isAuthenticated || !accessToken) {
@@ -52,10 +51,8 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     });
 
     newSocket.on("connect", () => {
-      console.log("Connected to signaling gateway");
       setIsConnected(true);
       newSocket.emit("register");
-      fetchLiveQueue(true); // Silent/background update on connect
     });
 
     newSocket.on("registered", (data) => {
@@ -63,20 +60,16 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     });
 
     newSocket.on("appointment:created", (appointment) => {
-      console.log("New appointment created (real-time):", appointment);
       addLiveQueueItem(appointment);
     });
 
     newSocket.on("appointment:attended", (data: { appointmentId: string }) => {
-      console.log("Appointment attended (real-time):", data);
-      // Data payload is { appointmentId: string }
       if (data.appointmentId) {
         updateAppointmentStatus(data.appointmentId, AppointmentStatus.PROGRESS);
       }
     });
 
     newSocket.on("disconnect", () => {
-      console.log("Disconnected from signaling gateway");
       setIsConnected(false);
     });
 
@@ -89,7 +82,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     return () => {
       newSocket.disconnect();
     };
-  }, [isAuthenticated, accessToken, fetchLiveQueue, addLiveQueueItem, updateAppointmentStatus]);
+  }, [isAuthenticated, accessToken, addLiveQueueItem, updateAppointmentStatus]);
 
   return (
     <SocketContext.Provider value={{ socket, isConnected }}>
