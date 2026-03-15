@@ -17,3 +17,4 @@ export type { Pharmacy, CreatePharmacyRequest, UpdatePharmacyRequest } from "./P
 export type { ListQueryParams } from "./QueryParams";
 export * from "./Prescription";
 export type { LabTestType } from "./LabTestType";
+export * from "./LabUploadResponse";

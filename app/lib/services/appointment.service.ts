@@ -6,6 +6,7 @@ import {
   DoctorAvailability,
   CompleteAppointmentRequest,
   CreatePrescriptionRequest,
+  LabUploadData,
 } from "../../models";
 import type { ProposeAvailabilityRequest } from "../../models/DoctorAvailability";
 import { ListQueryParams } from "../../models/QueryParams";
@@ -153,13 +154,13 @@ class AppointmentService {
   /**
    * Add an attachment to a clinical record
    */
-  async addAttachment(clinicalRecordId: string, file: File, type: string): Promise<ApiResponse<any>> {
+  async addAttachment(clinicalRecordId: string, file: File, type: string): Promise<ApiResponse<LabUploadData>> {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('type', type);
 
-    const response = await apiClient.post<ApiResponse<any>>(
-      `/clinical-records/${clinicalRecordId}/attachments`,
+    const response = await apiClient.post<ApiResponse<LabUploadData>>(
+      '/labs',
       formData,
       {
         headers: {
@@ -173,14 +174,14 @@ class AppointmentService {
   /**
    * Upload a lab result for an appointment
    */
-  async uploadLabResult(appointmentId: string, labTestTypeId: string, file: File): Promise<ApiResponse<any>> {
+  async uploadLabResult(appointmentId: string, labTestTypeId: string, file: File): Promise<ApiResponse<LabUploadData>> {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('labTestTypeId', labTestTypeId);
     formData.append('appointmentId', appointmentId);
 
-    const response = await apiClient.post<ApiResponse<any>>(
-      '/lab-upload',
+    const response = await apiClient.post<ApiResponse<LabUploadData>>(
+      '/labs',
       formData,
       {
         headers: {

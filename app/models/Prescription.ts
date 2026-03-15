@@ -13,4 +13,6 @@ export interface CreatePrescriptionRequest {
 
 export interface CompleteAppointmentRequest {
   doctorNotes: string;
+  /** Optional medications when finalizing in one step */
+  medications?: MedicationRequest[];
 }

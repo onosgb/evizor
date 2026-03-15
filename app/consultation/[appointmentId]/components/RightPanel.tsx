@@ -21,8 +21,6 @@ interface RightPanelProps {
   setMedications: (meds: any[]) => void;
   isSendingPrescription: boolean;
   handleSendPrescription: () => void;
-  labType: string;
-  setLabType: (type: string) => void;
   labTestTypeId: string;
   setLabTestTypeId: (id: string) => void;
   labTestTypes: LabTestType[];
@@ -57,8 +55,6 @@ export const RightPanel = ({
   setMedications,
   isSendingPrescription,
   handleSendPrescription,
-  labType,
-  setLabType,
   labTestTypeId,
   setLabTestTypeId,
   labTestTypes,
@@ -276,39 +272,23 @@ export const RightPanel = ({
           </div>
         )}
 
-        {/* LAB */}
         {activeTab === "lab" && (
           <div className="space-y-4 text-sm animate-fade-in min-w-0">
             <div>
               <label className="block mb-1.5 font-medium text-gray-700">
-                Attachment Type
+                Lab Test / Diagnosis
               </label>
               <select
-                value={labType}
-                onChange={(e) => setLabType(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl p-2.5 focus:ring-1 focus:ring-[#2a27c2] outline-none bg-white"
+                value={labTestTypeId}
+                onChange={(e) => setLabTestTypeId(e.target.value)}
+                className="w-full border border-gray-200 rounded-xl p-2.5 focus:ring-1 focus:ring-[#2a27c2] outline-none bg-white font-inter"
               >
-                <option value="Diagnosis">Diagnosis</option>
-                <option value="Lab Test">Lab Test</option>
+                <option value="">Select Lab Test / Diagnosis</option>
+                {labTestTypes.filter(t => t.isActive).map((t) => (
+                  <option key={t.id} value={t.id}>{t.name}</option>
+                ))}
               </select>
             </div>
-            {labType === "Lab Test" && (
-              <div className="mt-3">
-                <label className="block mb-1.5 font-medium text-gray-700">
-                  Lab Test Type
-                </label>
-                <select
-                  value={labTestTypeId}
-                  onChange={(e) => setLabTestTypeId(e.target.value)}
-                  className="w-full border border-gray-200 rounded-xl p-2.5 focus:ring-1 focus:ring-[#2a27c2] outline-none bg-white"
-                >
-                  <option value="">Select Lab Test Type</option>
-                  {labTestTypes.filter(t => t.isActive).map((t) => (
-                    <option key={t.id} value={t.id}>{t.name}</option>
-                  ))}
-                </select>
-              </div>
-            )}
             <div>
               <label className="block mb-1.5 font-medium text-gray-700">
                 Upload File
