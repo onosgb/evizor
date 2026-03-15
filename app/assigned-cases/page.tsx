@@ -9,6 +9,7 @@ import { useAppointmentStore } from "../stores/appointmentStore";
 import { AppointmentStatus } from "../models";
 import { useSearchContext } from "../contexts/SearchContext";
 import { formatTodayOrDate } from "@/app/lib/utils/dateUtils";
+import { useToast } from "../contexts/ToastContext";
 
 export default function AssignedCasesPage() {
   const [dateFrom, setDateFrom] = useState("");
@@ -21,6 +22,7 @@ export default function AssignedCasesPage() {
 
   const { assignedCases, assignedTotal, isQueueLoading, error, fetchAssignedCases, fetchVideoToken } =
     useAppointmentStore();
+  const toast = useToast();
 
   const { query: contextQuery, registerPageSearch, unregisterPageSearch } = useSearchContext();
 
@@ -57,10 +59,11 @@ export default function AssignedCasesPage() {
   };
 
   const handleJoinCall = async (appointmentId: string) => {
-    await fetchVideoToken(appointmentId);
-    const token = useAppointmentStore.getState().videoMeetingToken;
-    if (token) {
+    try {
+      await fetchVideoToken(appointmentId);
       window.location.href = `/consultation/${appointmentId}`;
+    } catch (err: any) {
+      toast.showToast(err.message || "Failed to start video call", "error");
     }
   };
 

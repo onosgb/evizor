@@ -35,7 +35,7 @@ export class ApiError extends Error {
     }
 
     return new ApiError(
-      response.message || "An error occurred",
+      response.message || response.error || "An error occurred",
       response.statusCode || 500,
       response.status || false,
       response.error || "API Error",

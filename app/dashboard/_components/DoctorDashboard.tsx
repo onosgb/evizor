@@ -11,6 +11,7 @@ import { useAppointmentStore } from "@/app/stores/appointmentStore";
 import { formatDate, formatTime, formatTodayOrDate } from "@/app/lib/utils/dateUtils";
 import ConfirmationModal from "@/app/components/ConfirmationModal";
 import { useState } from "react";
+import { useToast } from "@/app/contexts/ToastContext";
 
 const getGreeting = () => {
   const hour = new Date().getHours();
@@ -22,6 +23,7 @@ const getGreeting = () => {
 export default function DoctorDashboard({ user }: { user: User | null }) {
   const router = useRouter();
   const { liveQueue, assignedCases, isQueueLoading: queueLoading, alertsLoading, fetchLiveQueue, fetchAssignedCases, clinicalAlerts, fetchClinicalAlerts, startVideoCall, rejectAppointment, isVideoLoading, isRejecting, fetchVideoToken } = useAppointmentStore();
+  const toast = useToast();
   const [modalConfig, setModalConfig] = useState<{
     isOpen: boolean;
     title: string;
@@ -51,11 +53,12 @@ export default function DoctorDashboard({ user }: { user: User | null }) {
       confirmText: "Accept & Start",
       onConfirm: async () => {
         await startVideoCall(appointmentId);
-        const token = useAppointmentStore.getState().videoMeetingToken;
-        if (token) {
+        try {
           router.push(`/consultation/${appointmentId}`);
+        } catch (error) {
+          toast.showToast("Error joining call", "error");
         }
-        setModalConfig((prev) => ({ ...prev, isOpen: false }));
+      
       },
     });
   };
@@ -76,9 +79,10 @@ export default function DoctorDashboard({ user }: { user: User | null }) {
 
   const handleJoinCall = async (appointmentId: string) => {
     await fetchVideoToken(appointmentId);
-    const token = useAppointmentStore.getState().videoMeetingToken;
-    if (token) {
+    try {
       router.push(`/consultation/${appointmentId}`);
+    } catch (error) {
+      toast.showToast("Error joining call", "error");
     }
   };
 

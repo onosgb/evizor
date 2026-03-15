@@ -1,11 +1,16 @@
 "use client";
 
-import type { Message as RTKMessage } from "@cloudflare/realtimekit";
-import RealtimeKitClient from "@cloudflare/realtimekit";
 import { Pharmacy, Appointment, User, LabTestType } from "@/app/models";
-import { RefObject } from "react";
+import { RefObject, useState } from "react";
 
 type Tab = "info" | "notes" | "prescription" | "lab" | "chat";
+
+interface ChatMessage {
+  id: string;
+  sender: { name: string };
+  text: string;
+  timestamp: string;
+}
 
 interface RightPanelProps {
   activeTab: Tab;
@@ -28,8 +33,7 @@ interface RightPanelProps {
   labFile: File | null;
   isUploadingLab: boolean;
   handleSendLabRequest: () => void;
-  chatMessages: RTKMessage[];
-  meeting: RealtimeKitClient | null;
+  chatMessages: ChatMessage[];
   chatEndRef: RefObject<HTMLDivElement | null>;
   chatInput: string;
   setChatInput: (input: string) => void;
@@ -38,8 +42,6 @@ interface RightPanelProps {
   handleFinalize: () => void;
   actionLoading: boolean;
 }
-
-import { useState } from "react";
 
 export const RightPanel = ({
   activeTab,
@@ -63,7 +65,6 @@ export const RightPanel = ({
   isUploadingLab,
   handleSendLabRequest,
   chatMessages,
-  meeting,
   chatEndRef,
   chatInput,
   setChatInput,
@@ -105,7 +106,7 @@ export const RightPanel = ({
   };
 
   return (
-    <section className="flex flex-col shrink-0 w-[35%] min-w-0 bg-white rounded-2xl shadow-md pt-2 pb-4 px-4 lg:pt-3 lg:pb-6 lg:px-6 h-full min-h-0 overflow-hidden">
+    <section className="flex flex-col shrink-0 w-[35%] min-w-0 bg-white rounded-2xl shadow-md pt-2 pb-4 px-4 lg:pt-3 lg:pb-6 lg:px-6 h-full min-h-0 overflow-hidden text-slate-800">
       {/* Tabs */}
       <div className="flex flex-wrap gap-3 border-b pb-3 mb-4 text-sm font-medium min-w-0">
         {(["chat", "info", "notes", "prescription", "lab"] as Tab[]).map((tab) => (
@@ -114,7 +115,7 @@ export const RightPanel = ({
             onClick={() => setActiveTab(tab)}
             className={
               activeTab === tab
-                ? "border-b-2 border-[#2a27c2] text-[#2a27c2]"
+                ? "border-b-2 border-blue-600 text-blue-600"
                 : "text-gray-500 hover:text-gray-700 capitalize"
             }
           >
@@ -170,7 +171,7 @@ export const RightPanel = ({
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Type your clinical notes here..."
-              className="flex-1 w-full border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#2a27c2] focus:border-transparent outline-none resize-none"
+              className="flex-1 w-full border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none resize-none"
             />
           </div>
         )}
@@ -182,7 +183,7 @@ export const RightPanel = ({
               <select
                 value={pharmacyId}
                 onChange={(e) => setPharmacyId(e.target.value)}
-                className="col-span-2 border border-gray-200 rounded-xl p-2 focus:ring-1 focus:ring-[#2a27c2] outline-none bg-white text-sm"
+                className="col-span-2 border border-gray-200 rounded-xl p-2 focus:ring-1 focus:ring-blue-600 outline-none bg-white text-sm"
               >
                 <option value="">Select Pharmacy</option>
                 {pharmacies.map((p) => (
@@ -199,29 +200,29 @@ export const RightPanel = ({
                     value={currentDrug}
                     onChange={(e) => setCurrentDrug(e.target.value)}
                     placeholder="Drug Name"
-                    className="col-span-2 border border-gray-200 rounded-lg p-2 focus:ring-1 focus:ring-[#2a27c2] outline-none"
+                    className="col-span-2 border border-gray-200 rounded-lg p-2 focus:ring-1 focus:ring-blue-600 outline-none"
                   />
                   <input
                     value={currentDosage}
                     onChange={(e) => setCurrentDosage(e.target.value)}
                     placeholder="Dosage"
-                    className="border border-gray-200 rounded-lg p-2 focus:ring-1 focus:ring-[#2a27c2] outline-none"
+                    className="border border-gray-200 rounded-lg p-2 focus:ring-1 focus:ring-blue-600 outline-none"
                   />
                   <input
                     value={currentFrequency}
                     onChange={(e) => setCurrentFrequency(e.target.value)}
                     placeholder="Frequency"
-                    className="border border-gray-200 rounded-lg p-2 focus:ring-1 focus:ring-[#2a27c2] outline-none"
+                    className="border border-gray-200 rounded-lg p-2 focus:ring-1 focus:ring-blue-600 outline-none"
                   />
                   <input
                     value={currentDuration}
                     onChange={(e) => setCurrentDuration(e.target.value)}
                     placeholder="Duration"
-                    className="border border-gray-200 rounded-lg p-2 focus:ring-1 focus:ring-[#2a27c2] outline-none"
+                    className="border border-gray-200 rounded-lg p-2 focus:ring-1 focus:ring-blue-600 outline-none"
                   />
                   <button
                     onClick={addMedication}
-                    className="bg-primary text-white text-xs font-bold rounded-lg px-2 hover:bg-primary-focus transition-colors"
+                    className="bg-blue-600 text-white text-xs font-bold rounded-lg px-2 hover:bg-blue-700 transition-colors"
                   >
                     + ADD DRUG
                   </button>
@@ -229,7 +230,7 @@ export const RightPanel = ({
                     value={currentInstructions}
                     onChange={(e) => setCurrentInstructions(e.target.value)}
                     placeholder="Instructions"
-                    className="col-span-2 border border-gray-200 rounded-lg p-2 focus:ring-1 focus:ring-[#2a27c2] outline-none min-h-12 text-xs"
+                    className="col-span-2 border border-gray-200 rounded-lg p-2 focus:ring-1 focus:ring-blue-600 outline-none min-h-12 text-xs"
                   />
                 </div>
               </div>
@@ -242,7 +243,7 @@ export const RightPanel = ({
                     {medications.map((med, idx) => (
                       <div key={idx} className="flex items-center justify-between bg-gray-50 border border-gray-100 p-2 rounded-lg group">
                         <div className="min-w-0">
-                          <p className="font-bold text-primary text-xs">{med.drug}</p>
+                          <p className="font-bold text-blue-600 text-xs">{med.drug}</p>
                           <p className="text-[10px] text-gray-500">
                             {med.dosage} - {med.frequency} ({med.duration})
                           </p>
@@ -281,7 +282,7 @@ export const RightPanel = ({
               <select
                 value={labTestTypeId}
                 onChange={(e) => setLabTestTypeId(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl p-2.5 focus:ring-1 focus:ring-[#2a27c2] outline-none bg-white font-inter"
+                className="w-full border border-gray-200 rounded-xl p-2.5 focus:ring-1 focus:ring-blue-600 outline-none bg-white font-inter"
               >
                 <option value="">Select Lab Test / Diagnosis</option>
                 {labTestTypes.filter(t => t.isActive).map((t) => (
@@ -297,10 +298,10 @@ export const RightPanel = ({
                 <input
                   type="file"
                   onChange={(e) => setLabFile(e.target.files?.[0] || null)}
-                  className="w-full border-2 border-dashed border-gray-200 rounded-xl p-6 text-center cursor-pointer hover:border-[#2a27c2] transition-colors"
+                  className="w-full border-2 border-dashed border-gray-200 rounded-xl p-6 text-center cursor-pointer hover:border-blue-600 transition-colors"
                 />
                 {labFile && (
-                  <p className="mt-2 text-xs text-[#2a27c2] font-medium text-center">
+                  <p className="mt-2 text-xs text-blue-600 font-medium text-center">
                     Selected: {labFile.name}
                   </p>
                 )}
@@ -320,33 +321,35 @@ export const RightPanel = ({
           <div className="flex flex-col h-full animate-fade-in min-w-0">
             <div className="flex-1 overflow-y-auto p-2 space-y-2 border border-gray-200 rounded-xl bg-white">
               {chatMessages.length === 0 ? (
-                <p className="text-sm text-gray-400 text-center py-6">
-                  No messages yet. Start the chat.
-                </p>
+                <div className="flex flex-col items-center justify-center py-10 opacity-40">
+                   <svg className="size-10 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                   </svg>
+                   <p className="text-sm">No messages yet. Start the chat.</p>
+                </div>
               ) : (
                 chatMessages.map((msg) => {
-                  const isOwn = msg.userId === meeting?.self?.id;
+                  const isOwn = msg.sender.name === "You";
                   return (
                     <div
                       key={msg.id}
-                      className={`rounded-xl p-2 text-sm ${
-                        isOwn
-                          ? "bg-[#2a27c2] text-white self-end"
-                          : "bg-gray-100 text-gray-800"
-                      }`}
+                      className={`flex flex-col ${isOwn ? "items-end" : "items-start"}`}
                     >
-                      <div className="font-medium text-xs uppercase opacity-70 mb-0.5">
-                        {isOwn ? "You" : msg.displayName || "Participant"}
-                        <span className="ml-2 text-[10px] text-gray-500">
-                          {msg.time
-                            ? new Date(msg.time).toLocaleTimeString([], {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })
-                            : ""}
-                        </span>
-                      </div>
-                      <div>{"message" in msg ? msg.message : ""}</div>
+                       <div className="flex items-center gap-2 mb-1 px-1">
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">
+                             {isOwn ? "You" : msg.sender.name}
+                          </span>
+                          <span className="text-[10px] text-slate-300">
+                             {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                       </div>
+                       <div className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm shadow-sm ${
+                          isOwn 
+                            ? "bg-blue-600 text-white rounded-tr-none" 
+                            : "bg-slate-100 text-slate-800 rounded-tl-none"
+                       }`}>
+                          {msg.text}
+                       </div>
                     </div>
                   );
                 })
@@ -365,13 +368,15 @@ export const RightPanel = ({
                   }
                 }}
                 placeholder="Type a message..."
-                className="flex-1 border border-gray-200 rounded-xl p-2 outline-none focus:ring-1 focus:ring-[#2a27c2]"
+                className="flex-1 border border-gray-200 rounded-xl p-2 outline-none focus:ring-1 focus:ring-blue-600 text-sm"
               />
               <button
                 onClick={handleSendChatMessage}
-                className="px-4 py-2 bg-[#2a27c2] text-white rounded-xl hover:bg-indigo-700 transition-colors"
+                className="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors shadow-sm"
               >
-                Send
+                <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                </svg>
               </button>
             </div>
           </div>
@@ -382,14 +387,14 @@ export const RightPanel = ({
       <div className="pt-4 mt-auto border-t border-gray-100 flex justify-between gap-3 min-w-0 shrink-0">
         <button
           onClick={() => showToast("Draft saved locally", "info")}
-          className="flex-1 min-w-0 py-2.5 bg-gray-100 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-200 transition-colors overflow-hidden text-ellipsis whitespace-nowrap"
+          className="flex-1 min-w-0 py-2.5 bg-gray-50 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-200 transition-colors overflow-hidden text-ellipsis whitespace-nowrap"
         >
           Save Draft
         </button>
         <button
           onClick={handleFinalize}
           disabled={actionLoading}
-          className="flex-1 min-w-0 py-2.5 bg-[#2a27c2] text-white rounded-xl text-sm font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden text-ellipsis whitespace-nowrap"
+          className="flex-1 min-w-0 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden text-ellipsis whitespace-nowrap shadow-md"
         >
           {actionLoading ? "Processing..." : "Finalize & Close Case"}
         </button>

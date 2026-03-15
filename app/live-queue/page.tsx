@@ -5,6 +5,7 @@ import DashboardLayout from "../components/DashboardLayout";
 import { useRouter } from "next/navigation";
 import { useAppointmentStore } from "../stores/appointmentStore";
 import { useSearchContext } from "../contexts/SearchContext";
+import { useToast } from "../contexts/ToastContext";
 import ConfirmationModal from "../components/ConfirmationModal";
 import WaitingPatientCard from "../components/WaitingPatientCard";
 import { formatDate } from "date-fns";
@@ -12,6 +13,7 @@ import { formatTime } from "../lib/utils/dateUtils";
 
 export default function LiveQueuePage() {
   const router = useRouter();
+  const toast = useToast();
   const {
     liveQueue: appointments,
     isQueueLoading: loading,
@@ -67,10 +69,11 @@ export default function LiveQueuePage() {
       type: "success",
       confirmText: "Accept & Start",
       onConfirm: async () => {
-        await startVideoCall(appointmentId);
-        const token = useAppointmentStore.getState().videoMeetingToken;
-        if (token) {
-          router.push(`/consultation/${appointmentId}?token=${token}`);
+        try {
+          await startVideoCall(appointmentId);
+          router.push(`/consultation/${appointmentId}`);
+        } catch (err: any) {
+          toast.showToast(err.message || "Failed to start video call", "error");
         }
         setModalConfig((prev) => ({ ...prev, isOpen: false }));
       },
@@ -85,7 +88,12 @@ export default function LiveQueuePage() {
       type: "danger",
       confirmText: "Reject",
       onConfirm: async () => {
-        await rejectAppointment(appointmentId);
+        try {
+          await rejectAppointment(appointmentId);
+          toast.showToast("Appointment rejected successfully", "success");
+        } catch (err: any) {
+          toast.showToast(err.message || "Failed to reject appointment", "error");
+        }
         setModalConfig((prev) => ({ ...prev, isOpen: false }));
       },
     });

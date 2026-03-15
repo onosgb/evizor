@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { Appointment, AppointmentStatus, User, CompleteAppointmentRequest } from "../models";
+import { StreamVideoCredentials } from "../models/StreamVideo";
 import { ListQueryParams } from "../models/QueryParams";
 import { appointmentService, adminService } from "../lib/services";
 
@@ -19,8 +20,7 @@ interface AppointmentState {
   isRejecting: boolean;
   error: string | null;
 
-  videoMeetingToken: string | null;
-  videoMeetingId: string | null;
+  streamCredentials: StreamVideoCredentials | null;
   isVideoLoading: boolean;
 
   fetchLiveQueue: (isBackground?: boolean) => Promise<void>;
@@ -54,8 +54,7 @@ export const useAppointmentStore = create<AppointmentState>((set, get) => ({
   actionLoading: false,
   isRejecting: false,
   error: null,
-  videoMeetingToken: null,
-  videoMeetingId: null,
+  streamCredentials: null,
   isVideoLoading: false,
 
   
@@ -70,10 +69,10 @@ export const useAppointmentStore = create<AppointmentState>((set, get) => ({
       const appointment = 
         liveQueue.find((a: Appointment) => a.id === appointmentId) || 
         assignedCases.find((a: Appointment) => a.id === appointmentId) ||
-        state.selectedAppointment;
-
+        state.selectedAppointment
+      
       set({ 
-        videoMeetingToken: data.dyteToken,
+        streamCredentials: data,
         selectedAppointment: appointment 
           ? { ...appointment, status: AppointmentStatus.PROGRESS } 
           : null 
@@ -84,6 +83,7 @@ export const useAppointmentStore = create<AppointmentState>((set, get) => ({
       }
     } catch (error: unknown) {
       set({ error: (error as Error).message || "Failed to start video call" });
+      throw error;
     } finally {
       set({ isVideoLoading: false });
     }
@@ -94,10 +94,11 @@ export const useAppointmentStore = create<AppointmentState>((set, get) => ({
     try {
       const data = await appointmentService.fetchAppointmentToken(appointmentId);
       set({ 
-        videoMeetingToken: data.dyteToken,
+        streamCredentials: data,
       });
     } catch (error: unknown) {
       set({ error: (error as Error).message || "Failed to fetch video token" });
+      throw error;
     } finally {
       set({ isVideoLoading: false });
     }
@@ -123,6 +124,7 @@ export const useAppointmentStore = create<AppointmentState>((set, get) => ({
       });
     } catch (error: unknown) {
       set({ error: (error as Error).message || "Failed to reject appointment" });
+      throw error;
     } finally {
       set({ isRejecting: false });
     }
@@ -147,7 +149,7 @@ export const useAppointmentStore = create<AppointmentState>((set, get) => ({
   },
 
   endVideoCall: () => {
-    set({ videoMeetingToken: null, videoMeetingId: null });
+    set({ streamCredentials: null });
   },
 
   setClinicalAlert: async (appointmentId: string) => {
@@ -158,6 +160,7 @@ export const useAppointmentStore = create<AppointmentState>((set, get) => ({
       set({ selectedAppointment: { ...state.selectedAppointment!, status: AppointmentStatus.CLINICAL } });
     } catch (error: unknown) {
       set({ error: (error as Error).message || "Failed to set clinical alert" });
+      throw error;
     } finally {
       set({ actionLoading: false });
     }
@@ -179,7 +182,6 @@ export const useAppointmentStore = create<AppointmentState>((set, get) => ({
     if (!isBackground) set({ isQueueLoading: true, error: null });
     try {
       const response = await appointmentService.getLiveQueue();
-      console.log(response.data);
       if (response.data && response.data) {
         set({ liveQueue: response.data });
       } else {

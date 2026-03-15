@@ -7,10 +7,12 @@ import { AppointmentStatus } from "../models";
 import { useAppointmentStore } from "../stores/appointmentStore";
 import ConfirmationModal from "./ConfirmationModal";
 import { useRouter } from "next/navigation";
+import { useToast } from "../contexts/ToastContext";
 
 export default function ActionButtons() {
   const user = useAuthStore((state) => state.user);
   const router = useRouter();
+  const toast = useToast();
   const selectedAppointment = useAppointmentStore((state) => state.selectedAppointment);
   const setClinicalAlert = useAppointmentStore((state) => state.setClinicalAlert);
   const actionLoading = useAppointmentStore((state) => state.actionLoading);
@@ -92,14 +94,9 @@ onConfirm={async () => {
   if (selectedAppointment) {
     try {
       await startVideoCall(selectedAppointment.id);
-      const token = useAppointmentStore.getState().videoMeetingToken;
-      if (token) {
-        router.push(`/consultation/${selectedAppointment.id}`);
-      } else {
-        console.error("No video token generated");
-      }
-    } catch (err) {
-      console.error("Failed to accept or start call:", err);
+      router.push(`/consultation/${selectedAppointment.id}`);
+    } catch (err: any) {
+      toast.showToast(err.message || "Failed to start video call", "error");
     }
   }
   setAcceptModalOpen(false);
@@ -117,10 +114,15 @@ cancelText="Cancel"
 isLoading={actionLoading}
 message="Are you sure you want to send a clinical alert?"
 onConfirm={async () => {
-  if (selectedAppointment?.id) {
-    await setClinicalAlert(selectedAppointment.id);
-  }
-  setClinicalAlertModalOpen(false);
+    if (selectedAppointment?.id) {
+      try {
+        await setClinicalAlert(selectedAppointment.id);
+        toast.showToast("Clinical alert sent successfully", "success");
+      } catch (err: any) {
+        toast.showToast(err.message || "Failed to send clinical alert", "error");
+      }
+    }
+    setClinicalAlertModalOpen(false);
 }}
 confirmButtonClass={applyBtnClass}
 />

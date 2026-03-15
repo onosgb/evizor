@@ -63,6 +63,10 @@ apiClient.interceptors.request.use(
 // Response interceptor - Handle token refresh and errors
 apiClient.interceptors.response.use(
   (response) => {
+    // Check for success status in the response body
+    if (response.data && response.data.status === false) {
+      throw ApiError.fromResponse(response.data as ApiResponse<any>);
+    }
     return response;
   },
   async (error: AxiosError) => {

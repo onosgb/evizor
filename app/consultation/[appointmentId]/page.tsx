@@ -3,14 +3,14 @@
 import { use, useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
-  RealtimeKitProvider,
-  useRealtimeKitClient,
-  useRealtimeKitSelector,
-} from "@cloudflare/realtimekit-react";
-import type {
-  Message as RTKMessage,
-  ChatUpdateParams,
-} from "@cloudflare/realtimekit";
+  StreamVideo,
+  StreamVideoClient as StreamClient,
+  StreamCall,
+  useCallStateHooks,
+  ParticipantView,
+  SpeakerLayout,
+} from "@stream-io/video-react-sdk";
+import "@stream-io/video-react-sdk/dist/css/styles.css";
 
 import { useAppointmentStore } from "@/app/stores/appointmentStore";
 import { usePharmacyStore } from "@/app/stores/pharmacyStore";
@@ -23,32 +23,16 @@ type Tab = "info" | "notes" | "prescription" | "lab" | "chat";
 
 // Local video (doctor) — inline so page re-renders keep connection rendering
 const LocalVideo = () => {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const videoTrack = useRealtimeKitSelector((m) => m.self.videoTrack);
-  const audioTrack = useRealtimeKitSelector((m) => m.self.audioTrack);
+  const { useLocalParticipant } = useCallStateHooks();
+  const localParticipant = useLocalParticipant();
 
-  useEffect(() => {
-    const videoElement = videoRef.current;
-    if (!videoElement) return;
-    
-    if (videoTrack || audioTrack) {
-      const stream = new MediaStream();
-      if (videoTrack) stream.addTrack(videoTrack);
-      if (audioTrack) stream.addTrack(audioTrack);
-      videoElement.srcObject = stream;
-    } else {
-      videoElement.srcObject = null;
-    }
-  }, [videoTrack, audioTrack]);
+  if (!localParticipant) return null;
 
   return (
     <div className="absolute bottom-4 right-4 w-40 h-56 bg-black rounded-xl overflow-hidden border-2 border-slate-700 shadow-2xl z-20 flex flex-col">
-      <video
-        ref={videoRef}
-        autoPlay
-        playsInline
-        muted
-        style={{ transform: 'scaleX(-1)' }}
+      <ParticipantView
+        participant={localParticipant}
+        mirror={true}
         className="flex-1 w-full h-full object-cover bg-slate-800"
       />
       <div className="absolute bottom-2 left-2 bg-black/60 px-2 py-0.5 rounded text-[10px] font-medium text-white backdrop-blur-sm">
@@ -58,27 +42,12 @@ const LocalVideo = () => {
   );
 };
 
-// Remote participants — old logic: only participants.joined, filter self (connection renders with page)
+// Remote participants — prioritized 1-on-1 layout
 const RemoteVideos = ({ patientDisplayName }: { patientDisplayName: string }) => {
-  const participants = useRealtimeKitSelector((m) => m.participants.joined);
-  const selfId = useRealtimeKitSelector((m) => m.self.id);
-  const participantsArray = Array.from(participants.values()).filter((p: any) => p.id !== selfId);
+  const { useRemoteParticipants } = useCallStateHooks();
+  const remoteParticipants = useRemoteParticipants();
 
-  useEffect(() => {
-    participantsArray.forEach((p: any) => {
-      const el = document.getElementById(`rtk-remote-video-${p.id}`) as HTMLVideoElement;
-      if (el) {
-        const stream = new MediaStream();
-        if (p.videoTrack) stream.addTrack(p.videoTrack);
-        if (p.audioTrack) stream.addTrack(p.audioTrack);
-        if (stream.getTracks().length > 0 && el.srcObject !== stream) {
-          el.srcObject = stream;
-        }
-      }
-    });
-  }, [participantsArray]);
-
-  if (participantsArray.length === 0) {
+  if (remoteParticipants.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center p-8 text-center text-white/40 space-y-3">
         <div className="size-16 rounded-full bg-white/5 flex items-center justify-center animate-pulse">
@@ -91,21 +60,83 @@ const RemoteVideos = ({ patientDisplayName }: { patientDisplayName: string }) =>
     );
   }
 
+  // In 1-on-1, the first remote participant is the patient
   return (
-    <div className="absolute inset-0 grid grid-cols-1 overflow-hidden">
-      {participantsArray.map((p: any) => (
-        <div key={p.id} className="relative w-full h-full flex items-center justify-center bg-slate-900">
-          <video
-            id={`rtk-remote-video-${p.id}`}
-            autoPlay
-            playsInline
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute bottom-4 left-4 bg-black/60 px-3 py-1.5 rounded-lg text-sm text-white font-medium backdrop-blur-sm border border-white/10">
-            {p.name || "Patient"}
-          </div>
-        </div>
-      ))}
+    <div className="absolute inset-0 w-full h-full overflow-hidden">
+      <ParticipantView 
+        participant={remoteParticipants[0]} 
+        className="w-full h-full object-cover"
+        mirror={false}
+      />
+    </div>
+  );
+};
+
+// Custom mobile-like controls
+const ConsultationControls = ({ onLeave }: { onLeave: () => void }) => {
+  const { useMicrophoneState, useCameraState } = useCallStateHooks();
+  const { microphone, isMute: isMicMuted } = useMicrophoneState();
+  const { camera, isMute: isCamMuted } = useCameraState();
+
+  return (
+    <div className="flex items-center justify-center gap-4 px-6 py-3 bg-black/40 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl animate-fade-in">
+      {/* Mic Toggle */}
+      <button
+        onClick={() => microphone.toggle()}
+        className={`size-12 rounded-xl flex items-center justify-center transition-all ${
+          isMicMuted 
+            ? "bg-red-500/20 text-red-500 hover:bg-red-500/30" 
+            : "bg-white/10 text-white hover:bg-white/20"
+        }`}
+        title={isMicMuted ? "Unmute Mic" : "Mute Mic"}
+      >
+        {isMicMuted ? (
+          <svg xmlns="http://www.w3.org/2000/svg" className="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+            <line x1="1" y1="1" x2="23" y2="23" stroke="currentColor" strokeWidth={2} />
+          </svg>
+        ) : (
+          <svg xmlns="http://www.w3.org/2000/svg" className="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+          </svg>
+        )}
+      </button>
+
+      {/* Camera Toggle */}
+      <button
+        onClick={() => camera.toggle()}
+        className={`size-12 rounded-xl flex items-center justify-center transition-all ${
+          isCamMuted 
+            ? "bg-red-500/20 text-red-500 hover:bg-red-500/30" 
+            : "bg-white/10 text-white hover:bg-white/20"
+        }`}
+        title={isCamMuted ? "Turn Camera On" : "Turn Camera Off"}
+      >
+        {isCamMuted ? (
+          <svg xmlns="http://www.w3.org/2000/svg" className="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+            <line x1="1" y1="1" x2="23" y2="23" stroke="currentColor" strokeWidth={2} />
+          </svg>
+        ) : (
+          <svg xmlns="http://www.w3.org/2000/svg" className="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+          </svg>
+        )}
+      </button>
+
+      <div className="w-px h-8 bg-white/10 mx-2" />
+
+      {/* End Call */}
+      <button
+        onClick={onLeave}
+        className="h-12 px-6 bg-red-500 hover:bg-red-600 text-white rounded-xl flex items-center gap-2 font-medium transition-all shadow-lg shadow-red-500/20"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 8l2-2m0 0l2 2m-2-2v10m-6-8l-2-2m0 0l-2 2m2-2v10m-6-8l-2-2m0 0l-2 2m2-2v10" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+        </svg>
+        End Call
+      </button>
     </div>
   );
 };
@@ -120,12 +151,13 @@ export default function ConsultationPage({
   const unwrappedParams = use(params);
   const appointmentId = unwrappedParams.appointmentId;
 
-  const [meeting, initMeeting] = useRealtimeKitClient();
+  const [client, setClient] = useState<StreamClient | null>(null);
+  const [call, setCall] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const {
     selectedAppointment,
     selectedPatient,
-    videoMeetingToken,
+    streamCredentials,
     endVideoCall,
     selectAppointment,
     fetchPatientDetails,
@@ -136,10 +168,9 @@ export default function ConsultationPage({
 
   const [activeTab, setActiveTab] = useState<Tab>("chat");
   const [notes, setNotes] = useState("");
-  const [chatMessages, setChatMessages] = useState<RTKMessage[]>([]);
+  const [chatMessages, setChatMessages] = useState<any[]>([]);
   const [chatInput, setChatInput] = useState("");
   const chatEndRef = useRef<HTMLDivElement>(null);
-  const connectionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [medications, setMedications] = useState<any[]>([]);
   const [pharmacyId, setPharmacyId] = useState("");
   const { pharmacies, fetchPharmacies } = usePharmacyStore();
@@ -168,165 +199,120 @@ export default function ConsultationPage({
   ]);
 
   useEffect(() => {
-    if (!videoMeetingToken && appointmentId) {
+    if (!streamCredentials && appointmentId) {
       fetchVideoToken(appointmentId);
     }
-  }, [appointmentId, videoMeetingToken, fetchVideoToken]);
+  }, [appointmentId, streamCredentials, fetchVideoToken]);
 
   useEffect(() => {
     fetchPharmacies();
     fetchLabTestTypes();
   }, [fetchPharmacies, fetchLabTestTypes]);
 
-  // Initialize RealtimeKit meeting when component mounts
+  const hasInitializedRef = useRef(false);
+
+  // Initialize Stream Video client when credentials arrive
   useEffect(() => {
-    const activeToken = videoMeetingToken;
-    if (!activeToken) {
-      return;
-    }
+    if (!streamCredentials || hasInitializedRef.current) return;
 
-    // Log meeting ID from token so you can compare with mobile (must be same meeting)
-    try {
-      const payload = JSON.parse(
-        atob(activeToken.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))
-      ) as { meetingId?: string; meeting_id?: string };
-      const meetingId = payload.meetingId ?? payload.meeting_id;
-      if (meetingId) {
-        console.log("[Consultation] [WEB] Token meeting ID:", meetingId);
-      }
-    } catch {
-      // ignore decode errors
-    }
+    const initStream = async () => {
+      hasInitializedRef.current = true;
+      const { userId, userToken, callId, callType } = streamCredentials;
+      const apiKey = process.env.NEXT_PUBLIC_STREAM_API_KEY!;
 
-    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+      const newClient = new StreamClient(apiKey);
+      setClient(newClient);
 
-    try {
-      initMeeting({
-        authToken: activeToken,
-        defaults: {
-          audio: true,
-          video: true,
-        },
-      });
-
-      // Fallback: if we still have no meeting after 30s, show connection message (matches app behavior)
-      timeoutId = setTimeout(() => {
-        setError((prev) =>
-          prev
-            ? prev
-            : "Connecting is taking longer than expected. Check your connection (try a different network) and try again.",
+      try {
+        await newClient.connectUser(
+          { id: userId, name: selectedAppointment?.doctorName || "Doctor" },
+          userToken
         );
-      }, 30000);
-      connectionTimeoutRef.current = timeoutId;
-    } catch (err: unknown) {
-      console.error("Failed to initialize RealtimeKit meeting:", err);
-      setError("Failed to connect to the video server.");
-    }
+        console.log("[Stream] User connected successfully");
+
+        const newCall = newClient.call(callType, callId);
+        setCall(newCall);
+
+        await newCall.join({ create: true });
+        console.log("[Stream] Joined call successfully");
+      } catch (err: any) {
+        console.error("[Stream] Initialization failed:", err);
+        setError(`Video initialization failed: ${err.message || "Unknown error"}`);
+        hasInitializedRef.current = false; // Allow retry
+      }
+    };
+
+    initStream();
 
     return () => {
-      if (timeoutId) clearTimeout(timeoutId);
-      connectionTimeoutRef.current = null;
+      // Cleanup is handled by the hooks/client disconnect if needed, 
+      // but we reset ref if we unmount
+      hasInitializedRef.current = false;
     };
-  }, [videoMeetingToken, initMeeting]);
+  }, [streamCredentials, selectedAppointment?.doctorName]);
 
-  // Clear connection-timeout error and cancel the 30s timer once meeting is available
-  useEffect(() => {
-    if (meeting) {
-      if (connectionTimeoutRef.current) {
-        clearTimeout(connectionTimeoutRef.current);
-        connectionTimeoutRef.current = null;
-      }
-      setError((prev) =>
-        prev?.includes("Connecting is taking longer") ? null : prev,
-      );
-    }
-  }, [meeting]);
+  // Initialization Effect return handles cleanup
 
   // Tracks whether we initiated the leave ourselves, so the "roomLeft"
   // event listener doesn't trigger a second navigation.
   const isLeavingRef = useRef(false);
-  const hasJoinedRef = useRef<string | null>(null);
 
   const handleEndCall = useCallback(async () => {
-    if (isLeavingRef.current) return; // prevent double-execution
+    if (isLeavingRef.current) return;
     isLeavingRef.current = true;
-    if (meeting) {
+    if (call) {
       try {
-        await meeting.leave();
+        await call.leave();
       } catch (e) {
-        console.warn("Error leaving meeting", e);
-        showToast(
-          `Error while ending session: ${(e as Error)?.message || "Please try again."}`,
-          "error",
-        );
+        console.warn("Error leaving call", e);
       }
+    }
+    if (client) {
+      await client.disconnectUser();
     }
     endVideoCall();
     showToast("Session ended. Redirecting to dashboard.", "success");
     router.push("/");
-  }, [meeting, endVideoCall, router, showToast]);
+  }, [call, client, endVideoCall, router, showToast]);
 
   const handleRetryJoin = useCallback(async () => {
     setError(null);
-    if (meeting) {
+    if (call) {
       try {
-        await meeting.join();
+        await call.join({ create: true });
       } catch (err: unknown) {
-        const message =
-          (err as Error)?.message || "Failed to join meeting. Try again or go back.";
-        console.error("Failed to join meeting (retry)", err);
+        const message = (err as Error)?.message || "Failed to join call. Try again.";
         setError(message);
         showToast(message, "error");
       }
       return;
     }
-    // No meeting yet (init failed or timed out): re-init with current token
-    const activeToken = videoMeetingToken;
-    if (!activeToken) {
-      setError("No session token. Please go back and start the call again.");
-      return;
+    
+    if (appointmentId) {
+      fetchVideoToken(appointmentId);
     }
-    try {
-      initMeeting({
-        authToken: activeToken,
-        defaults: { audio: true, video: true },
-      });
-    } catch (err: unknown) {
-      console.error("Failed to re-initialize meeting", err);
-      setError("Failed to connect. Try again or go back.");
-    }
-  }, [meeting, videoMeetingToken, initMeeting, showToast]);
+  }, [call, appointmentId, fetchVideoToken, showToast]);
 
+  // Handle incoming chat messages via custom events
   useEffect(() => {
-    if (!meeting?.chat) return;
+    if (!call) return;
 
-    setChatMessages(meeting.chat.messages || []);
-
-    const handleChatUpdate = (payload: ChatUpdateParams) => {
-      // SDK sends full list in payload.messages; use it to avoid duplicates and ordering issues
-      if (Array.isArray(payload.messages)) {
-        setChatMessages([...payload.messages]);
-        return;
+    const unsubscribe = call.on("custom", (event: any) => {
+      if (event.type === "chat") {
+        setChatMessages((prev) => [
+          ...prev,
+          {
+            id: event.event_id || Date.now().toString(),
+            sender: { name: event.user?.name || "Patient" },
+            text: event.custom.text,
+            timestamp: new Date().toISOString(),
+          },
+        ]);
       }
-      if (payload.action === "add" && payload.message) {
-        setChatMessages((prev) => [...prev, payload.message!]);
-      } else if (payload.action === "edit" && payload.message) {
-        setChatMessages((prev) =>
-          prev.map((m) => (m.id === payload.message!.id ? payload.message! : m))
-        );
-      } else if (payload.action === "delete" && payload.message) {
-        setChatMessages((prev) =>
-          prev.filter((m) => m.id !== payload.message!.id)
-        );
-      }
-    };
+    });
 
-    meeting.chat.on("chatUpdate", handleChatUpdate);
-
-    return () => {
-      meeting.chat.off("chatUpdate", handleChatUpdate);
-    };
-  }, [meeting]);
+    return () => unsubscribe();
+  }, [call]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -404,56 +390,32 @@ export default function ConsultationPage({
 
   const handleSendChatMessage = async () => {
     const text = chatInput.trim();
-    if (!text || !meeting?.chat) return;
+    if (!text || !call) return;
 
     try {
-      await meeting.chat.sendTextMessage(text);
+      await call.sendCustomEvent({
+        type: "chat",
+        text: text,
+      });
+
+      // Add to local state
+      setChatMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now().toString(),
+          sender: { name: "You" },
+          text: text,
+          timestamp: new Date().toISOString(),
+        },
+      ]);
       setChatInput("");
     } catch (err: unknown) {
-      const message =
-        err && typeof err === "object" && "message" in err
-          ? (err as Error).message
-          : "Failed to send message";
       console.error("Failed to send chat message", err);
-      showToast(message, "error");
+      showToast("Failed to send message", "error");
     }
   };
 
-  useEffect(() => {
-    if (!meeting || hasJoinedRef.current === videoMeetingToken) return;
-
-    // Join the room now that we are initialized
-    console.log("[Consultation] [WEB] Joining the room...");
-    hasJoinedRef.current = videoMeetingToken;
-    meeting.join().then(() => {
-      console.log("[Consultation] [WEB] We have joined the room");
-    }).catch((err: unknown) => {
-      const message =
-        (err as Error)?.message ||
-        "Failed to join meeting. Check your connection and try again.";
-      console.error("Failed to join meeting", err);
-      // Only set error if we are not already leaving
-      if (!isLeavingRef.current) {
-        setError(message);
-        showToast(message, "error");
-      }
-    });
-
-    const handleRoomLeft = () => {
-      // Only navigate if the room was closed externally (e.g. doctor on another
-      // device ended the call). If we initiated the leave ourselves,
-      // handleEndCall already pushed to /live-queue.
-      if (!isLeavingRef.current) {
-        handleEndCall();
-      }
-    };
-
-    meeting.self.on("roomLeft", handleRoomLeft);
-
-    return () => {
-      meeting.self.off("roomLeft", handleRoomLeft);
-    };
-  }, [meeting, handleEndCall, setError, showToast, videoMeetingToken]);
+  // Effects above handle joining and messaging
 
   // Patient data from store
   const patientDisplayName = selectedPatient
@@ -462,12 +424,11 @@ export default function ConsultationPage({
   const displayPatientId =
     selectedPatient?.healthCardNo|| "...";
 
-  const activeToken = videoMeetingToken;
-
-  if (!activeToken && !error) {
+  if (!client || !call) {
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-navy-900 flex items-center justify-center">
-        <p>Loading consultation...</p>
+      <div className="min-h-screen dark:bg-navy-900 flex flex-col items-center justify-center space-y-4">
+        <div className="size-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+        <p className="text-slate-500 font-medium">Initializing secure video session...</p>
       </div>
     );
   }
@@ -516,23 +477,17 @@ export default function ConsultationPage({
                       End Meeting
                     </button>
                   </div>
-                  <p className="mt-3 text-xs cursor-pointer text-red-200 opacity-80">
-                    If the issue persists, refresh the page or check your network.
-                  </p>
-                </div>
-              ) : !meeting ? (
-                <div className="flex flex-col items-center text-white space-y-4">
-                  <svg className="w-10 h-10 animate-spin text-white opacity-80" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                  </svg>
-                  <p>Starting video feed...</p>
                 </div>
               ) : (
-                <RealtimeKitProvider value={meeting}>
-                  <RemoteVideos patientDisplayName={patientDisplayName} />
-                  <LocalVideo />
-                </RealtimeKitProvider>
+                <StreamVideo client={client}>
+                  <StreamCall call={call}>
+                    <RemoteVideos patientDisplayName={patientDisplayName} />
+                    <LocalVideo />
+                    <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 w-full max-w-md px-4">
+                       <ConsultationControls onLeave={handleEndCall} />
+                    </div>
+                  </StreamCall>
+                </StreamVideo>
               )}
             </div>
 
@@ -564,7 +519,6 @@ export default function ConsultationPage({
             isUploadingLab={isUploadingLab}
             handleSendLabRequest={handleSendLabRequest}
             chatMessages={chatMessages}
-            meeting={meeting}
             chatEndRef={chatEndRef}
             chatInput={chatInput}
             setChatInput={setChatInput}

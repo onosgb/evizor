@@ -8,6 +8,7 @@ import {
   CreatePrescriptionRequest,
   LabUploadData,
 } from "../../models";
+import { StreamVideoCredentials } from "../../models/StreamVideo";
 import type { ProposeAvailabilityRequest } from "../../models/DoctorAvailability";
 import { ListQueryParams } from "../../models/QueryParams";
 import { buildQueryParams } from "../utils/queryParams";
@@ -112,8 +113,8 @@ class AppointmentService {
    * Request a Dyte video auth token for a given appointment.
    * The backend creates/retrieves the meeting and returns a participant auth token.
    */
-  async requestVideoToken(appointmentId: string): Promise<{ dyteToken: string; meetingUrl: string; }> {
-    const response = await apiClient.post<ApiResponse<{ dyteToken: string; meetingUrl: string; }>>(
+  async requestVideoToken(appointmentId: string): Promise<StreamVideoCredentials> {
+    const response = await apiClient.post<ApiResponse<StreamVideoCredentials>>(
       `/appointments/${appointmentId}/start`,
     );
     return response.data.data;
@@ -133,8 +134,8 @@ class AppointmentService {
   /**
    * Fetch a Dyte auth token for an active appointment (Session Recovery)
    */
-  async fetchAppointmentToken(appointmentId: string): Promise<{ dyteToken: string; meetingUrl?: string }> {
-    const response = await apiClient.get<ApiResponse<{ dyteToken: string; meetingUrl?: string }>>(
+  async fetchAppointmentToken(appointmentId: string): Promise<StreamVideoCredentials> {
+    const response = await apiClient.get<ApiResponse<StreamVideoCredentials>>(
       `/appointments/${appointmentId}/token`,
     );
     return response.data.data;
