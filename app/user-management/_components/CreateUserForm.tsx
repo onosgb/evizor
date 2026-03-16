@@ -4,6 +4,13 @@ import { CreateStaffRequest } from "@/app/models";
 import { useTenantStore } from "@/app/stores";
 import { useAuthStore } from "@/app/stores/authStore";
 import { isSuperAdmin } from "@/app/lib/roles";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/app/components/ui/select";
 
 // Helper function to check if status is active
 const isActiveStatus = (status: string | null | undefined): boolean => {
@@ -146,45 +153,47 @@ export default function CreateStaffForm({
             </div>
           )}
           <form onSubmit={handleSubmit} className="mt-4 space-y-4">
-            <label className="block">
+            <div className="space-y-1.5">
               <span>Role:</span>
-              <select
-                className="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 hover:border-slate-400 focus:border-navy dark:border-navy-450 dark:bg-navy-700 dark:hover:border-navy-400 dark:focus:border-accent"
+              <Select
                 value={formData.role}
-                onChange={(e) =>
-                  setFormData({ ...formData, role: e.target.value })
-                }
-                required
+                onValueChange={(value) => setFormData({ ...formData, role: value })}
               >
-                <option value="">Select role</option>
-                <option value="DOCTOR">Doctor</option>
-                <option value="ADMIN">Admin</option>
-              </select>
-            </label>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="DOCTOR">Doctor</SelectItem>
+                  <SelectItem value="ADMIN">Admin</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             {currentUserIsSuperAdmin && (
-              <label className="block">
+              <div className="space-y-1.5">
                 <span>Location (Province):</span>
-                <select
-                  className="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 hover:border-slate-400 focus:border-navy dark:border-navy-450 dark:bg-navy-700 dark:hover:border-navy-400 dark:focus:border-accent"
+                <Select
                   value={formData.tenantId}
-                  onChange={(e) =>
-                    setFormData({ ...formData, tenantId: e.target.value })
-                  }
-                  required
+                  onValueChange={(value) => setFormData({ ...formData, tenantId: value })}
                   disabled={isLoadingTenants}
                 >
-                  <option value="">
-                    {isLoadingTenants ? "Loading locations..." : "Select location"}
-                  </option>
-                  {(tenants || [])
-                    .filter((tenant) => tenant.isActive)
-                    .map((tenant) => (
-                      <option key={tenant.id} value={tenant.id}>
-                        {tenant.province}
-                      </option>
-                    ))}
-                </select>
-              </label>
+                  <SelectTrigger className="w-full">
+                    <SelectValue
+                      placeholder={
+                        isLoadingTenants ? "Loading locations..." : "Select location"
+                      }
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(tenants || [])
+                      .filter((tenant) => tenant.isActive)
+                      .map((tenant) => (
+                        <SelectItem key={tenant.id} value={tenant.id}>
+                          {tenant.province}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
             )}
             <label className="block">
               <span>Full Name:</span>

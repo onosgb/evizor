@@ -18,3 +18,4 @@ export type { ListQueryParams } from "./QueryParams";
 export * from "./Prescription";
 export type { LabTestType } from "./LabTestType";
 export * from "./LabUploadResponse";
+export type { Attachment } from "./Attachment";

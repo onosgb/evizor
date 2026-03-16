@@ -13,12 +13,12 @@ import "@stream-io/video-react-sdk/dist/css/styles.css";
 
 import { useAppointmentStore } from "@/app/stores/appointmentStore";
 import { usePharmacyStore } from "@/app/stores/pharmacyStore";
-import { useLabTestTypeStore } from "@/app/stores/labTestTypeStore";
 import { useToast } from "@/app/contexts/ToastContext";
 import { appointmentService } from "@/app/lib/services/appointment.service";
 import { RightPanel } from "./components/RightPanel";
+import { Attachment } from "@/app/models";
 
-type Tab = "info" | "notes" | "prescription" | "lab" | "chat";
+type Tab = "Info" | "Notes" | "Prescription" | "Lab / Diagnosis" | "Chat";
 
 // Local video (doctor) — inline so page re-renders keep connection rendering
 const LocalVideo = () => {
@@ -78,11 +78,11 @@ const ConsultationControls = ({ onLeave }: { onLeave: () => void }) => {
   const { camera, isMute: isCamMuted } = useCameraState();
 
   return (
-    <div className="flex items-center justify-center gap-4 px-6 py-3 bg-black/40 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl animate-fade-in">
+    <div className="flex items-center justify-center gap-3 px-4 py-2 bg-black/40 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl animate-fade-in">
       {/* Mic Toggle */}
       <button
         onClick={() => microphone.toggle()}
-        className={`size-12 rounded-xl flex items-center justify-center transition-all ${
+        className={`size-10 rounded-xl flex items-center justify-center transition-all ${
           isMicMuted 
             ? "bg-red-500/20 text-red-500 hover:bg-red-500/30" 
             : "bg-white/10 text-white hover:bg-white/20"
@@ -90,12 +90,12 @@ const ConsultationControls = ({ onLeave }: { onLeave: () => void }) => {
         title={isMicMuted ? "Unmute Mic" : "Mute Mic"}
       >
         {isMicMuted ? (
-          <svg xmlns="http://www.w3.org/2000/svg" className="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg xmlns="http://www.w3.org/2000/svg" className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
             <line x1="1" y1="1" x2="23" y2="23" stroke="currentColor" strokeWidth={2} />
           </svg>
         ) : (
-          <svg xmlns="http://www.w3.org/2000/svg" className="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg xmlns="http://www.w3.org/2000/svg" className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
           </svg>
         )}
@@ -104,7 +104,7 @@ const ConsultationControls = ({ onLeave }: { onLeave: () => void }) => {
       {/* Camera Toggle */}
       <button
         onClick={() => camera.toggle()}
-        className={`size-12 rounded-xl flex items-center justify-center transition-all ${
+        className={`size-10 rounded-xl flex items-center justify-center transition-all ${
           isCamMuted 
             ? "bg-red-500/20 text-red-500 hover:bg-red-500/30" 
             : "bg-white/10 text-white hover:bg-white/20"
@@ -112,25 +112,25 @@ const ConsultationControls = ({ onLeave }: { onLeave: () => void }) => {
         title={isCamMuted ? "Turn Camera On" : "Turn Camera Off"}
       >
         {isCamMuted ? (
-          <svg xmlns="http://www.w3.org/2000/svg" className="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg xmlns="http://www.w3.org/2000/svg" className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
             <line x1="1" y1="1" x2="23" y2="23" stroke="currentColor" strokeWidth={2} />
           </svg>
         ) : (
-          <svg xmlns="http://www.w3.org/2000/svg" className="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg xmlns="http://www.w3.org/2000/svg" className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
           </svg>
         )}
       </button>
 
-      <div className="w-px h-8 bg-white/10 mx-2" />
+      <div className="w-px h-6 bg-white/10 mx-1" />
 
       {/* End Call */}
       <button
         onClick={onLeave}
-        className="h-12 px-6 bg-red-500 hover:bg-red-600 text-white rounded-xl flex items-center gap-2 font-medium transition-all shadow-lg shadow-red-500/20"
+        className="h-10 px-4 bg-red-500 hover:bg-red-600 text-white rounded-xl flex items-center gap-2 text-sm font-medium transition-all shadow-lg shadow-red-500/20"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg xmlns="http://www.w3.org/2000/svg" className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 8l2-2m0 0l2 2m-2-2v10m-6-8l-2-2m0 0l-2 2m2-2v10m-6-8l-2-2m0 0l-2 2m2-2v10" />
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
         </svg>
@@ -163,9 +163,10 @@ export default function ConsultationPage({
     completeAppointment,
     fetchVideoToken,
     actionLoading,
+    history,
   } = useAppointmentStore();
 
-  const [activeTab, setActiveTab] = useState<Tab>("chat");
+  const [activeTab, setActiveTab] = useState<Tab>("Notes");
   const [notes, setNotes] = useState("");
   const [chatMessages, setChatMessages] = useState<any[]>([]);
   const [chatInput, setChatInput] = useState("");
@@ -174,9 +175,7 @@ export default function ConsultationPage({
   const [pharmacyId, setPharmacyId] = useState("");
   const { pharmacies, fetchPharmacies } = usePharmacyStore();
   const [isSendingPrescription, setIsSendingPrescription] = useState(false);
-  const [labFile, setLabFile] = useState<File | null>(null);
-  const [labTestTypeId, setLabTestTypeId] = useState("");
-  const { labTestTypes, fetchLabTestTypes } = useLabTestTypeStore();
+  const [uploads, setUploads] = useState<Attachment[]>([]);
   const [isUploadingLab, setIsUploadingLab] = useState(false);
 
   // Refetch data on mount if missing (e.g., hard refresh)
@@ -205,8 +204,7 @@ export default function ConsultationPage({
 
   useEffect(() => {
     fetchPharmacies();
-    fetchLabTestTypes();
-  }, [fetchPharmacies, fetchLabTestTypes]);
+  }, [fetchPharmacies]);
 
   const hasInitializedRef = useRef(false);
 
@@ -346,7 +344,7 @@ export default function ConsultationPage({
     }
     setIsSendingPrescription(true);
     try {
-      await appointmentService.addPrescription(appointmentId, {
+      await appointmentService.addPrescription({
         phamacyId: pharmacyId,
         appointmentId,
         medications: medications.map((m: any) => ({
@@ -366,22 +364,20 @@ export default function ConsultationPage({
   };
 
   const handleSendLabRequest = async () => {
-    if (!labFile) {
-      showToast("Please select a file to upload", "error");
+    if (uploads.length === 0) {
+      showToast("Please select at least one file to upload", "error");
       return;
     }
     setIsUploadingLab(true);
     try {
-      if (labTestTypeId) {
-        await appointmentService.uploadLabResult(appointmentId, labTestTypeId, labFile);
-      } else {
-        await appointmentService.addAttachment(appointmentId, labFile, "Lab Test / Diagnosis");
-      }
-      showToast("Attachment uploaded successfully", "success");
-      setLabFile(null);
-      setLabTestTypeId("");
+      await appointmentService.addAttachments(appointmentId, uploads);
+      showToast("Attachment(s) uploaded successfully", "success");
+      setUploads([]);
     } catch (err: unknown) {
-      showToast((err as Error).message || "Failed to upload attachment", "error");
+      showToast(
+        (err as Error).message || "Failed to upload attachment(s)",
+        "error"
+      );
     } finally {
       setIsUploadingLab(false);
     }
@@ -423,18 +419,10 @@ export default function ConsultationPage({
   const displayPatientId =
     selectedPatient?.healthCardNo|| "...";
 
-  if (!client || !call) {
-    return (
-      <div className="min-h-screen dark:bg-navy-900 flex flex-col items-center justify-center space-y-4">
-        <div className="size-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
-        <p className="text-slate-500 font-medium">Initializing secure video session...</p>
-      </div>
-    );
-  }
 
   return (
-    <div className="min-h-screen scrollbar-hide flex flex-col bg-slate-50 dark:bg-navy-900 overflow-hidden font-inter">
-      <main className="main-content w-full h-screen flex pt-1 pb-4 px-4 lg:pt-1 lg:pb-6 lg:px-6 overflow-hidden">
+    <div className="h-dvh scrollbar-hide flex flex-col bg-slate-50 dark:bg-navy-900 overflow-hidden font-inter">
+      <main className="main-content w-full h-full flex items-center pt-4 pb-12 px-4 lg:pt-6 lg:pb-16 lg:px-10 overflow-hidden">
         <div className="flex w-full min-w-0 h-full gap-3 lg:gap-4 overflow-hidden">
           {/* VIDEO SECTION — inline so connection keeps rendering */}
           <section className="flex flex-col flex-1 min-w-0 w-full lg:max-w-[55%] bg-white rounded-2xl shadow-md pt-2 pb-4 px-4 lg:pt-3 lg:pb-6 lg:px-6 relative h-full min-h-0 overflow-hidden">
@@ -445,17 +433,16 @@ export default function ConsultationPage({
               </div>
               <div className="flex items-center space-x-4">
                 <span className="px-3 py-1 text-sm bg-green-100 text-green-600 rounded-full animate-pulse">Live</span>
-                <button
-                  onClick={handleEndCall}
-                  className="px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-sm font-medium transition-colors"
-                >
-                  End Session
-                </button>
               </div>
             </div>
 
             <div className="relative flex-1 min-h-0 bg-slate-900 rounded-2xl overflow-hidden flex items-center justify-center">
-              {error ? (
+              {(!client || !call) && !error ? (
+                <div className="flex flex-col items-center justify-center space-y-4 text-center p-8">
+                  <div className="size-12 border-4 border-blue-400 border-t-transparent rounded-full animate-spin" />
+                  <p className="text-white/40 font-medium text-sm">Initializing secure video session...</p>
+                </div>
+              ) : error ? (
                 <div className="w-full px-5 py-6 max-w-lg rounded-2xl bg-red-900/70 border border-red-500/30 shadow-lg backdrop-blur">
                   <div className="flex items-start gap-3">
                     <div className="mt-1 rounded-full bg-red-500/20 p-2 text-red-100">
@@ -478,11 +465,11 @@ export default function ConsultationPage({
                   </div>
                 </div>
               ) : (
-                <StreamVideo client={client}>
-                  <StreamCall call={call}>
+                <StreamVideo client={client!}>
+                  <StreamCall call={call!}>
                     <RemoteVideos patientDisplayName={patientDisplayName} />
                     <LocalVideo />
-                    <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 w-full max-w-md px-4">
+                    <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-30 w-full max-w-md px-4">
                        <ConsultationControls onLeave={handleEndCall} />
                     </div>
                   </StreamCall>
@@ -510,11 +497,8 @@ export default function ConsultationPage({
             setMedications={setMedications}
             isSendingPrescription={isSendingPrescription}
             handleSendPrescription={handleSendPrescription}
-            labTestTypeId={labTestTypeId}
-            setLabTestTypeId={setLabTestTypeId}
-            labTestTypes={labTestTypes}
-            setLabFile={setLabFile}
-            labFile={labFile}
+            uploads={uploads}
+            setUploads={setUploads}
             isUploadingLab={isUploadingLab}
             handleSendLabRequest={handleSendLabRequest}
             chatMessages={chatMessages}
@@ -525,6 +509,7 @@ export default function ConsultationPage({
             showToast={showToast}
             handleFinalize={handleFinalize}
             actionLoading={actionLoading}
+            history={history}
           />
         </div>
       </main>

@@ -142,35 +142,49 @@ class AppointmentService {
   }
 
   /**
-   * Add a prescription to a clinical record
+   * Add a prescription
    */
-  async addPrescription(clinicalRecordId: string, data: CreatePrescriptionRequest): Promise<ApiResponse<any>> {
+  async addPrescription(data: CreatePrescriptionRequest): Promise<ApiResponse<any>> {
     const response = await apiClient.post<ApiResponse<any>>(
-      `/clinical-records/${clinicalRecordId}/prescriptions`,
+      `/prescriptions`,
       data
     );
     return response.data;
   }
 
   /**
-   * Add an attachment to a clinical record
+   * Add multiple attachments to a clinical record
    */
-  async addAttachment(clinicalRecordId: string, file: File, type: string): Promise<ApiResponse<LabUploadData>> {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('type', type);
+async addAttachments(
+  appointmentId: string,
+  uploads: { file: File; types: string }[]
+): Promise<ApiResponse<LabUploadData[]>> {
 
-    const response = await apiClient.post<ApiResponse<LabUploadData>>(
-      '/labs',
-      formData,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      }
-    );
-    return response.data;
-  }
+  const formData = new FormData();
+
+  formData.append('appointmentId', appointmentId);
+
+  uploads.forEach((upload) => {
+    formData.append('files', upload.file);
+  });
+
+  formData.append(
+    'types',
+    uploads.map((u) => u.types).join(',')
+  );
+
+  const response = await apiClient.post<ApiResponse<LabUploadData[]>>(
+    '/labs',
+    formData,
+    {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    }
+  );
+
+  return response.data;
+}
 
   /**
    * Upload a lab result for an appointment

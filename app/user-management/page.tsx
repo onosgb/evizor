@@ -12,6 +12,13 @@ import TableActionMenu from "../components/TableActionMenu";
 import { useAuthStore, useTenantStore, useUserStore } from "../stores";
 import { isSuperAdmin } from "../lib/roles";
 import { useSearchContext } from "../contexts/SearchContext";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/app/components/ui/select";
 
 // Helper function to get role badge color
 const getRoleBadgeColor = (role: string | null | undefined): string => {
@@ -153,26 +160,43 @@ export default function UserManagementPage() {
           </h2>
         </div>
         <div className="flex items-center justify-center gap-3 flex-wrap">
-          <select
+          <Select
             value={selectedRole}
-            onChange={(e) => { setSelectedRole(e.target.value); setPage(1); }}
-            className="form-select h-9 w-36 rounded-lg border border-slate-300 bg-transparent px-3 py-1.5 text-sm dark:border-navy-450 dark:text-navy-100"
+            onValueChange={(value) => {
+              setSelectedRole(value);
+              setPage(1);
+            }}
           >
-            <option value="">All Roles</option>
-            <option value="DOCTOR">Doctor</option>
-            <option value="ADMIN">Admin</option>
-          </select>
+            <SelectTrigger className="h-9 w-36">
+              <SelectValue placeholder="All Roles" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">All Roles</SelectItem>
+              <SelectItem value="DOCTOR">Doctor</SelectItem>
+              <SelectItem value="ADMIN">Admin</SelectItem>
+            </SelectContent>
+          </Select>
+
           {userIsSuperAdmin && (
-            <select
+            <Select
               value={selectedProvince}
-              onChange={(e) => { setSelectedProvince(e.target.value); setPage(1); }}
-              className="form-select h-9 rounded-lg border border-slate-300 bg-transparent px-3 py-1.5 text-sm dark:border-navy-450 dark:text-navy-100"
+              onValueChange={(value) => {
+                setSelectedProvince(value);
+                setPage(1);
+              }}
             >
-              <option value="">All Provinces</option>
-              {tenants.map((t) => (
-                <option key={t.id} value={t.id}>{t.province}</option>
-              ))}
-            </select>
+              <SelectTrigger className="h-9 w-48">
+                <SelectValue placeholder="All Provinces" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">All Provinces</SelectItem>
+                {tenants.map((t) => (
+                  <SelectItem key={t.id} value={t.id}>
+                    {t.province}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           )}
           <button
             onClick={() => setShowModal(true)}
