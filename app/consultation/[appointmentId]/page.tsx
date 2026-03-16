@@ -8,7 +8,6 @@ import {
   StreamCall,
   useCallStateHooks,
   ParticipantView,
-  SpeakerLayout,
 } from "@stream-io/video-react-sdk";
 import "@stream-io/video-react-sdk/dist/css/styles.css";
 
@@ -29,7 +28,7 @@ const LocalVideo = () => {
   if (!localParticipant) return null;
 
   return (
-    <div className="absolute bottom-4 right-4 w-40 h-56 bg-black rounded-xl overflow-hidden border-2 border-slate-700 shadow-2xl z-20 flex flex-col">
+    <div className="absolute bottom-28 right-4 w-32 h-44 bg-black rounded-xl overflow-hidden border-2 border-slate-700 shadow-2xl z-20 flex flex-col">
       <ParticipantView
         participant={localParticipant}
         mirror={true}
