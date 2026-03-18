@@ -2,15 +2,11 @@
 
 import { Pharmacy, Appointment, User, Attachment } from "@/app/models";
 import { RefObject, useState } from "react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/app/components/ui/select";
-import { Label } from "@/app/components/ui/label";
 import { Button } from "@/app/components/ui/button";
+import { FormInput } from "@/app/components/ui/FormInput";
+import { FormSelect } from "@/app/components/ui/FormSelect";
+import { FormTextarea } from "@/app/components/ui/FormTextarea";
+import { History, Trash2, Send, MessageSquareText } from "lucide-react";
 
 type Tab = "Info" | "Notes" | "Prescription" | "Lab / Diagnosis" | "Chat";
 
@@ -169,9 +165,7 @@ export const RightPanel = ({
             {/* Previous Consultations */}
             <div className="pt-2">
               <h4 className="font-semibold mb-3 flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" className="size-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+                <History className="size-4 text-blue-600" />
                 Previous Consultations
               </h4>
               <div className="space-y-3">
@@ -208,12 +202,13 @@ export const RightPanel = ({
         {/* NOTES */}
         {activeTab === "Notes" && (
           <div className="flex-1 space-y-4 animate-fade-in flex flex-col min-w-0">
-            <h4 className="font-semibold">Consultation Notes</h4>
-            <textarea
+            <FormTextarea
+              label="Consultation Notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Type your clinical notes here..."
-              className="flex-1 w-full border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none resize-none"
+              className="flex-1"
+              rows={10}
             />
           </div>
         )}
@@ -222,59 +217,61 @@ export const RightPanel = ({
         {activeTab === "Prescription" && (
           <div className="flex-1 space-y-4 animate-fade-in min-w-0 overflow-y-auto">
             <div className="grid grid-cols-2 gap-3 text-sm">
-              <div className="col-span-2 space-y-1.5">
-                <Label htmlFor="pharmacy">Pharmacy Referal</Label>
-                <Select value={pharmacyId} onValueChange={setPharmacyId}>
-                  <SelectTrigger id="pharmacy">
-                    <SelectValue placeholder="Select Pharmacy" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {pharmacies.map((p) => (
-                      <SelectItem key={p.id} value={p.id}>
-                        {p.name} - {p.address}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <div className="col-span-2">
+                <FormSelect
+                  label="Pharmacy Referral"
+                  value={pharmacyId}
+                  onChange={(e) => setPharmacyId(e.target.value)}
+                  options={[
+                    { value: "", label: "Select Pharmacy" },
+                    ...pharmacies.map((p) => ({
+                      value: p.id,
+                      label: `${p.name} - ${p.address}`,
+                    })),
+                  ]}
+                />
               </div>
 
               <div className="col-span-2 border border-blue-100 bg-blue-50/30 rounded-xl p-3 space-y-3">
                 <h5 className="text-xs font-bold text-gray-700 uppercase tracking-wider">Add Medication</h5>
-                <div className="grid grid-cols-2 gap-2">
-                  <input
+                <div className="grid grid-cols-2 gap-3">
+                  <FormInput
                     value={currentDrug}
                     onChange={(e) => setCurrentDrug(e.target.value)}
                     placeholder="Drug"
-                    className="border border-gray-200 rounded-lg p-2 focus:ring-1 focus:ring-blue-600 outline-none"
+                    type="text"
                   />
-                  <input
+                  <FormInput
                     value={currentDosage}
                     onChange={(e) => setCurrentDosage(e.target.value)}
                     placeholder="Dosage"
-                    className="border border-gray-200 rounded-lg p-2 focus:ring-1 focus:ring-blue-600 outline-none"
+                    type="text"
                   />
-                  <input
+                  <FormInput
                     value={currentFrequency}
                     onChange={(e) => setCurrentFrequency(e.target.value)}
                     placeholder="Frequency"
-                    className="border border-gray-200 rounded-lg p-2 focus:ring-1 focus:ring-blue-600 outline-none"
+                    type="text"
                   />
-                  <input
+                  <FormInput
                     value={currentDuration}
                     onChange={(e) => setCurrentDuration(e.target.value)}
                     placeholder="Duration"
-                    className="border border-gray-200 rounded-lg p-2 focus:ring-1 focus:ring-blue-600 outline-none"
+                    type="text"
                   />
-                  <textarea
-                    value={currentInstructions}
-                    onChange={(e) => setCurrentInstructions(e.target.value)}
-                    placeholder="Instructions (Optional)"
-                    className="col-span-2 border border-gray-200 rounded-lg p-2 focus:ring-1 focus:ring-blue-600 outline-none min-h-12 text-xs"
-                  />
+                  <div className="col-span-2">
+                    <FormTextarea
+                      value={currentInstructions}
+                      onChange={(e) => setCurrentInstructions(e.target.value)}
+                      placeholder="Instructions (Optional)"
+                      rows={2}
+                    />
+                  </div>
                   <Button
                     onClick={addMedication}
-                    className="col-span-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2"
-                 size={"sm"} >
+                    className="col-span-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold"
+                    size="sm"
+                  >
                     + ADD DRUG
                   </Button>
                 </div>
@@ -296,14 +293,14 @@ export const RightPanel = ({
                             {med.frequency} - {med.duration}
                           </p>
                         </div>
-                        <button
+                        <Button
                           onClick={() => removeMedication(idx)}
+                          variant="ghost"
+                          size="icon"
                           className="text-red-500 hover:text-red-700 p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                         >
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
-                        </button>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
                     ))}
                   </div>
@@ -329,7 +326,7 @@ export const RightPanel = ({
               const currentUpload = uploads.find((u) => u.types === types);
               return (
                 <div key={types} className="space-y-1.5">
-                  <Label>{types} Upload</Label>
+                  <span className="text-sm font-medium">{types} Upload</span>
                   <div className="relative group">
                     <input
                       type="file"
@@ -361,14 +358,15 @@ export const RightPanel = ({
                           : "No file selected (Optional)"}
                       </p>
                       {currentUpload && (
-                        <button
+                        <Button
+                          variant="ghost"
                           onClick={() => {
                             setUploads(uploads.filter((u) => u.types !== types));
                           }}
-                          className="text-red-500 hover:text-red-700 text-xs font-medium"
+                          className="text-red-500 hover:text-red-700 text-xs font-medium h-auto p-1"
                         >
                           Clear
-                        </button>
+                        </Button>
                       )}
                     </div>
                   </div>
@@ -393,9 +391,7 @@ export const RightPanel = ({
             <div className="flex-1 overflow-y-auto p-2 space-y-2 border border-gray-200 rounded-xl bg-white">
               {chatMessages.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-10 opacity-40">
-                   <svg className="size-10 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                   </svg>
+                   <MessageSquareText className="size-10 mb-2" />
                    <p className="text-sm">No messages yet. Start the chat.</p>
                 </div>
               ) : (
@@ -443,10 +439,10 @@ export const RightPanel = ({
               />
               <Button
                 onClick={handleSendChatMessage}
+                size="icon"
+                variant="default"
               >
-                <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                </svg>
+                <Send className="size-4" />
               </Button>
             </div>
           </div>

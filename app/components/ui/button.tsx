@@ -21,10 +21,16 @@ const buttonVariants = cva(
         secondary:
           "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
+        success:
+          "bg-success text-white shadow-sm hover:bg-success-focus",
+        warning:
+          "bg-warning text-white shadow-sm hover:bg-warning-focus",
+        error:
+          "bg-error text-white shadow-sm hover:bg-error-focus",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {
-        default: "h-12 px-4 py-2",
+        default: "h-10 px-4 py-2",
         sm: "h-8 rounded-md px-3 text-xs",
         md: "h-10 rounded-md px-6 text-sm",
         lg: "h-12 rounded-md px-8 text-base",

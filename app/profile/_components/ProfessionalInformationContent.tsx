@@ -11,6 +11,10 @@ import { ProfessionalProfile } from "@/app/models";
 
 import { useSearchParams } from "next/navigation";
 import ConfirmationModal from "@/app/components/ConfirmationModal";
+import { FormInput } from "@/app/components/ui/FormInput";
+import { FormSelect } from "@/app/components/ui/FormSelect";
+import { Button } from "@/app/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export default function ProfessionalInformationContent() {
   const user = useAuthStore((state) => state.user);
@@ -136,7 +140,7 @@ export default function ProfessionalInformationContent() {
               </h2>
               <div className="flex justify-center space-x-2">
                 {(!isReadOnly || showApproveButton) && (
-                  <button
+                  <Button
                     onClick={() => {
                       if(showApproveButton){
                         setShowConfirmationModal(true)
@@ -145,14 +149,11 @@ export default function ProfessionalInformationContent() {
                       }
                     }}
                     disabled={isSaving}
-                    className={`btn min-w-28 rounded-full font-medium text-white disabled:opacity-50 disabled:cursor-not-allowed ${
-                      theme === "admin"
-                        ? "bg-success hover:bg-success-focus focus:bg-success-focus active:bg-success-focus/90 dark:bg-success dark:hover:bg-success-focus dark:focus:bg-success-focus dark:active:bg-success/90"
-                        : "bg-primary hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
-                    }`}
+                    variant={theme === "admin" ? "success" : "default"}
+                    className="min-w-28 rounded-full font-medium transition duration-300"
                   >
-                   {showApproveButton ? "Approve" : "Save"}
-                  </button>
+                    {showApproveButton ? "Approve" : "Save"}
+                  </Button>
                 )}
               </div>
             </div>
@@ -184,101 +185,93 @@ export default function ProfessionalInformationContent() {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 gap-4 p-5 my-5 sm:grid-cols-2">
-                  <label className="block">
-                    <span>Specialty </span>
-                    <span className="relative mt-1.5 flex">
-                      <select
-                        name="specialtyId"
-                        value={String(formData.specialtyId || "")}
-                        onChange={handleInputChange}
-                        disabled={isLoadingSpecialties || isReadOnly}
-                        className={`form-select peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent ${isReadOnly ? 'bg-slate-50 dark:bg-navy-900 cursor-not-allowed' : ''}`}
-                      >
-                        <option value="">
-                          {isLoadingSpecialties
-                            ? "Loading specialties..."
-                            : "Select Specialty"}
+                  <FormSelect
+                    label="Specialty"
+                    name="specialtyId"
+                    value={String(formData.specialtyId || "")}
+                    onChange={handleInputChange}
+                    disabled={isLoadingSpecialties || isReadOnly}
+                    className={cn(
+                      "rounded-full",
+                      isReadOnly && "bg-slate-50 dark:bg-navy-900 cursor-not-allowed",
+                    )}
+                  >
+                    <option value="">
+                      {isLoadingSpecialties ? "Loading specialties..." : "Select Specialty"}
+                    </option>
+                    {specialties
+                      .filter((s) => s.isActive)
+                      .map((specialty) => (
+                        <option key={specialty.id} value={specialty.id}>
+                          {specialty.name}
                         </option>
-                        {specialties
-                          .filter((s) => s.isActive)
-                          .map((specialty) => (
-                          <option key={specialty.id} value={specialty.id}>
-                            {specialty.name}
-                          </option>
-                        ))}
-                      </select>
-                    </span>
-                  </label>
-                  <label className="block">
-                    <span>Sub-Specialty </span>
-                    <span className="relative mt-1.5 flex">
-                      <input
-                        name="subSpecialty"
-                        value={formData.subSpecialty}
-                        onChange={handleInputChange}
-                        readOnly={isReadOnly}
-                        className={`form-input peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent ${isReadOnly ? 'bg-slate-50 dark:bg-navy-900 cursor-not-allowed' : ''}`}
-                        placeholder="Enter Sub-Specialty"
-                        type="text"
-                      />
-                    </span>
-                  </label>
-                  <label className="block">
-                    <span>Years of Experience</span>
-                    <span className="relative mt-1.5 flex">
-                      <input
-                        name="yearsOfExperience"
-                        value={formData.yearsOfExperience}
-                        onChange={handleInputChange}
-                        readOnly={isReadOnly}
-                        className={`form-input peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent ${isReadOnly ? 'bg-slate-50 dark:bg-navy-900 cursor-not-allowed' : ''}`}
-                        placeholder="Enter Years of Experience"
-                        type="number"
-                      />
-                    </span>
-                  </label>
-                  <label className="block">
-                    <span>License Number </span>
-                    <span className="relative mt-1.5 flex">
-                      <input
-                        name="licenseNumber"
-                        value={formData.licenseNumber}
-                        onChange={handleInputChange}
-                        readOnly={isReadOnly}
-                        className={`form-input peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent ${isReadOnly ? 'bg-slate-50 dark:bg-navy-900 cursor-not-allowed' : ''}`}
-                        placeholder="Enter License Number "
-                        type="text"
-                      />
-                    </span>
-                  </label>
-                  <label className="block">
-                    <span>Issuing Authority</span>
-                    <span className="relative mt-1.5 flex">
-                      <input
-                        name="issuingAuthority"
-                        value={formData.issuingAuthority}
-                        onChange={handleInputChange}
-                        readOnly={isReadOnly}
-                        className={`form-input peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent ${isReadOnly ? 'bg-slate-50 dark:bg-navy-900 cursor-not-allowed' : ''}`}
-                        placeholder="Enter Issuing Authority"
-                        type="text"
-                      />
-                    </span>
-                  </label>
-                  <label className="block">
-                    <span>License Expiry Date</span>
-                    <span className="relative mt-1.5 flex">
-                      <input
-                        name="licenseExpiryDate"
-                        value={formData.licenseExpiryDate}
-                        onChange={handleInputChange}
-                        readOnly={isReadOnly}
-                        className={`form-input peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent ${isReadOnly ? 'bg-slate-50 dark:bg-navy-900 cursor-not-allowed' : ''}`}
-                        placeholder="Enter License Expiry Date"
-                        type="date"
-                      />
-                    </span>
-                  </label>
+                      ))}
+                  </FormSelect>
+                  <FormInput
+                    label="Sub-Specialty"
+                    name="subSpecialty"
+                    value={formData.subSpecialty}
+                    onChange={handleInputChange}
+                    readOnly={isReadOnly}
+                    className={cn(
+                      "rounded-full",
+                      isReadOnly && "bg-slate-50 dark:bg-navy-900 cursor-not-allowed",
+                    )}
+                    placeholder="Enter Sub-Specialty"
+                    type="text"
+                  />
+                  <FormInput
+                    label="Years of Experience"
+                    name="yearsOfExperience"
+                    value={formData.yearsOfExperience}
+                    onChange={handleInputChange}
+                    readOnly={isReadOnly}
+                    className={cn(
+                      "rounded-full",
+                      isReadOnly && "bg-slate-50 dark:bg-navy-900 cursor-not-allowed",
+                    )}
+                    placeholder="Enter Years of Experience"
+                    type="number"
+                  />
+                  <FormInput
+                    label="License Number"
+                    name="licenseNumber"
+                    value={formData.licenseNumber}
+                    onChange={handleInputChange}
+                    readOnly={isReadOnly}
+                    className={cn(
+                      "rounded-full",
+                      isReadOnly && "bg-slate-50 dark:bg-navy-900 cursor-not-allowed",
+                    )}
+                    placeholder="Enter License Number"
+                    type="text"
+                  />
+                  <FormInput
+                    label="Issuing Authority"
+                    name="issuingAuthority"
+                    value={formData.issuingAuthority}
+                    onChange={handleInputChange}
+                    readOnly={isReadOnly}
+                    className={cn(
+                      "rounded-full",
+                      isReadOnly && "bg-slate-50 dark:bg-navy-900 cursor-not-allowed",
+                    )}
+                    placeholder="Enter Issuing Authority"
+                    type="text"
+                  />
+                  <FormInput
+                    label="License Expiry Date"
+                    name="licenseExpiryDate"
+                    value={formData.licenseExpiryDate}
+                    onChange={handleInputChange}
+                    readOnly={isReadOnly}
+                    className={cn(
+                      "rounded-full",
+                      isReadOnly && "bg-slate-50 dark:bg-navy-900 cursor-not-allowed",
+                    )}
+                    placeholder="Enter License Expiry Date"
+                    type="date"
+                  />
                 </div>
               )}
             </div>
@@ -295,6 +288,7 @@ export default function ProfessionalInformationContent() {
         }}
         title="Approve Professional Information"
         message="Are you sure you want to approve this professional information?"
+        variant="success"
       />
     </>
   );

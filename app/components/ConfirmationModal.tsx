@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { Button } from "@/app/components/ui/button";
 
 interface ConfirmationModalProps {
   isOpen: boolean;
@@ -11,8 +12,7 @@ interface ConfirmationModalProps {
   message: string;
   confirmText?: string;
   cancelText?: string;
-  confirmButtonClass?: string;
-  type?: "success" | "danger" | "info";
+  variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link" | "success" | "warning" | "error";
   isLoading?: boolean;
   loadingText?: string;
 }
@@ -25,7 +25,7 @@ export default function ConfirmationModal({
   message,
   confirmText = "Confirm",
   cancelText = "Cancel",
-  confirmButtonClass = "bg-primary hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90",
+  variant = "default",
   isLoading = false,
   loadingText = "Processing...",
 }: ConfirmationModalProps) {
@@ -75,25 +75,25 @@ export default function ConfirmationModal({
         <div className="px-4 py-4 sm:px-5">
           <p className="text-slate-600 dark:text-navy-200">{message}</p>
           <div className="mt-6 flex justify-end space-x-2">
-            <button
+            <Button
               onClick={onClose}
-              className="btn min-w-28 rounded-full border border-slate-300 font-medium text-slate-800 hover:bg-slate-150 focus:bg-slate-150 active:bg-slate-150/80 dark:border-navy-450 dark:text-navy-50 dark:hover:bg-navy-500 dark:focus:bg-navy-500 dark:active:bg-navy-500/90"
+              variant="outline"
+              className="min-w-28 rounded-full"
               disabled={isLoading}
             >
               {cancelText}
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={onConfirm}
-              className={`btn min-w-28 rounded-full font-medium text-white ${confirmButtonClass} ${
-                isLoading ? "opacity-70 cursor-not-allowed" : ""
-              }`}
+              variant={variant}
+              className="min-w-28 rounded-full"
               disabled={isLoading}
             >
               {isLoading ? (
                 <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-r-transparent"></div>
               ) : null}
               {isLoading ? loadingText : confirmText}
-            </button>
+            </Button>
           </div>
         </div>
       </div>

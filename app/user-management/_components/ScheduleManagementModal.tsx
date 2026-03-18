@@ -6,6 +6,9 @@ import { adminService } from "@/app/lib/services";
 import { CreateScheduleRequest } from "@/app/models";
 import ConfirmationModal from "@/app/components/ConfirmationModal";
 import { useToast } from "@/app/contexts/ToastContext";
+import { FormInput } from "@/app/components/ui/FormInput";
+import { Button } from "@/app/components/ui/button";
+import { X, Trash2 } from "lucide-react";
 
 interface Schedule {
   id: string;
@@ -180,20 +183,7 @@ export default function ScheduleManagementModal({
             onClick={onClose}
             className="btn -mr-1.5 size-7 rounded-full p-0 hover:bg-slate-300/20 focus:bg-slate-300/20 active:bg-slate-300/25 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="size-4.5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M6 18L18 6M6 6l12 12"
-              ></path>
-            </svg>
+            <X className="size-4.5" />
           </button>
         </div>
         
@@ -207,45 +197,37 @@ export default function ScheduleManagementModal({
             {/* Add New Schedule Section */}
             <div className="rounded-lg border border-slate-200 p-4 dark:border-navy-500">
                 <h4 className="mb-3 text-sm font-medium text-slate-700 dark:text-navy-100">Add New Availability</h4>
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-4 items-end">
-                    <label className="block">
-                        <span className="text-xs text-slate-500 dark:text-navy-300">Date</span>
-                        <input
-                            type="date"
-                            name="date"
-                            value={newSchedule.date}
-                            min={todayStr()}
-                            onChange={handleInputChange}
-                            className="form-input mt-1 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 text-sm placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
-                        />
-                    </label>
-                    <label className="block">
-                        <span className="text-xs text-slate-500 dark:text-navy-300">Start Time</span>
-                        <input
-                            type="time"
-                            name="startTime"
-                            value={newSchedule.startTime}
-                            onChange={handleInputChange}
-                            className="form-input mt-1 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 text-sm placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
-                        />
-                    </label>
-                    <label className="block">
-                        <span className="text-xs text-slate-500 dark:text-navy-300">End Time</span>
-                        <input
-                            type="time"
-                            name="endTime"
-                            value={newSchedule.endTime}
-                            onChange={handleInputChange}
-                            className="form-input mt-1 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 text-sm placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
-                        />
-                    </label>
-                    <button 
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-4 items-end">
+                    <FormInput
+                        label="Date"
+                        type="date"
+                        name="date"
+                        value={newSchedule.date}
+                        min={todayStr()}
+                        onChange={handleInputChange}
+                    />
+                    <FormInput
+                        label="Start Time"
+                        type="time"
+                        name="startTime"
+                        value={newSchedule.startTime}
+                        onChange={handleInputChange}
+                    />
+                    <FormInput
+                        label="End Time"
+                        type="time"
+                        name="endTime"
+                        value={newSchedule.endTime}
+                        onChange={handleInputChange}
+                    />
+                    <Button 
                         onClick={handleAddSchedule}
                         disabled={isSubmitting}
-                        className="btn h-9.5 w-full rounded-lg bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 disabled:opacity-70 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
+                        variant="default"
+                        className="h-9.5 w-full rounded-lg font-medium"
                     >
                         {isSubmitting ? "Adding..." : "Add"}
-                    </button>
+                    </Button>
                 </div>
             </div>
 
@@ -291,9 +273,7 @@ export default function ScheduleManagementModal({
                                                 }}
                                                 className="btn size-7 rounded-full p-0 text-error hover:bg-error/10 focus:bg-error/10 active:bg-error/20"
                                             >
-                                                <svg xmlns="http://www.w3.org/2000/svg" className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                </svg>
+                                                <Trash2 className="size-4" />
                                             </button>
                                         </td>
                                     </tr>
@@ -306,12 +286,13 @@ export default function ScheduleManagementModal({
         </div>
 
         <div className="flex justify-end rounded-b-lg bg-slate-50 px-4 py-3 dark:bg-navy-800 sm:px-5">
-          <button
+          <Button
             onClick={onClose}
-            className="btn min-w-28 rounded-full border border-slate-300 font-medium text-slate-700 hover:bg-slate-150 focus:bg-slate-150 active:bg-slate-150/80 dark:border-navy-450 dark:text-navy-100 dark:hover:bg-navy-500 dark:focus:bg-navy-500 dark:active:bg-navy-500/90"
+            variant="outline"
+            className="min-w-28 rounded-full"
           >
             Close
-          </button>
+          </Button>
         </div>
         {openConfirmDialog && (
           <ConfirmationModal
@@ -323,6 +304,7 @@ export default function ScheduleManagementModal({
             message="Are you sure you want to delete this schedule?"
             confirmText="Delete"
             cancelText="Cancel"
+            variant="error"
           />
         )}
       </div>

@@ -2,6 +2,8 @@
 
 import * as Popover from "@radix-ui/react-popover";
 import { ReactNode, useState } from "react";
+import { Button } from "./ui/button";
+import { MoreHorizontal } from "lucide-react";
 
 interface TableActionMenuProps {
   children: ReactNode;
@@ -13,25 +15,14 @@ export default function TableActionMenu({ children }: TableActionMenuProps) {
   return (
     <Popover.Root open={open} onOpenChange={setOpen}>
       <Popover.Trigger asChild>
-        <button
-          className="btn size-8 rounded-full p-0 hover:bg-slate-300/20 focus:bg-slate-300/20 active:bg-slate-300/25 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25 outline-none"
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-8 rounded-full p-0 outline-none"
           aria-label="Options"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="size-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"
-            />
-          </svg>
-        </button>
+          <MoreHorizontal className="size-5" />
+        </Button>
       </Popover.Trigger>
       <Popover.Portal>
         <Popover.Content

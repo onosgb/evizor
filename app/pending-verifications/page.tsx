@@ -10,6 +10,8 @@ import { useSearchContext } from "../contexts/SearchContext";
 import { Pagination } from "../components/Pagination";
 import VerificationModal from "./_components/VerificationModal";
 import { formatDate } from "../lib/utils/dateUtils";
+import { FormSelect } from "../components/ui/FormSelect";
+import { Button } from "../components/ui/button";
 
 export default function PendingVerificationsPage() {
   const {
@@ -102,10 +104,10 @@ export default function PendingVerificationsPage() {
 
         {userIsSuperAdmin && (
           <div className="w-48">
-            <select
+            <FormSelect
               value={tenantId}
               onChange={(e) => setTenantId(e.target.value)}
-              className="form-select h-9 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-1.5 text-sm dark:border-navy-450 dark:text-navy-100"
+              className="h-9"
             >
               <option value="">All Provinces</option>
               {tenants.map((t) => (
@@ -113,7 +115,7 @@ export default function PendingVerificationsPage() {
                   {t.province}
                 </option>
               ))}
-            </select>
+            </FormSelect>
           </div>
         )}
       </div>
@@ -211,7 +213,7 @@ export default function PendingVerificationsPage() {
                     </td>
                     <td className="whitespace-nowrap px-4 py-3 sm:px-5">
                       <div className="flex space-x-2">
-                        <button
+                        <Button
                           onClick={() =>
                             handleOpenModal(
                               item.userId,
@@ -219,11 +221,12 @@ export default function PendingVerificationsPage() {
                               "approve",
                             )
                           }
-                          className="btn h-8 rounded bg-primary px-3 text-xs font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
+                          size="sm"
+                          className="h-8 rounded px-3 text-xs font-medium"
                         >
                           Approve
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                           onClick={() =>
                             handleOpenModal(
                               item.userId,
@@ -231,10 +234,12 @@ export default function PendingVerificationsPage() {
                               "reject",
                             )
                           }
-                          className="btn h-8 rounded bg-error px-3 text-xs font-medium text-white hover:bg-error-focus focus:bg-error-focus active:bg-error-focus/90"
+                          variant="error"
+                          size="sm"
+                          className="h-8 rounded px-3 text-xs font-medium"
                         >
                           Reject
-                        </button>
+                        </Button>
                       </div>
                     </td>
                   </tr>

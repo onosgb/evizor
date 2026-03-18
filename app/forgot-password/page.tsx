@@ -6,6 +6,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { authService } from "../lib/services";
 import { ApiError } from "../models";
+import { FormInput } from "../components/ui/FormInput";
+import { Button } from "../components/ui/button";
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
@@ -54,23 +56,17 @@ export default function ForgotPasswordPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
-
-          {/* Email */}
-          <div>
-            <label htmlFor="inputEmail" className="block text-sm font-medium text-gray-700 mb-1">
-              Email Address
-            </label>
-            <input
-              type="email"
-              id="inputEmail"
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition"
-              placeholder="Enter your email"
-              required
-              autoFocus
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
+          <FormInput
+            label="Email Address"
+            type="email"
+            id="inputEmail"
+            placeholder="Enter your email"
+            required
+            autoFocus
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="focus:ring-2 focus:ring-blue-600 focus:border-blue-600"
+          />
 
           {/* Error */}
           {error && (
@@ -80,13 +76,15 @@ export default function ForgotPasswordPage() {
           )}
 
           {/* Submit */}
-          <button
+          <Button
             type="submit"
             disabled={isLoading}
-            className="w-full py-3 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            variant="default"
+            size="lg"
+            className="w-full font-semibold"
           >
             {isLoading ? "Sending..." : "Send Verification Code"}
-          </button>
+          </Button>
         </form>
 
         {/* Back to login */}

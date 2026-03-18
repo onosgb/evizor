@@ -9,6 +9,11 @@ import ProfileSidebar from "./ProfileSidebar";
 import { useProfileStore } from "@/app/stores/profileStore";
 import ScheduleManagementModal from "@/app/user-management/_components/ScheduleManagementModal";
 import { isAdmin } from "@/app/lib/roles";
+import { FormInput } from "@/app/components/ui/FormInput";
+import { FormTextarea } from "@/app/components/ui/FormTextarea";
+import { Button } from "@/app/components/ui/button";
+import { Ban, CheckCircle, X, Plus } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface Schedule {
   id: string;
@@ -168,12 +173,13 @@ export default function AvailabilityContent() {
                 Availability & Schedule
               </h2>
               {isAdmin(user) && !!userId && (
-                <button
+                <Button
                   onClick={() => setShowScheduleModal(true)}
-                  className="btn min-w-28 rounded-full bg-success font-medium text-white hover:bg-success-focus focus:bg-success-focus active:bg-success-focus/90"
+                  variant="success"
+                  className="min-w-28 rounded-full font-medium"
                 >
-                  Add Schedule
-                </button>
+                  <Plus className="size-4 mr-2" /> Add Schedule
+                </Button>
               )}
             </div>
             <div className="p-4 sm:p-5">
@@ -246,47 +252,29 @@ export default function AvailabilityContent() {
                             <td className="whitespace-nowrap px-4 py-4 sm:px-5">
                               {!isReadOnly &&
                                 (schedule.isAvailable ? (
-                                  <button
+                                  <Button
                                     onClick={() =>
                                       openModal(schedule, "reject")
                                     }
-                                    className="btn size-8 rounded-full p-0 text-error hover:bg-error/20 focus:bg-error/20 active:bg-error/25"
+                                    variant="ghost"
+                                    size="icon"
+                                    className="size-8 rounded-full text-error hover:bg-error/20 focus:bg-error/20 active:bg-error/25"
                                     title="Mark unavailable"
                                   >
-                                    <svg
-                                      xmlns="http://www.w3.org/2000/svg"
-                                      className="size-5"
-                                      viewBox="0 0 20 20"
-                                      fill="currentColor"
-                                    >
-                                      <path
-                                        fillRule="evenodd"
-                                        d="M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.367zM18 10a8 8 0 11-16 0 8 8 0 0116 0z"
-                                        clipRule="evenodd"
-                                      />
-                                    </svg>
-                                  </button>
+                                    <Ban className="size-5" />
+                                  </Button>
                                 ) : (
-                                  <button
+                                  <Button
                                     onClick={() =>
                                       openModal(schedule, "accept")
                                     }
-                                    className="btn size-8 rounded-full p-0 text-success hover:bg-success/20 focus:bg-success/20 active:bg-success/25"
+                                    variant="ghost"
+                                    size="icon"
+                                    className="size-8 rounded-full text-success hover:bg-success/20 focus:bg-success/20 active:bg-success/25"
                                     title="Mark available"
                                   >
-                                    <svg
-                                      xmlns="http://www.w3.org/2000/svg"
-                                      className="size-5"
-                                      viewBox="0 0 20 20"
-                                      fill="currentColor"
-                                    >
-                                      <path
-                                        fillRule="evenodd"
-                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                        clipRule="evenodd"
-                                      />
-                                    </svg>
-                                  </button>
+                                    <CheckCircle className="size-5" />
+                                  </Button>
                                 ))}
                             </td>
                           </tr>
@@ -323,20 +311,7 @@ export default function AvailabilityContent() {
                   onClick={handleCancel}
                   className="btn -mr-1.5 size-7 rounded-full p-0 hover:bg-slate-300/20 focus:bg-slate-300/20 active:bg-slate-300/25 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="size-4.5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
+                  <X className="size-4.5" />
                 </button>
               </div>
 
@@ -344,85 +319,65 @@ export default function AvailabilityContent() {
               <div className="px-4 py-4 sm:px-5 space-y-4">
                 {/* Readonly slot info */}
                 <div className="grid grid-cols-3 gap-3">
-                  <label className="block">
-                    <span className="text-xs font-medium text-slate-500 dark:text-navy-300">
-                      Date
-                    </span>
-                    <input
-                      readOnly
-                      value={
-                        selectedSchedule
-                          ? formatDate(selectedSchedule.dateScheduled)
-                          : ""
-                      }
-                      className="form-input mt-1 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600 dark:border-navy-500 dark:bg-navy-800 dark:text-navy-200 cursor-default"
-                    />
-                  </label>
-                  <label className="block">
-                    <span className="text-xs font-medium text-slate-500 dark:text-navy-300">
-                      Start Time
-                    </span>
-                    <input
-                      readOnly
-                      value={selectedSchedule?.startTime ?? ""}
-                      className="form-input mt-1 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600 dark:border-navy-500 dark:bg-navy-800 dark:text-navy-200 cursor-default"
-                    />
-                  </label>
-                  <label className="block">
-                    <span className="text-xs font-medium text-slate-500 dark:text-navy-300">
-                      End Time
-                    </span>
-                    <input
-                      readOnly
-                      value={selectedSchedule?.endTime ?? ""}
-                      className="form-input mt-1 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600 dark:border-navy-500 dark:bg-navy-800 dark:text-navy-200 cursor-default"
-                    />
-                  </label>
+                  <FormInput
+                    label="Date"
+                    readOnly
+                    value={
+                      selectedSchedule
+                        ? formatDate(selectedSchedule.dateScheduled)
+                        : ""
+                    }
+                    className="border-slate-200 bg-slate-50 text-slate-600 dark:border-navy-500 dark:bg-navy-800 dark:text-navy-200 cursor-default"
+                  />
+                  <FormInput
+                    label="Start Time"
+                    readOnly
+                    value={selectedSchedule?.startTime ?? ""}
+                    className="border-slate-200 bg-slate-50 text-slate-600 dark:border-navy-500 dark:bg-navy-800 dark:text-navy-200 cursor-default"
+                  />
+                  <FormInput
+                    label="End Time"
+                    readOnly
+                    value={selectedSchedule?.endTime ?? ""}
+                    className="border-slate-200 bg-slate-50 text-slate-600 dark:border-navy-500 dark:bg-navy-800 dark:text-navy-200 cursor-default"
+                  />
                 </div>
 
                 {/* Reason — only for marking unavailable */}
                 {modalAction === "reject" && (
-                  <label className="block">
-                    <span className="text-sm font-medium text-slate-700 dark:text-navy-100">
-                      Reason <span className="text-error">*</span>
-                    </span>
-                    <textarea
-                      value={reason}
-                      onChange={(e) => setReason(e.target.value)}
-                      rows={3}
-                      placeholder="Enter your reason for rejecting this slot..."
-                      className="form-textarea mt-1.5 w-full resize-none rounded-lg border border-slate-300 bg-white px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:bg-navy-700 dark:hover:border-navy-400 dark:focus:border-accent"
-                    />
-                  </label>
+                  <FormTextarea
+                    label="Reason"
+                    value={reason}
+                    onChange={(e) => setReason(e.target.value)}
+                    rows={3}
+                    placeholder="Enter your reason for rejecting this slot..."
+                    required
+                  />
                 )}
 
                 {/* Actions */}
                 <div className="flex justify-end space-x-2 pt-1">
-                  <button
+                  <Button
                     onClick={handleCancel}
                     disabled={isSubmitting}
-                    className="btn min-w-28 rounded-full border border-slate-300 font-medium text-slate-700 hover:bg-slate-150 focus:bg-slate-150 active:bg-slate-150/80 dark:border-navy-450 dark:text-navy-100 dark:hover:bg-navy-500 dark:focus:bg-navy-500 dark:active:bg-navy-500/90 disabled:opacity-60"
+                    variant="outline"
+                    className="min-w-28 rounded-full"
                   >
                     Cancel
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     onClick={handleApply}
                     disabled={
                       isSubmitting ||
                       (modalAction === "reject" && !reason.trim())
                     }
-                    className={`btn min-w-28 rounded-full font-medium text-white disabled:opacity-60 ${
-                      modalAction === "accept"
-                        ? "bg-success hover:bg-success-focus focus:bg-success-focus active:bg-success-focus/90"
-                        : "bg-error hover:bg-error-focus focus:bg-error-focus active:bg-error-focus/90"
-                    }`}
+                    variant={modalAction === "accept" ? "success" : "error"}
+                    className="min-w-28 rounded-full font-medium"
                   >
                     {isSubmitting
                       ? "Saving..."
-                      : modalAction === "accept"
-                        ? "Confirm"
-                        : "Confirm"}
-                  </button>
+                      : "Confirm"}
+                  </Button>
                 </div>
               </div>
             </div>

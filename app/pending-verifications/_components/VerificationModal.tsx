@@ -1,7 +1,10 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import { createPortal } from "react-dom";
+import { FormTextarea } from "@/app/components/ui/FormTextarea";
+import { Button } from "@/app/components/ui/button";
+import { X } from "lucide-react";
 
 
 
@@ -72,20 +75,7 @@ export default function VerificationModal({
             onClick={onClose}
             className="btn -mr-1.5 size-7 rounded-full p-0 hover:bg-slate-300/20 focus:bg-slate-300/20 active:bg-slate-300/25 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="size-4.5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
+            <X className="size-4.5" />
           </button>
         </div>
 
@@ -100,34 +90,32 @@ export default function VerificationModal({
 
           <div className="space-y-3">
              {!isApprove && (
-               <label className="block">
-                <span className="text-sm font-medium text-slate-600 dark:text-navy-100">
-                  Reason for Rejection
-                </span>
-                <textarea
-                  rows={4}
-                  value={comment}
-                  onChange={(e) => setComment(e.target.value)}
-                  placeholder="e.g., Incomplete documentation, Invalid license number..."
-                  className="form-textarea mt-1.5 w-full resize-none rounded-lg border border-slate-300 bg-transparent p-2.5 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
-                />
-              </label>
+               <FormTextarea
+                 label="Reason for Rejection"
+                 rows={4}
+                 value={comment}
+                 onChange={(e) => setComment(e.target.value)}
+                 placeholder="e.g., Incomplete documentation, Invalid license number..."
+                 required
+               />
              )}
             {error && <span className="text-xs text-error">{error}</span>}
           </div>
 
           <div className="mt-5 flex justify-end space-x-2">
-            <button
+            <Button
               onClick={onClose}
               disabled={isSubmitting}
-              className="btn rounded-lg border border-slate-300 font-medium text-slate-700 hover:bg-slate-150 focus:bg-slate-150 active:bg-slate-150/80 dark:border-navy-450 dark:text-navy-100 dark:hover:bg-navy-500 dark:focus:bg-navy-500 dark:active:bg-navy-500/90"
+              variant="outline"
+              className="rounded-lg"
             >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={handleSubmit}
               disabled={isSubmitting}
-              className={`btn rounded-lg font-medium text-white ${buttonClass}`}
+              variant={isApprove ? "success" : "error"}
+              className="rounded-lg"
             >
               {isSubmitting ? (
                 <div className="flex items-center space-x-1">
@@ -137,7 +125,7 @@ export default function VerificationModal({
               ) : (
                 buttonText
               )}
-            </button>
+            </Button>
           </div>
         </div>
       </div>

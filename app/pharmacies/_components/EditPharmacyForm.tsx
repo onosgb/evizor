@@ -1,6 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
 import { Pharmacy, UpdatePharmacyRequest } from "@/app/models/Pharmacy";
+import { FormInput } from "@/app/components/ui/FormInput";
+import { Button } from "@/app/components/ui/button";
 
 interface EditPharmacyFormProps {
   isOpen: boolean;
@@ -69,72 +71,47 @@ export default function EditPharmacyForm({
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-navy-200">
-              Name
-            </label>
-            <input
-              type="text"
-              required
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 text-sm text-slate-700 focus:border-primary focus:outline-none dark:border-navy-500 dark:text-navy-100"
-            />
-          </div>
+          <FormInput
+            label="Name"
+            type="text"
+            required
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
 
-          <div>
-            <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-navy-200">
-              Address
-            </label>
-            <input
-              type="text"
-              required
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 text-sm text-slate-700 focus:border-primary focus:outline-none dark:border-navy-500 dark:text-navy-100"
-            />
-          </div>
+          <FormInput
+            label="Address"
+            type="text"
+            required
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
+          />
 
           <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-navy-200">
-                Phone Number
-              </label>
-              <input
-                type="tel"
-                required
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 text-sm text-slate-700 focus:border-primary focus:outline-none dark:border-navy-500 dark:text-navy-100"
-              />
-            </div>
-
-            <div>
-              <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-navy-200">
-                Email
-              </label>
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 text-sm text-slate-700 focus:border-primary focus:outline-none dark:border-navy-500 dark:text-navy-100"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-navy-200">
-              License Number
-            </label>
-            <input
-              type="text"
+            <FormInput
+              label="Phone Number"
+              type="tel"
               required
-              value={licenseNumber}
-              onChange={(e) => setLicenseNumber(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 text-sm text-slate-700 focus:border-primary focus:outline-none dark:border-navy-500 dark:text-navy-100"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+            />
+
+            <FormInput
+              label="Email"
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
             />
           </div>
+
+          <FormInput
+            label="License Number"
+            type="text"
+            required
+            value={licenseNumber}
+            onChange={(e) => setLicenseNumber(e.target.value)}
+          />
 
           <div className="flex items-center gap-3">
             <label className="text-xs font-medium text-slate-600 dark:text-navy-200">
@@ -159,20 +136,22 @@ export default function EditPharmacyForm({
           </div>
 
           <div className="flex justify-end gap-2 pt-2">
-            <button
+            <Button
               type="button"
               onClick={onClose}
-              className="rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 dark:border-navy-500 dark:text-navy-200 dark:hover:bg-navy-600"
+              variant="outline"
+              className="rounded-lg"
             >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
               disabled={isSubmitting}
-              className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-focus disabled:opacity-60"
+              variant="default"
+              className="rounded-lg"
             >
               {isSubmitting ? "Saving..." : "Save Changes"}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

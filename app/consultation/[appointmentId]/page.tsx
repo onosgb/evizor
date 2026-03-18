@@ -9,6 +9,7 @@ import {
   useCallStateHooks,
   ParticipantView,
 } from "@stream-io/video-react-sdk";
+import { Video, VideoOff, Mic, MicOff, PhoneOff, AlertTriangle } from "lucide-react";
 import "@stream-io/video-react-sdk/dist/css/styles.css";
 
 import { useAppointmentStore } from "@/app/stores/appointmentStore";
@@ -50,9 +51,7 @@ const RemoteVideos = ({ patientDisplayName }: { patientDisplayName: string }) =>
     return (
       <div className="flex flex-col items-center justify-center p-8 text-center text-white/40 space-y-3">
         <div className="size-16 rounded-full bg-white/5 flex items-center justify-center animate-pulse">
-           <svg xmlns="http://www.w3.org/2000/svg" className="size-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-           </svg>
+           <Video className="size-8" />
         </div>
         <p className="text-sm font-medium">Waiting for {patientDisplayName} to connect...</p>
       </div>
@@ -90,14 +89,9 @@ const ConsultationControls = ({ onLeave }: { onLeave: () => void }) => {
         title={isMicMuted ? "Unmute Mic" : "Mute Mic"}
       >
         {isMicMuted ? (
-          <svg xmlns="http://www.w3.org/2000/svg" className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-            <line x1="1" y1="1" x2="23" y2="23" stroke="currentColor" strokeWidth={2} />
-          </svg>
+          <MicOff className="size-5" />
         ) : (
-          <svg xmlns="http://www.w3.org/2000/svg" className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-          </svg>
+          <Mic className="size-5" />
         )}
       </button>
 
@@ -112,14 +106,9 @@ const ConsultationControls = ({ onLeave }: { onLeave: () => void }) => {
         title={isCamMuted ? "Turn Camera On" : "Turn Camera Off"}
       >
         {isCamMuted ? (
-          <svg xmlns="http://www.w3.org/2000/svg" className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-            <line x1="1" y1="1" x2="23" y2="23" stroke="currentColor" strokeWidth={2} />
-          </svg>
+          <VideoOff className="size-5" />
         ) : (
-          <svg xmlns="http://www.w3.org/2000/svg" className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-          </svg>
+          <Video className="size-5" />
         )}
       </button>
 
@@ -130,10 +119,7 @@ const ConsultationControls = ({ onLeave }: { onLeave: () => void }) => {
         onClick={onLeave}
         className="h-10 px-4 bg-red-500 hover:bg-red-600 text-white rounded-xl flex items-center gap-2 text-sm font-medium transition-all shadow-lg shadow-red-500/20"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 8l2-2m0 0l2 2m-2-2v10m-6-8l-2-2m0 0l-2 2m2-2v10m-6-8l-2-2m0 0l-2 2m2-2v10" />
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-        </svg>
+        <PhoneOff className="size-4" />
         End Call
       </button>
     </div>
@@ -483,9 +469,7 @@ export default function ConsultationPage({
                 <div className="w-full px-5 py-6 max-w-lg rounded-2xl bg-red-900/70 border border-red-500/30 shadow-lg backdrop-blur">
                   <div className="flex items-start gap-3">
                     <div className="mt-1 rounded-full bg-red-500/20 p-2 text-red-100">
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5">
-                        <path fillRule="evenodd" d="M8.257 3.099c.366-.746 1.4-.746 1.766 0l6.523 13.307c.35.714-.232 1.594-.883 1.594H2.617c-.651 0-1.233-.88-.883-1.594L8.257 3.1zM10 12a1 1 0 100 2 1 1 0 000-2zm-.75-4a.75.75 0 011.5 0v3a.75.75 0 01-1.5 0V8z" clipRule="evenodd" />
-                      </svg>
+                      <AlertTriangle className="h-5 w-5" />
                     </div>
                     <div className="text-left">
                       <p className="text-base font-semibold text-red-100">Call session error</p>

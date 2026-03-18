@@ -11,6 +11,9 @@ import { isSuperAdmin } from "../../lib/roles";
 import { CreateSpecialtyRequest } from "../../lib/services/specialty.service";
 import { Specialty } from "../../models";
 import { useSearchContext } from "../../contexts/SearchContext";
+import { Button } from "../../components/ui/button";
+import ConfirmationModal from "../../components/ConfirmationModal";
+import { Edit3, Trash2, Plus } from "lucide-react";
 
 export default function SpecialtiesPage() {
   const currentUser = useAuthStore((state) => state.user);
@@ -87,12 +90,13 @@ export default function SpecialtiesPage() {
           </p>
         </div>
         {userIsSuperAdmin && (
-          <button
+          <Button
             onClick={() => { setFormError(null); setShowCreateModal(true); }}
-            className="btn min-w-28 bg-success font-medium text-white hover:bg-success-focus focus:bg-success-focus active:bg-success-focus/90"
+            variant="success"
+            className="min-w-28 rounded-full"
           >
-            + Add Specialty
-          </button>
+            <Plus className="size-4 mr-1" /> Add Specialty
+          </Button>
         )}
       </ReferenceNav>
 
@@ -118,32 +122,17 @@ export default function SpecialtiesPage() {
       )}
 
       {/* Delete confirmation */}
-      {deleteTarget && (
-        <div className="fixed inset-0 z-100 flex items-center justify-center px-4" role="dialog">
-          <div className="absolute inset-0 bg-slate-900/60" onClick={() => setDeleteTarget(null)} />
-          <div className="relative w-full max-w-sm rounded-lg bg-white p-6 shadow-xl dark:bg-navy-700">
-            <h3 className="text-base font-semibold text-slate-700 dark:text-navy-100">Delete Specialty</h3>
-            <p className="mt-2 text-sm text-slate-500 dark:text-navy-300">
-              Are you sure you want to delete <span className="font-medium text-slate-700 dark:text-navy-100">{deleteTarget.name}</span>? This action cannot be undone.
-            </p>
-            <div className="mt-5 flex justify-end gap-3">
-              <button
-                onClick={() => setDeleteTarget(null)}
-                className="btn rounded-full border border-slate-300 font-medium text-slate-700 hover:bg-slate-100 dark:border-navy-450 dark:text-navy-100 dark:hover:bg-navy-600"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDelete}
-                disabled={isSubmitting}
-                className="btn rounded-full bg-error font-medium text-white hover:bg-error/90 disabled:opacity-50"
-              >
-                {isSubmitting ? "Deleting..." : "Delete"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmationModal
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        title="Delete Specialty"
+        message={`Are you sure you want to delete ${deleteTarget?.name}? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        onConfirm={handleDelete}
+        isLoading={isSubmitting}
+        variant="error"
+      />
 
       {/* Success toast */}
       {successMessage && (
@@ -222,25 +211,25 @@ export default function SpecialtiesPage() {
                       <td className="whitespace-nowrap px-4 py-3 sm:px-5">
                         <div className="flex items-center gap-2">
                           {/* Edit */}
-                          <button
+                          <Button
                             onClick={() => { setFormError(null); setEditTarget(s); }}
                             title="Edit"
-                            className="btn size-8 rounded-full p-0 hover:bg-primary/10 text-primary dark:hover:bg-navy-600"
+                            variant="ghost"
+                            size="icon"
+                            className="size-8 rounded-full p-0 text-primary dark:hover:bg-navy-600"
                           >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125" />
-                            </svg>
-                          </button>
+                            <Edit3 className="size-4" />
+                          </Button>
                           {/* Delete */}
-                          <button
+                          <Button
                             onClick={() => setDeleteTarget(s)}
                             title="Delete"
-                            className="btn size-8 rounded-full p-0 hover:bg-error/10 text-error dark:hover:bg-navy-600"
+                            variant="ghost"
+                            size="icon"
+                            className="size-8 rounded-full p-0 text-error dark:hover:bg-navy-600"
                           >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                            </svg>
-                          </button>
+                            <Trash2 className="size-4" />
+                          </Button>
                         </div>
                       </td>
                     )}

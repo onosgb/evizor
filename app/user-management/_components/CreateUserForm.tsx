@@ -4,6 +4,10 @@ import { CreateStaffRequest } from "@/app/models";
 import { useTenantStore } from "@/app/stores";
 import { useAuthStore } from "@/app/stores/authStore";
 import { isSuperAdmin } from "@/app/lib/roles";
+import { FormInput } from "@/app/components/ui/FormInput";
+import { FormSelect } from "@/app/components/ui/FormSelect";
+import { Button } from "@/app/components/ui/button";
+import { X } from "lucide-react";
 
 // Helper function to check if status is active
 const isActiveStatus = (status: string | null | undefined): boolean => {
@@ -116,20 +120,7 @@ export default function CreateStaffForm({
             onClick={handleCancel}
             className="btn -mr-1.5 size-7 rounded-full p-0 hover:bg-slate-300/20 focus:bg-slate-300/20 active:bg-slate-300/25 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="size-4.5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M6 18L18 6M6 6l12 12"
-              ></path>
-            </svg>
+            <X className="size-4.5" />
           </button>
         </div>
         <div className="px-4 py-4 sm:px-5 overflow-y-auto flex-1">
@@ -146,94 +137,66 @@ export default function CreateStaffForm({
             </div>
           )}
           <form onSubmit={handleSubmit} className="mt-4 space-y-4">
-            <div className="space-y-1.5">
-              <span>Role:</span>
-              <select
-                className="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
-                value={formData.role}
-                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+            <FormSelect
+              label="Role:"
+              value={formData.role}
+              onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+              required
+            >
+              <option value="">Select role</option>
+              <option value="DOCTOR">Doctor</option>
+              <option value="ADMIN">Admin</option>
+            </FormSelect>
+            {currentUserIsSuperAdmin && (
+              <FormSelect
+                label="Location (Province):"
+                value={formData.tenantId}
+                onChange={(e) => setFormData({ ...formData, tenantId: e.target.value })}
+                disabled={isLoadingTenants}
                 required
               >
-                <option value="">Select role</option>
-                <option value="DOCTOR">Doctor</option>
-                <option value="ADMIN">Admin</option>
-              </select>
-            </div>
-            {currentUserIsSuperAdmin && (
-              <div className="space-y-1.5">
-                <span>Location (Province):</span>
-                <select
-                  className="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
-                  value={formData.tenantId}
-                  onChange={(e) => setFormData({ ...formData, tenantId: e.target.value })}
-                  disabled={isLoadingTenants}
-                  required
-                >
-                  <option value="">
-                    {isLoadingTenants ? "Loading locations..." : "Select location"}
-                  </option>
-                  {(tenants || [])
-                    .filter((tenant) => tenant.isActive && tenant.id)
-                    .map((tenant) => (
-                      <option key={tenant.id} value={tenant.id}>
-                        {tenant.province}
-                      </option>
-                    ))}
-                </select>
-              </div>
+                <option value="">
+                  {isLoadingTenants ? "Loading locations..." : "Select location"}
+                </option>
+                {(tenants || [])
+                  .filter((tenant) => tenant.isActive && tenant.id)
+                  .map((tenant) => (
+                    <option key={tenant.id} value={tenant.id}>
+                      {tenant.province}
+                    </option>
+                  ))}
+              </FormSelect>
             )}
-            <label className="block">
-              <span>Full Name:</span>
-              <input
-                className="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-navy dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-success"
-                placeholder="Enter full name"
-                type="text"
-                value={formData.fullName}
-                onChange={(e) =>
-                  setFormData({ ...formData, fullName: e.target.value })
-                }
-                required
-              />
-            </label>
-            <label className="block">
-              <span>Email Address:</span>
-              <input
-                className="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-navy dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-success"
-                placeholder="email@example.com"
-                type="email"
-                value={formData.email}
-                onChange={(e) =>
-                  setFormData({ ...formData, email: e.target.value })
-                }
-                required
-              />
-            </label>
-            <label className="block">
-              <span>Phone Number:</span>
-              <input
-                className="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-navy dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-success"
-                placeholder="+1 234 567 890"
-                type="tel"
-                value={formData.phoneNumber}
-                onChange={(e) =>
-                  setFormData({ ...formData, phoneNumber: e.target.value })
-                }
-                required
-              />
-            </label>
-            <label className="block">
-              <span>Social ID:</span>
-              <input
-                className="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-navy dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-success"
-                placeholder="Enter social ID"
-                type="text"
-                value={formData.socialId}
-                onChange={(e) =>
-                  setFormData({ ...formData, socialId: e.target.value })
-                }
-                required
-              />
-            </label>
+            <FormInput
+              label="Full Name:"
+              placeholder="Enter full name"
+              value={formData.fullName}
+              onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+              required
+            />
+            <FormInput
+              label="Email Address:"
+              type="email"
+              placeholder="email@example.com"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              required
+            />
+            <FormInput
+              label="Phone Number:"
+              type="tel"
+              placeholder="+1 234 567 890"
+              value={formData.phoneNumber}
+              onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
+              required
+            />
+            <FormInput
+              label="Social ID:"
+              placeholder="Enter social ID"
+              value={formData.socialId}
+              onChange={(e) => setFormData({ ...formData, socialId: e.target.value })}
+              required
+            />
             
             <label className="inline-flex items-center space-x-2">
               <input
@@ -250,24 +213,22 @@ export default function CreateStaffForm({
               <span>Active status</span>
             </label>
             <div className="space-x-2 text-right">
-              <button
+              <Button
                 type="button"
                 onClick={handleCancel}
-                className="btn min-w-28 rounded-full border border-slate-300 font-medium text-slate-800 hover:bg-slate-150 focus:bg-slate-150 active:bg-slate-150/80 dark:border-navy-450 dark:text-navy-50 dark:hover:bg-navy-500 dark:focus:bg-navy-500 dark:active:bg-navy-500/90"
+                variant="outline"
+                className="min-w-28 rounded-full"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 type="submit"
                 disabled={isSubmitting}
-                className={`btn min-w-28 rounded-full font-medium text-white disabled:opacity-50 disabled:cursor-not-allowed ${
-                  theme === "admin"
-                    ? "bg-success hover:bg-success-focus focus:bg-success-focus active:bg-success-focus/90 dark:bg-success dark:hover:bg-success-focus dark:focus:bg-success-focus dark:active:bg-success/90"
-                    : "bg-primary hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
-                }`}
+                variant={theme === "admin" ? "success" : "default"}
+                className="min-w-28 rounded-full font-medium"
               >
                 {isSubmitting ? "Creating..." : "Create"}
-              </button>
+              </Button>
             </div>
           </form>
         </div>

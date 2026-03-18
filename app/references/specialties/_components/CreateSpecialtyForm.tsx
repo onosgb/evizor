@@ -1,6 +1,10 @@
 "use client";
 import { useState, useEffect } from "react";
 import { CreateSpecialtyRequest } from "@/app/lib/services/specialty.service";
+import { FormInput } from "@/app/components/ui/FormInput";
+import { FormTextarea } from "@/app/components/ui/FormTextarea";
+import { Button } from "@/app/components/ui/button";
+import { X } from "lucide-react";
 
 interface CreateSpecialtyFormProps {
   isOpen: boolean;
@@ -64,9 +68,7 @@ export default function CreateSpecialtyForm({
             onClick={handleCancel}
             className="btn -mr-1.5 size-7 rounded-full p-0 hover:bg-slate-300/20 focus:bg-slate-300/20 active:bg-slate-300/25 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="size-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            <X className="size-4.5" />
           </button>
         </div>
 
@@ -83,45 +85,41 @@ export default function CreateSpecialtyForm({
           )}
 
           <form onSubmit={handleSubmit} className="mt-4 space-y-4">
-            <label className="block">
-              <span className="text-sm font-medium">Specialty Name:</span>
-              <input
-                className="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-navy dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-success"
-                placeholder="e.g. Cardiology"
-                type="text"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                required
-              />
-            </label>
+            <FormInput
+              label="Specialty Name"
+              placeholder="e.g. Cardiology"
+              type="text"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              required
+            />
 
-            <label className="block">
-              <span className="text-sm font-medium">Description:</span>
-              <textarea
-                className="form-textarea mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-navy dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-success resize-none"
-                placeholder="Brief description of this specialty..."
-                rows={3}
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                required
-              />
-            </label>
+            <FormTextarea
+              label="Description"
+              placeholder="Brief description of this specialty..."
+              rows={3}
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              required
+            />
 
             <div className="space-x-2 text-right pt-2">
-              <button
+              <Button
                 type="button"
                 onClick={handleCancel}
-                className="btn min-w-28 rounded-full border border-slate-300 font-medium text-slate-800 hover:bg-slate-150 focus:bg-slate-150 active:bg-slate-150/80 dark:border-navy-450 dark:text-navy-50 dark:hover:bg-navy-500 dark:focus:bg-navy-500 dark:active:bg-navy-500/90"
+                variant="outline"
+                className="min-w-28 rounded-full"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="btn min-w-28 rounded-full bg-success font-medium text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-success-focus focus:bg-success-focus active:bg-success-focus/90 dark:bg-success dark:hover:bg-success-focus dark:focus:bg-success-focus dark:active:bg-success/90"
+                variant="success"
+                className="min-w-28 rounded-full font-medium"
               >
                 {isSubmitting ? "Creating..." : "Create"}
-              </button>
+              </Button>
             </div>
           </form>
         </div>

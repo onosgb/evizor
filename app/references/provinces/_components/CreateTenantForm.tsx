@@ -1,6 +1,9 @@
 "use client";
 import { useState, useEffect } from "react";
 import { UpdateTenantRequest } from "@/app/lib/services/tenant.service";
+import { FormInput } from "@/app/components/ui/FormInput";
+import { Button } from "@/app/components/ui/button";
+import { X } from "lucide-react";
 
 interface CreateTenantFormProps {
   isOpen: boolean;
@@ -54,9 +57,7 @@ export default function CreateTenantForm({
             onClick={onClose}
             className="btn -mr-1.5 size-7 rounded-full p-0 hover:bg-slate-300/20 focus:bg-slate-300/20 active:bg-slate-300/25 dark:hover:bg-navy-300/20"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="size-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            <X className="size-4.5" />
           </button>
         </div>
 
@@ -73,41 +74,32 @@ export default function CreateTenantForm({
           )}
 
           <form onSubmit={handleSubmit} className="mt-4 space-y-4">
-            <label className="block">
-              <span className="text-sm font-medium">Province Name:</span>
-              <input
-                className="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-navy dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-success"
-                placeholder="e.g. Gauteng"
-                type="text"
-                value={formData.province}
-                onChange={(e) => setFormData({ ...formData, province: e.target.value })}
-                required
-              />
-            </label>
+            <FormInput
+              label="Province Name"
+              placeholder="e.g. Gauteng"
+              type="text"
+              value={formData.province}
+              onChange={(e) => setFormData({ ...formData, province: e.target.value })}
+              required
+            />
 
-            <label className="block">
-              <span className="text-sm font-medium">Slug:</span>
-              <input
-                className="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-navy dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-success"
-                placeholder="e.g. gauteng"
-                type="text"
-                value={formData.slug}
-                onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                required
-              />
-            </label>
+            <FormInput
+              label="Slug"
+              placeholder="e.g. gauteng"
+              type="text"
+              value={formData.slug}
+              onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+              required
+            />
 
-            <label className="block">
-              <span className="text-sm font-medium">Schema Name:</span>
-              <input
-                className="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-navy dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-success"
-                placeholder="e.g. gauteng_schema"
-                type="text"
-                value={formData.schemaName}
-                onChange={(e) => setFormData({ ...formData, schemaName: e.target.value })}
-                required
-              />
-            </label>
+            <FormInput
+              label="Schema Name"
+              placeholder="e.g. gauteng_schema"
+              type="text"
+              value={formData.schemaName}
+              onChange={(e) => setFormData({ ...formData, schemaName: e.target.value })}
+              required
+            />
 
             <label className="flex items-center gap-3 cursor-pointer">
               <input
@@ -120,20 +112,22 @@ export default function CreateTenantForm({
             </label>
 
             <div className="space-x-2 text-right pt-2">
-              <button
+              <Button
                 type="button"
                 onClick={onClose}
-                className="btn min-w-28 rounded-full border border-slate-300 font-medium text-slate-800 hover:bg-slate-150 dark:border-navy-450 dark:text-navy-50 dark:hover:bg-navy-500"
+                variant="outline"
+                className="min-w-28 rounded-full"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="btn min-w-28 rounded-full bg-success font-medium text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-success-focus"
+                variant="success"
+                className="min-w-28 rounded-full"
               >
                 {isSubmitting ? "Creating..." : "Create"}
-              </button>
+              </Button>
             </div>
           </form>
         </div>

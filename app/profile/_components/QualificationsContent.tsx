@@ -11,6 +11,9 @@ import { Qualification } from "@/app/models";
 
 import { useSearchParams } from "next/navigation";
 import ConfirmationModal from "@/app/components/ConfirmationModal";
+import { FormInput } from "@/app/components/ui/FormInput";
+import { FormTextarea } from "@/app/components/ui/FormTextarea";
+import { Button } from "@/app/components/ui/button";
 
 export default function QualificationsContent() {
   const user = useAuthStore((state) => state.user);
@@ -169,16 +172,13 @@ export default function QualificationsContent() {
                   </div>
                 )}
                 {!isReadOnly && (
-                  <button
+                  <Button
                     onClick={() => setShowModal(true)}
-                    className={`btn min-w-28 rounded-full font-medium text-white ${
-                      theme === "admin"
-                        ? "bg-success hover:bg-success-focus focus:bg-success-focus active:bg-success-focus/90 dark:bg-success dark:hover:bg-success-focus dark:focus:bg-success-focus dark:active:bg-success/90"
-                        : "bg-primary hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
-                    }`}
+                    variant={theme === "admin" ? "success" : "default"}
+                    className="min-w-28 rounded-full font-medium"
                   >
                     Upload New Document
-                  </button>
+                  </Button>
                 )}
               </div>
             </div>
@@ -380,31 +380,23 @@ export default function QualificationsContent() {
                   </div>
                 )}
                 <div className="mt-4 space-y-4">
-                  <label className="block">
-                    <span>
-                      Document Title <span className="text-error">*</span>
-                    </span>
-                    <input
-                      name="title"
-                      value={uploadFormData.title}
-                      onChange={handleUploadFormChange}
-                      className="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
-                      placeholder="Enter document title"
-                      type="text"
-                      required
-                    />
-                  </label>
-                  <label className="block">
-                    <span>Description</span>
-                    <textarea
-                      name="description"
-                      value={uploadFormData.description}
-                      onChange={handleUploadFormChange}
-                      rows={3}
-                      placeholder="Enter description"
-                      className="form-textarea mt-1.5 w-full resize-none rounded-lg border border-slate-300 bg-transparent p-2.5 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
-                    ></textarea>
-                  </label>
+                  <FormInput
+                    label="Document Title"
+                    name="title"
+                    value={uploadFormData.title}
+                    onChange={handleUploadFormChange}
+                    placeholder="Enter document title"
+                    type="text"
+                    required
+                  />
+                  <FormTextarea
+                    label="Description"
+                    name="description"
+                    value={uploadFormData.description}
+                    onChange={handleUploadFormChange}
+                    rows={3}
+                    placeholder="Enter description"
+                  />
                   <div className="block">
                     <span>
                       Attachment <span className="text-error">*</span>
@@ -463,28 +455,26 @@ export default function QualificationsContent() {
                     </p>
                   </div>
                   <div className="space-x-2 text-right">
-                    <button
+                    <Button
                       onClick={() => {
                         setShowModal(false);
                         setUploadFormData({ title: "", description: "" });
                         setSelectedFile(null);
                         setFileError(null);
                       }}
-                      className="btn min-w-28 rounded-full border border-slate-300 font-medium text-slate-800 hover:bg-slate-150 focus:bg-slate-150 active:bg-slate-150/80 dark:border-navy-450 dark:text-navy-50 dark:hover:bg-navy-500 dark:focus:bg-navy-500 dark:active:bg-navy-500/90"
+                      variant="outline"
+                      className="min-w-28 rounded-full"
                     >
                       Cancel
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       onClick={handleUpload}
                       disabled={isUploading}
-                      className={`btn min-w-28 rounded-full font-medium text-white disabled:opacity-50 disabled:cursor-not-allowed ${
-                        theme === "admin"
-                          ? "bg-success hover:bg-success-focus focus:bg-success-focus active:bg-success-focus/90 dark:bg-success dark:hover:bg-success-focus dark:focus:bg-success-focus dark:active:bg-success/90"
-                          : "bg-primary hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
-                      }`}
+                      variant={theme === "admin" ? "success" : "default"}
+                      className="min-w-28 rounded-full font-medium"
                     >
                       {isUploading ? "Uploading..." : "Upload"}
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -593,14 +583,19 @@ export default function QualificationsContent() {
                     <p className="text-sm mb-4">
                       This file type cannot be previewed in the browser
                     </p>
-                    <a
-                      href={selectedDocument.fileUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="btn bg-primary hover:bg-primary-focus text-white rounded-full px-6"
+                    <Button
+                      asChild
+                      variant="default"
+                      className="rounded-full px-6"
                     >
-                      Download File
-                    </a>
+                      <a
+                        href={selectedDocument.fileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Download File
+                      </a>
+                    </Button>
                   </div>
                 )}
               </div>
@@ -617,7 +612,7 @@ export default function QualificationsContent() {
         title="Delete Qualification"
         message="Are you sure you want to delete this qualification? This action cannot be undone."
         confirmText="Delete"
-        confirmButtonClass="bg-error hover:bg-error-focus focus:bg-error-focus active:bg-error-focus/90"
+        variant="error"
         isLoading={isDeleting}
         loadingText="Deleting..."
       />

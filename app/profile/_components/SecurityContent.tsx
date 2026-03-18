@@ -5,6 +5,10 @@ import ProfileSidebar from "./ProfileSidebar";
 import { useAuthStore } from "@/app/stores/authStore";
 import { getTheme } from "@/app/lib/roles";
 import { useSearchParams } from "next/navigation";
+import { FormInput } from "@/app/components/ui/FormInput";
+import { Button } from "@/app/components/ui/button";
+import { Lock, Eye, EyeOff } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface ActiveSession {
   date: string;
@@ -200,24 +204,22 @@ export default function SecurityContent() {
               </h2>
 
               <div className="flex justify-center space-x-2">
-                <button
+                <Button
                   onClick={handleCancel}
                   disabled={isLoading}
-                  className="btn min-w-28 rounded-full border border-slate-300 font-medium text-slate-700 hover:bg-slate-150 focus:bg-slate-150 active:bg-slate-150/80 dark:border-navy-450 dark:text-navy-100 dark:hover:bg-navy-500 dark:focus:bg-navy-500 dark:active:bg-navy-500/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                  variant="outline"
+                  className="min-w-28 rounded-full"
                 >
                   Cancel
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={handleSave}
                   disabled={isLoading}
-                  className={`btn min-w-28 rounded-full font-medium text-white ${
-                    theme === "admin"
-                      ? "bg-success hover:bg-success-focus focus:bg-success-focus active:bg-success-focus/90 dark:bg-success dark:hover:bg-success-focus dark:focus:bg-success-focus dark:active:bg-success/90"
-                      : "bg-primary hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
-                  } disabled:opacity-50 disabled:cursor-not-allowed`}
+                  variant={theme === "admin" ? "success" : "default"}
+                  className="min-w-28 rounded-full"
                 >
                   {isLoading ? "Saving..." : "Save"}
-                </button>
+                </Button>
               </div>
             </div>
             <div className="p-4 sm:p-5">
@@ -233,106 +235,38 @@ export default function SecurityContent() {
                   </div>
                 )}
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <label className="block sm:col-span-2">
-                    <span>Current Password</span>
-                    <span className="relative mt-1.5 flex">
-                      <input
-                        name="currentPassword"
-                        value={formData.currentPassword}
-                        onChange={handleInputChange}
-                        className="form-input peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 pl-9 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
-                        placeholder="Enter current password"
-                        type="password"
-                      />
-                      <span className="pointer-events-none absolute flex h-full w-10 items-center justify-center text-slate-400 peer-focus:text-primary dark:text-navy-300 dark:peer-focus:text-accent">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="size-4"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                          />
-                        </svg>
-                      </span>
-                    </span>
-                  </label>
-                  <label className="block sm:col-span-2">
-                    <span>New Password</span>
-                    <div className="relative mt-1.5 flex">
-                      <input
-                        name="newPassword"
-                        value={formData.newPassword}
-                        onChange={handleInputChange}
-                        className="form-input peer w-full rounded-full border border-slate-300 bg-transparent px-3 py-2 pl-9 pr-9 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
-                        placeholder="Enter new password"
-                        type={showNewPassword ? "text" : "password"}
-                      />
-                      <span className="pointer-events-none absolute flex h-full w-10 items-center justify-center text-slate-400 peer-focus:text-primary dark:text-navy-300 dark:peer-focus:text-accent left-0">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="size-4"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"
-                          />
-                        </svg>
-                      </span>
+                  <FormInput
+                    label="Current Password"
+                    name="currentPassword"
+                    value={formData.currentPassword}
+                    onChange={handleInputChange}
+                    className="rounded-full"
+                    placeholder="Enter current password"
+                    type="password"
+                    wrapperClassName="sm:col-span-2"
+                    leftIcon={<Lock className="size-4" />}
+                  />
+                  <FormInput
+                    label="New Password"
+                    name="newPassword"
+                    value={formData.newPassword}
+                    onChange={handleInputChange}
+                    className="rounded-full sm:col-span-2"
+                    leftIcon={<Lock className="size-4" />}
+                    rightIcon={
                       <button
                         type="button"
                         onClick={() => setShowNewPassword(!showNewPassword)}
-                        className="absolute right-0 flex h-full w-10 items-center justify-center text-slate-400 hover:text-primary focus:outline-none dark:text-navy-300 dark:hover:text-accent"
+                        className="flex size-full items-center justify-center text-slate-400 hover:text-primary focus:outline-none dark:text-navy-300 dark:hover:text-accent"
                       >
                         {showNewPassword ? (
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="size-4"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            strokeWidth={2}
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
-                            />
-                          </svg>
+                          <EyeOff className="size-4" />
                         ) : (
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="size-4"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            strokeWidth={2}
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                            />
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                            />
-                          </svg>
+                          <Eye className="size-4" />
                         )}
                       </button>
-                    </div>
-                  </label>
+                    }
+                  />
                 </div>
                 <div className="my-7 h-px bg-slate-200 dark:bg-navy-500"></div>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-6">

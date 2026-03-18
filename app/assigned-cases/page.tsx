@@ -10,6 +10,7 @@ import { AppointmentStatus } from "../models";
 import { useSearchContext } from "../contexts/SearchContext";
 import { formatTodayOrDate } from "@/app/lib/utils/dateUtils";
 import { useToast } from "../contexts/ToastContext";
+import { FormInput } from "@/app/components/ui/FormInput";
 
 export default function AssignedCasesPage() {
   const [dateFrom, setDateFrom] = useState("");
@@ -90,35 +91,25 @@ export default function AssignedCasesPage() {
             Filter by Date
           </h2>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div>
-              <label className="block text-xs text-slate-500 dark:text-navy-300 mb-0.5">
-                From
-              </label>
-              <input
-                type="date"
-                value={dateFrom}
-                onChange={(e) => {
-                  setDateFrom(e.target.value);
-                  setCurrentPage(1);
-                }}
-                className="form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 text-sm hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
-              />
-            </div>
-            <div>
-              <label className="block text-xs text-slate-500 dark:text-navy-300 mb-0.5">
-                To
-              </label>
-              <input
-                type="date"
-                value={dateTo}
-                min={dateFrom}
-                onChange={(e) => {
-                  setDateTo(e.target.value);
-                  setCurrentPage(1);
-                }}
-                className="form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 text-sm hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
-              />
-            </div>
+            <FormInput
+              label="From"
+              type="date"
+              value={dateFrom}
+              onChange={(e) => {
+                setDateFrom(e.target.value);
+                setCurrentPage(1);
+              }}
+            />
+            <FormInput
+              label="To"
+              type="date"
+              value={dateTo}
+              min={dateFrom}
+              onChange={(e) => {
+                setDateTo(e.target.value);
+                setCurrentPage(1);
+              }}
+            />
           </div>
 
           {hasDateFilter && (

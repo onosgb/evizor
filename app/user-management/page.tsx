@@ -12,6 +12,10 @@ import TableActionMenu from "../components/TableActionMenu";
 import { useAuthStore, useTenantStore, useUserStore } from "../stores";
 import { isSuperAdmin } from "../lib/roles";
 import { useSearchContext } from "../contexts/SearchContext";
+import { FormSelect } from "../components/ui/FormSelect";
+import { Button } from "../components/ui/button";
+import ConfirmationModal from "../components/ConfirmationModal";
+import { Plus } from "lucide-react";
 
 // Helper function to get role badge color
 const getRoleBadgeColor = (role: string | null | undefined): string => {
@@ -153,27 +157,29 @@ export default function UserManagementPage() {
           </h2>
         </div>
         <div className="flex items-center justify-center gap-3 flex-wrap">
-          <select
+          <FormSelect
             value={selectedRole}
             onChange={(e) => {
               setSelectedRole(e.target.value);
               setPage(1);
             }}
-            className="form-select h-9 w-36 rounded-lg border border-slate-300 bg-transparent px-3 py-1.5 text-sm dark:border-navy-450 dark:text-navy-100"
+            wrapperClassName="w-36"
+            className="h-9"
           >
             <option value="">All Roles</option>
             <option value="DOCTOR">Doctor</option>
             <option value="ADMIN">Admin</option>
-          </select>
+          </FormSelect>
 
           {userIsSuperAdmin && (
-            <select
+            <FormSelect
               value={selectedProvince}
               onChange={(e) => {
                 setSelectedProvince(e.target.value);
                 setPage(1);
               }}
-              className="form-select h-9 w-48 rounded-lg border border-slate-300 bg-transparent px-3 py-1.5 text-sm dark:border-navy-450 dark:text-navy-100"
+              wrapperClassName="w-48"
+              className="h-9"
             >
               <option value="">All Provinces</option>
               {tenants.map((t) => (
@@ -181,14 +187,16 @@ export default function UserManagementPage() {
                   {t.province}
                 </option>
               ))}
-            </select>
+            </FormSelect>
           )}
-          <button
+          <Button
             onClick={() => setShowModal(true)}
-            className="btn min-w-28 bg-success font-medium text-white hover:bg-success-focus focus:bg-success-focus active:bg-success-focus/90 dark:bg-success dark:hover:bg-success-focus dark:focus:bg-success-focus dark:active:bg-success/90"
+            variant="success"
+            className="min-w-28 rounded-full font-medium"
           >
+            <Plus className="mr-2 size-4" />
             Add New User
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -207,35 +215,17 @@ export default function UserManagementPage() {
 
       {/* Toggle Status Confirmation */}
       {toggleTarget && (
-        <div className="fixed inset-0 z-100 flex items-center justify-center px-4" role="dialog">
-          <div className="absolute inset-0 bg-slate-900/60" onClick={() => { setToggleTarget(null); setToggleNewStatus(""); }} />
-          <div className="relative w-full max-w-sm rounded-lg bg-white p-6 shadow-xl dark:bg-navy-700">
-            <h3 className="text-base font-semibold text-slate-700 dark:text-navy-100">
-              Confirm Status Change
-            </h3>
-            <p className="mt-2 text-sm text-slate-500 dark:text-navy-300">
-              Are you sure you want to set{" "}
-              <span className="font-medium text-slate-700 dark:text-navy-100">
-                {toggleTarget.firstName} {toggleTarget.lastName}
-              </span>{" "}
-              to <span className="font-medium">{toggleNewStatus}</span>?
-            </p>
-            <div className="mt-5 flex justify-end gap-3">
-              <button
-                onClick={() => { setToggleTarget(null); setToggleNewStatus(""); }}
-                className="btn rounded-full border border-slate-300 font-medium text-slate-700 hover:bg-slate-100 dark:border-navy-450 dark:text-navy-100 dark:hover:bg-navy-600"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={confirmToggleUserStatus}
-                className={`btn rounded-full font-medium text-white ${getStatusBadgeColor(toggleNewStatus)}`}
-              >
-                Confirm
-              </button>
-            </div>
-          </div>
-        </div>
+        <ConfirmationModal
+          isOpen={!!toggleTarget}
+          onClose={() => { setToggleTarget(null); setToggleNewStatus(""); }}
+          onConfirm={confirmToggleUserStatus}
+          title="Confirm Status Change"
+          message={`Are you sure you want to set ${toggleTarget.firstName} ${toggleTarget.lastName} to ${toggleNewStatus}?`}
+          confirmText="Confirm"
+          cancelText="Cancel"
+          variant={toggleNewStatus === "ACTIVE" ? "success" : toggleNewStatus === "SUSPENDED" ? "error" : "default"}
+          isLoading={isSubmitting}
+        />
       )}
 
       {/* Schedule Management Modal */}

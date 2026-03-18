@@ -12,6 +12,9 @@ import { isSuperAdmin } from "@/app/lib/roles";
 import { Pagination } from "../components/Pagination";
 import { useSearchContext } from "../contexts/SearchContext";
 import { formatDate } from "@/app/lib/utils/dateUtils";
+import { FormSelect } from "../components/ui/FormSelect";
+import { Button } from "../components/ui/button";
+import { Clock, CheckCircle2, XCircle, ArrowUpRight } from "lucide-react";
 
 export default function QueueMonitorPage() {
   const {
@@ -71,21 +74,21 @@ export default function QueueMonitorPage() {
       case AppointmentStatus.PROGRESS: // Grouping 'waiting' logic if needed, or separate
         return (
           <div className="flex items-center space-x-2 text-warning">
-            <div className="size-2 rounded-full bg-current"></div>
+            <Clock className="size-4" />
             <span>Waiting</span>
           </div>
         );
       case AppointmentStatus.COMPLETED:
         return (
           <div className="flex items-center space-x-2 text-success">
-            <div className="size-2 rounded-full bg-current"></div>
+            <CheckCircle2 className="size-4" />
             <span>Completed</span>
           </div>
         );
       case AppointmentStatus.CANCELLED:
         return (
           <div className="flex items-center space-x-2 text-error">
-            <div className="size-2 rounded-full bg-current"></div>
+            <XCircle className="size-4" />
             <span>Cancelled</span>
           </div>
         );
@@ -109,10 +112,10 @@ export default function QueueMonitorPage() {
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           {userIsSuperAdmin && (
-            <select
+            <FormSelect
               value={tenantId}
-              className="form-select h-9 rounded-lg border border-slate-300 bg-transparent px-3 py-1.5 text-sm dark:border-navy-450 dark:text-navy-100"
               onChange={(e) => setFilters({ tenantId: e.target.value })}
+              className="h-9 py-1!"
             >
               <option value="">All Provinces</option>
               {tenants.map((t) => (
@@ -120,21 +123,21 @@ export default function QueueMonitorPage() {
                   {t.province}
                 </option>
               ))}
-            </select>
+            </FormSelect>
           )}
-          <select
-            className="form-select h-9 rounded-lg border border-slate-300 bg-transparent px-3 py-1.5 text-sm dark:border-navy-450 dark:text-navy-100"
+          <FormSelect
             value={status}
             onChange={(e) =>
               setFilters({ status: e.target.value as AppointmentStatus | "" })
             }
+            className="h-9 py-1!"
           >
             <option value="">All Status</option>
             <option value={AppointmentStatus.SCHEDULED}>Scheduled</option>
             <option value={AppointmentStatus.PROGRESS}>In Progress</option>
             <option value={AppointmentStatus.COMPLETED}>Completed</option>
             <option value={AppointmentStatus.CANCELLED}>Cancelled</option>
-          </select>
+          </FormSelect>
         </div>
       </div>
 
@@ -242,26 +245,17 @@ export default function QueueMonitorPage() {
                         }`}
                       >
                         <div className="flex items-center justify-end">
-                          <Link
-                            href={`/patient-preview?appointmentId=${item.id}&patientId=${item.patientId}`}
-                            className="flex size-8 items-center justify-center rounded-full bg-slate-150 text-slate-600 transition-colors hover:bg-slate-200 active:bg-slate-200/80 dark:bg-navy-500 dark:text-navy-200 dark:hover:bg-navy-450"
+                          <Button
+                            asChild
+                            variant="ghost"
+                            size="icon"
+                            className="size-8 rounded-full bg-slate-150 text-slate-600 transition-colors hover:bg-slate-200 active:bg-slate-200/80 dark:bg-navy-500 dark:text-navy-200 dark:hover:bg-navy-450"
                             title="View patient"
                           >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              className="size-4"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M7 17L17 7M17 7H7M17 7v10"
-                              />
-                            </svg>
-                          </Link>
+                            <Link href={`/patient-preview?appointmentId=${item.id}&patientId=${item.patientId}`}>
+                              <ArrowUpRight className="size-4" />
+                            </Link>
+                          </Button>
                         </div>
                       </td>
                     </tr>

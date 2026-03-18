@@ -1,7 +1,12 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { CreateSymptomRequest } from "@/app/lib/services/symptom.service";
 import { Tenant } from "@/app/models";
+import { FormInput } from "@/app/components/ui/FormInput";
+import { FormSelect } from "@/app/components/ui/FormSelect";
+import { FormTextarea } from "@/app/components/ui/FormTextarea";
+import { Button } from "@/app/components/ui/button";
+import { X, Lock } from "lucide-react";
 
 interface CreateSymptomFormProps {
   isOpen: boolean;
@@ -76,9 +81,7 @@ export default function CreateSymptomForm({
             onClick={handleCancel}
             className="btn -mr-1.5 size-7 rounded-full p-0 hover:bg-slate-300/20 focus:bg-slate-300/20 active:bg-slate-300/25 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="size-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            <X className="size-4.5" />
           </button>
         </div>
 
@@ -95,71 +98,64 @@ export default function CreateSymptomForm({
           )}
 
           <form onSubmit={handleSubmit} className="mt-4 space-y-4">
-            <div className="block">
-              <span className="text-sm font-medium">Province:</span>
-              {isSuperAdmin ? (
-                <select
-                  className="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 hover:border-slate-400 focus:border-navy dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-success"
-                  value={formData.tenantId}
-                  onChange={(e) => setFormData({ ...formData, tenantId: e.target.value })}
-                  required
-                >
-                  <option value="">Select province...</option>
-                  {tenants.map((t) => (
-                    <option key={t.id} value={t.id}>{t.province}</option>
-                  ))}
-                </select>
-              ) : (
-                <div className="mt-1.5 flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 dark:border-navy-500 dark:bg-navy-800">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="size-4 shrink-0 text-slate-400 dark:text-navy-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-                  </svg>
+            {isSuperAdmin ? (
+              <FormSelect
+                label="Province"
+                value={formData.tenantId}
+                onChange={(e) => setFormData({ ...formData, tenantId: e.target.value })}
+                required
+                options={[
+                  { value: "", label: "Select province..." },
+                  ...tenants.map((t) => ({ value: t.id, label: t.province })),
+                ]}
+              />
+            ) : (
+              <div className="space-y-1.5">
+                <span className="text-sm font-medium">Province</span>
+                <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 dark:border-navy-500 dark:bg-navy-800">
+                  <Lock className="size-4 shrink-0 text-slate-400 dark:text-navy-300" />
                   <span className="text-sm text-slate-600 dark:text-navy-200">
                     {tenants.find((t) => t.id === formData.tenantId)?.province ?? "—"}
                   </span>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
 
-            <label className="block">
-              <span className="text-sm font-medium">Symptom Name:</span>
-              <input
-                className="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-navy dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-success"
-                placeholder="e.g. Chest Pain"
-                type="text"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                required
-              />
-            </label>
+            <FormInput
+              label="Symptom Name"
+              placeholder="e.g. Chest Pain"
+              type="text"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              required
+            />
 
-            <label className="block">
-              <span className="text-sm font-medium">Description:</span>
-              <textarea
-                className="form-textarea mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-navy dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-success resize-none"
-                placeholder="Brief description of this symptom..."
-                rows={3}
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                required
-              />
-            </label>
+            <FormTextarea
+              label="Description"
+              placeholder="Brief description of this symptom..."
+              rows={3}
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              required
+            />
 
             <div className="space-x-2 text-right pt-2">
-              <button
+              <Button
                 type="button"
                 onClick={handleCancel}
-                className="btn min-w-28 rounded-full border border-slate-300 font-medium text-slate-800 hover:bg-slate-150 focus:bg-slate-150 active:bg-slate-150/80 dark:border-navy-450 dark:text-navy-50 dark:hover:bg-navy-500 dark:focus:bg-navy-500 dark:active:bg-navy-500/90"
+                variant="outline"
+                className="min-w-28 rounded-full"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="btn min-w-28 rounded-full bg-success font-medium text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-success-focus focus:bg-success-focus active:bg-success-focus/90 dark:bg-success dark:hover:bg-success-focus dark:focus:bg-success-focus dark:active:bg-success/90"
+                variant="success"
+                className="min-w-28 rounded-full"
               >
                 {isSubmitting ? "Creating..." : "Create"}
-              </button>
+              </Button>
             </div>
           </form>
         </div>
