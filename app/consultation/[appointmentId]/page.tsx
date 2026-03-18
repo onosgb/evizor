@@ -226,20 +226,10 @@ export default function ConsultationPage({
         const newCall = newClient.call(callType, callId);
         setCall(newCall);
 
-        // Initiate the ringing flow by adding members and setting ring: true
-        const patientId = selectedAppointment?.patientId || (selectedPatient as any)?.id;
-        await newCall.getOrCreate({
-          ring: true,
-          data: {
-            members: [
-              { user_id: userId, role: 'admin' },
-              { user_id: patientId, role: 'user' },
-            ].filter(m => m.user_id),
-          },
-        });
-
+        // Call is already created by the backend.
+        // We simply join.
         await newCall.join();
-        console.log("[Stream] Joined and rang call successfully");
+        console.log("[Stream] Joined call successfully");
       } catch (err: any) {
         console.error("[Stream] Initialization failed:", err);
         setError(`Video initialization failed: ${err.message || "Unknown error"}`);
@@ -378,7 +368,6 @@ export default function ConsultationPage({
         })),
       });
       showToast("Prescription sent successfully", "success");
-      setTimeout(() => handleEndCall(), 1000);
     } catch (err: unknown) {
       showToast((err as Error).message || "Failed to send prescription", "error");
     } finally {
