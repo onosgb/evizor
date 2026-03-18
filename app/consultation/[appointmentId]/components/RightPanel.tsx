@@ -1,6 +1,6 @@
 "use client";
 
-import { Pharmacy, Appointment, User, Attachment } from "@/app/models";
+import { Pharmacy, Appointment, User, Attachment, MedicationRequest } from "@/app/models";
 import { RefObject, useState } from "react";
 import { Button } from "@/app/components/ui/button";
 import { FormInput } from "@/app/components/ui/FormInput";
@@ -27,8 +27,8 @@ interface RightPanelProps {
   pharmacyId: string;
   setPharmacyId: (id: string) => void;
   pharmacies: Pharmacy[];
-  medications: any[];
-  setMedications: (meds: any[]) => void;
+  medications: MedicationRequest[];
+  setMedications: (meds: MedicationRequest[]) => void;
   isSendingPrescription: boolean;
   handleSendPrescription: () => void;
   uploads: Attachment[];
@@ -271,7 +271,7 @@ export const RightPanel = ({
                     onChange={(e) => setCurrentDuration(e.target.value)}
                     options={[
                       { value: "", label: "Duration" },
-                      { value: "Once a day", label: "Once a day" },
+                      { value: "Once", label: "Once" },
                       ...Array.from({ length: 29 }, (_, i) => ({
                         value: `${i + 2} days`,
                         label: `${i + 2} days`,
@@ -303,13 +303,15 @@ export const RightPanel = ({
                   <div className="space-y-2">
                     {medications.map((med, idx) => (
                       <div key={idx} className="flex items-center justify-between bg-gray-50 border border-gray-100 p-2 rounded-lg group">
-                        <div className="min-w-0">
-                          <div className="flex items-baseline gap-2">
-                            <p className="font-bold text-blue-600 text-xs">{med.drug}</p>
-                            <span className="text-[10px] text-gray-400 font-medium">({med.dosage})</span>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="font-bold text-blue-600 text-[13px]">{med.drug}</p>
+                            <span className="text-[11px] px-2 py-0.5 bg-blue-50 text-blue-700 rounded-md font-bold">
+                              {med.dosage}
+                            </span>
                           </div>
-                          <p className="text-[10px] text-gray-500">
-                            {med.frequency} - {med.duration}
+                          <p className="text-[11px] text-gray-500 mt-0.5">
+                            {med.frequency} • {med.duration}
                           </p>
                         </div>
                         <Button

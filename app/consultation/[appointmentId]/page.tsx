@@ -17,7 +17,10 @@ import { usePharmacyStore } from "@/app/stores/pharmacyStore";
 import { useToast } from "@/app/contexts/ToastContext";
 import { appointmentService } from "@/app/lib/services/appointment.service";
 import { RightPanel } from "./components/RightPanel";
-import { Attachment, MedicationRequest } from "@/app/models";
+import {
+  Attachment,
+  MedicationRequest,
+} from "@/app/models";
 
 type Tab = "Info" | "Notes" | "Prescription" | "Lab / Diagnosis" | "Chat";
 
@@ -157,7 +160,7 @@ export default function ConsultationPage({
   const [chatMessages, setChatMessages] = useState<any[]>([]);
   const [chatInput, setChatInput] = useState("");
   const chatEndRef = useRef<HTMLDivElement>(null);
-  const [medications, setMedications] = useState<any[]>([]);
+  const [medications, setMedications] = useState<MedicationRequest[]>([]);
   const [pharmacyId, setPharmacyId] = useState("");
   const { pharmacies, fetchPharmacies } = usePharmacyStore();
   const [isSendingPrescription, setIsSendingPrescription] = useState(false);
