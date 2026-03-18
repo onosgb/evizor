@@ -17,7 +17,7 @@ import { usePharmacyStore } from "@/app/stores/pharmacyStore";
 import { useToast } from "@/app/contexts/ToastContext";
 import { appointmentService } from "@/app/lib/services/appointment.service";
 import { RightPanel } from "./components/RightPanel";
-import { Attachment } from "@/app/models";
+import { Attachment, MedicationRequest } from "@/app/models";
 
 type Tab = "Info" | "Notes" | "Prescription" | "Lab / Diagnosis" | "Chat";
 
@@ -332,12 +332,6 @@ export default function ConsultationPage({
     try {
       await completeAppointment(appointmentId, {
         doctorNotes: notes,
-        medications: medications.map((m: any) => ({
-          drug: m.drug,
-          dosage: m.dosage,
-          frequency: m.frequency,
-          instructions: m.instructions ?? m.duration,
-        })),
       });
       showToast("Consultation completed successfully", "success");
       setTimeout(() => handleEndCall(), 1000);
@@ -360,11 +354,12 @@ export default function ConsultationPage({
       await appointmentService.addPrescription({
         phamacyId: pharmacyId,
         appointmentId,
-        medications: medications.map((m: any) => ({
+        medications: medications.map((m: MedicationRequest) => ({
           drug: m.drug,
           dosage: m.dosage,
           frequency: m.frequency,
-          instructions: m.instructions ?? m.duration,
+          duration: m.duration,
+          instructions: m.instructions,
         })),
       });
       showToast("Prescription sent successfully", "success");

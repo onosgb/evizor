@@ -2,6 +2,7 @@ export interface MedicationRequest {
   drug: string;
   frequency: string;
   dosage: string;
+  duration: string;
   instructions?: string;
 }
 
@@ -13,6 +14,4 @@ export interface CreatePrescriptionRequest {
 
 export interface CompleteAppointmentRequest {
   doctorNotes: string;
-  /** Optional medications when finalizing in one step */
-  medications?: MedicationRequest[];
 }

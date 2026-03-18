@@ -29,7 +29,7 @@ export default function DoctorDashboard({ user }: { user: User | null }) {
     title: string;
     message: string;
     onConfirm: () => void;
-    type?: "info" | "success" | "danger";
+    variant?: "default" | "success" | "error";
     confirmText?: string;
   }>({
     isOpen: false,
@@ -49,7 +49,7 @@ export default function DoctorDashboard({ user }: { user: User | null }) {
       isOpen: true,
       title: "Accept Appointment",
       message: `Are you sure you want to accept the appointment with ${patientName} and start the video call?`,
-      type: "success",
+      variant: "success",
       confirmText: "Accept & Start",
       onConfirm: async () => {
         await startVideoCall(appointmentId);
@@ -68,7 +68,7 @@ export default function DoctorDashboard({ user }: { user: User | null }) {
       isOpen: true,
       title: "Reject Appointment",
       message: `Are you sure you want to reject the appointment with ${patientName}? This action cannot be undone.`,
-      type: "danger",
+      variant: "error",
       confirmText: "Reject",
       onConfirm: async () => {
         await rejectAppointment(appointmentId);
@@ -370,7 +370,7 @@ export default function DoctorDashboard({ user }: { user: User | null }) {
         message={modalConfig.message}
         onConfirm={modalConfig.onConfirm}
         onClose={() => setModalConfig((prev) => ({ ...prev, isOpen: false }))}
-        type={modalConfig.type}
+        variant={modalConfig.variant}
         confirmText={modalConfig.confirmText}
         isLoading={isVideoLoading || isRejecting}
       />

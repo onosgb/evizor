@@ -92,6 +92,8 @@ export const RightPanel = ({
       frequency: currentFrequency,
       duration: currentDuration,
       instructions: currentInstructions,
+      // Create a combined instruction for mobile display
+      displayInstructions: `${currentFrequency ? currentFrequency + ' times daily. ' : ''}${currentDuration ? 'For ' + currentDuration + '. ' : ''}${currentInstructions || ''}`.trim()
     };
     setMedications([...medications, newMed]);
     // Reset form
@@ -241,23 +243,40 @@ export const RightPanel = ({
                     placeholder="Drug"
                     type="text"
                   />
-                  <FormInput
+                  <FormSelect
                     value={currentDosage}
                     onChange={(e) => setCurrentDosage(e.target.value)}
-                    placeholder="Dosage"
-                    type="text"
+                    options={[
+                      { value: "", label: "Dosage" },
+                      ...Array.from({ length: 5 }, (_, i) => ({
+                        value: `${i + 1} Dose(s)`,
+                        label: `${i + 1} Dose(s)`,
+                      })),
+                    ]}
                   />
-                  <FormInput
+                  <FormSelect
                     value={currentFrequency}
                     onChange={(e) => setCurrentFrequency(e.target.value)}
-                    placeholder="Frequency"
-                    type="text"
+                    options={[
+                      { value: "", label: "Frequency" },
+                      { value: "Once a day", label: "Once a day" },
+                      ...Array.from({ length: 4 }, (_, i) => ({
+                        value: `${i + 2} times a day`,
+                        label: `${i + 2} times a day`,
+                      })),
+                    ]}
                   />
-                  <FormInput
+                  <FormSelect
                     value={currentDuration}
                     onChange={(e) => setCurrentDuration(e.target.value)}
-                    placeholder="Duration"
-                    type="text"
+                    options={[
+                      { value: "", label: "Duration" },
+                      { value: "Once a day", label: "Once a day" },
+                      ...Array.from({ length: 29 }, (_, i) => ({
+                        value: `${i + 2} days`,
+                        label: `${i + 2} days`,
+                      })),
+                    ]}
                   />
                   <div className="col-span-2">
                     <FormTextarea
