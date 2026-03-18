@@ -254,7 +254,11 @@ export default function ConsultationPage({
       if (!isLeavingRef.current) {
         if (callRef.current) {
           console.log("[Stream] Cleaning up call on unmount");
-          callRef.current.leave().catch((e: any) => console.warn("Error leaving call", e));
+          const c = callRef.current;
+          // Explicitly stop hardware tracks
+          c.camera?.disable().catch((e: any) => console.warn("Error disabling camera", e));
+          c.microphone?.disable().catch((e: any) => console.warn("Error disabling microphone", e));
+          c.leave().catch((e: any) => console.warn("Error leaving call", e));
         }
         if (clientRef.current) {
           console.log("[Stream] Disconnecting client on unmount");
@@ -275,6 +279,9 @@ export default function ConsultationPage({
     isLeavingRef.current = true;
     if (call) {
       try {
+        console.log("[Stream] Explicitly disabling camera and mic");
+        await call.camera.disable();
+        await call.microphone.disable();
         await call.leave();
       } catch (e) {
         console.warn("Error leaving call", e);
@@ -285,7 +292,11 @@ export default function ConsultationPage({
     }
     endVideoCall();
     showToast("Session ended. Redirecting to dashboard.", "success");
-    router.push("/");
+    
+    // Tiny delay to ensure SDK cleanup processes are not cut off by navigation
+    setTimeout(() => {
+      router.push("/");
+    }, 500);
   }, [call, client, endVideoCall, router, showToast]);
 
   const handleRetryJoin = useCallback(async () => {
@@ -361,7 +372,6 @@ export default function ConsultationPage({
           drug: m.drug,
           dosage: m.dosage,
           frequency: m.frequency,
-          duration: m.duration,
           instructions: m.instructions,
         })),
       });

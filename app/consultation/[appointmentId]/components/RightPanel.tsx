@@ -78,9 +78,23 @@ export const RightPanel = ({
   const [currentDrug, setCurrentDrug] = useState("");
   const [currentDosage, setCurrentDosage] = useState("");
   const [currentFrequency, setCurrentFrequency] = useState("");
-  const [currentDuration, setCurrentDuration] = useState("");
   const [currentInstructions, setCurrentInstructions] = useState("");
-
+  const frequecyArray = ['Once daily', 'Twice daily', 'Three times daily', 'Four times daily', 'Every 4 hours', 'Every 6 hours', 'Every 8 hours', 'Every 12 hours', 'As needed', 'For pain as needed']
+  const durationArray = ['Once (Single dose)', '3 days', '5 days', '7 days', '10 days', '14 days', '1 month', 'Until finished']
+  const doseArray = [
+  // Tablets/Capsules
+  '1 Tablet', '2 Tablets', '0.5 Tablet', '1 Capsule', '2 Capsules',
+  
+  // Common Milligram Strengths
+  '2.5 mg', '5 mg', '10 mg', '20 mg', '25 mg', '50 mg', '100 mg', 
+  '125 mg', '250 mg', '500 mg', '625 mg', '1 g',
+  
+  // Liquids (Volumes)
+  '2.5 mL', '5 mL (1 tsp)', '10 mL (2 tsp)', '15 mL (1 tbsp)',
+  
+  // Specialized
+  '1 Puff', '2 Puffs', '5 Units', '10 Units', 'Apply thinly'
+];
   const addMedication = () => {
     if (!currentDrug.trim()) {
       showToast("Drug name is required", "error");
@@ -90,17 +104,13 @@ export const RightPanel = ({
       drug: currentDrug,
       dosage: currentDosage,
       frequency: currentFrequency,
-      duration: currentDuration,
       instructions: currentInstructions,
-      // Create a combined instruction for mobile display
-      displayInstructions: `${currentFrequency ? currentFrequency + ' times daily. ' : ''}${currentDuration ? 'For ' + currentDuration + '. ' : ''}${currentInstructions || ''}`.trim()
     };
     setMedications([...medications, newMed]);
     // Reset form
     setCurrentDrug("");
     setCurrentDosage("");
     setCurrentFrequency("");
-    setCurrentDuration("");
     setCurrentInstructions("");
   };
 
@@ -248,9 +258,9 @@ export const RightPanel = ({
                     onChange={(e) => setCurrentDosage(e.target.value)}
                     options={[
                       { value: "", label: "Dosage" },
-                      ...Array.from({ length: 5 }, (_, i) => ({
-                        value: `${i + 1} Dose(s)`,
-                        label: `${i + 1} Dose(s)`,
+                      ...doseArray.map((dose) => ({
+                        value: dose,
+                        label: dose,
                       })),
                     ]}
                   />
@@ -259,33 +269,23 @@ export const RightPanel = ({
                     onChange={(e) => setCurrentFrequency(e.target.value)}
                     options={[
                       { value: "", label: "Frequency" },
-                      { value: "Once a day", label: "Once a day" },
-                      ...Array.from({ length: 4 }, (_, i) => ({
-                        value: `${i + 2} times a day`,
-                        label: `${i + 2} times a day`,
+                      ...frequecyArray.map((freq) => ({
+                        value: freq,
+                        label: freq,
                       })),
                     ]}
                   />
                   <FormSelect
-                    value={currentDuration}
-                    onChange={(e) => setCurrentDuration(e.target.value)}
+                    value={currentInstructions}
+                    onChange={(e) => setCurrentInstructions(e.target.value)}
                     options={[
                       { value: "", label: "Duration" },
-                      { value: "Once", label: "Once" },
-                      ...Array.from({ length: 29 }, (_, i) => ({
-                        value: `${i + 2} days`,
-                        label: `${i + 2} days`,
+                      ...durationArray.map((dur) => ({
+                        value: dur,
+                        label: dur,
                       })),
                     ]}
                   />
-                  <div className="col-span-2">
-                    <FormTextarea
-                      value={currentInstructions}
-                      onChange={(e) => setCurrentInstructions(e.target.value)}
-                      placeholder="Instructions (Optional)"
-                      rows={2}
-                    />
-                  </div>
                   <Button
                     onClick={addMedication}
                     className="col-span-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold"
@@ -311,7 +311,7 @@ export const RightPanel = ({
                             </span>
                           </div>
                           <p className="text-[11px] text-gray-500 mt-0.5">
-                            {med.frequency} • {med.duration}
+                            {med.frequency} • {med.instructions}
                           </p>
                         </div>
                         <Button

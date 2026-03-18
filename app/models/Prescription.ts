@@ -2,7 +2,6 @@ export interface MedicationRequest {
   drug: string;
   frequency: string;
   dosage: string;
-  duration: string;
   instructions?: string;
 }
 
