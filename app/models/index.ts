@@ -19,3 +19,4 @@ export * from "./Prescription";
 export type { LabTestType } from "./LabTestType";
 export * from "./LabUploadResponse";
 export type { Attachment } from "./Attachment";
+export * from "./Analytics";

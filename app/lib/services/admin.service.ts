@@ -6,6 +6,7 @@ import {
   ProfessionalProfile,
   Qualification,
   CreateScheduleRequest,
+  GlobalAnalyticsResponse,
 } from "@/app/models";
 
 class AdminService {
@@ -31,8 +32,8 @@ class AdminService {
     userId: string,
     status: boolean,
     reason: string = "",
-  ): Promise<ApiResponse<any>> {
-    const payload: any = {
+  ): Promise<ApiResponse<void>> {
+    const payload: { approved: boolean; rejectionReason?: string } = {
       approved: status,
     };
 
@@ -40,7 +41,7 @@ class AdminService {
       payload.rejectionReason = reason;
     }
 
-    const response = await apiClient.put<ApiResponse<any>>(
+    const response = await apiClient.put<ApiResponse<void>>(
       `/profile/admin/verify-profile/${userId}`,
       payload,
     );
@@ -70,8 +71,8 @@ class AdminService {
   /**
    * Approve professional profile update (admin only)
    */
-  async approveProfessionalProfile(userId: string): Promise<ApiResponse<any>> {
-    const response = await apiClient.put<ApiResponse<any>>(
+  async approveProfessionalProfile(userId: string): Promise<ApiResponse<void>> {
+    const response = await apiClient.put<ApiResponse<void>>(
       `/profile/admin/verify-profile/${userId}`,
       {
         approved: true,
@@ -149,7 +150,15 @@ class AdminService {
     return response.data;
   }
 
- 
+  /**
+   * Get global analytics (admin only)
+   */
+  async getGlobalAnalytics(): Promise<ApiResponse<GlobalAnalyticsResponse>> {
+    const response = await apiClient.get<ApiResponse<GlobalAnalyticsResponse>>(
+      "/admin/analytics/global"
+    );
+    return response.data;
+  }
 }
 
 export const adminService = new AdminService();

@@ -1,16 +1,9 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { CreateStaffRequest } from "@/app/models";
 import { useTenantStore } from "@/app/stores";
 import { useAuthStore } from "@/app/stores/authStore";
 import { isSuperAdmin } from "@/app/lib/roles";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/app/components/ui/select";
 
 // Helper function to check if status is active
 const isActiveStatus = (status: string | null | undefined): boolean => {
@@ -155,44 +148,38 @@ export default function CreateStaffForm({
           <form onSubmit={handleSubmit} className="mt-4 space-y-4">
             <div className="space-y-1.5">
               <span>Role:</span>
-              <Select
+              <select
+                className="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
                 value={formData.role}
-                onValueChange={(value) => setFormData({ ...formData, role: value })}
+                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                required
               >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select role" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="DOCTOR">Doctor</SelectItem>
-                  <SelectItem value="ADMIN">Admin</SelectItem>
-                </SelectContent>
-              </Select>
+                <option value="">Select role</option>
+                <option value="DOCTOR">Doctor</option>
+                <option value="ADMIN">Admin</option>
+              </select>
             </div>
             {currentUserIsSuperAdmin && (
               <div className="space-y-1.5">
                 <span>Location (Province):</span>
-                <Select
+                <select
+                  className="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
                   value={formData.tenantId}
-                  onValueChange={(value) => setFormData({ ...formData, tenantId: value })}
+                  onChange={(e) => setFormData({ ...formData, tenantId: e.target.value })}
                   disabled={isLoadingTenants}
+                  required
                 >
-                  <SelectTrigger className="w-full">
-                    <SelectValue
-                      placeholder={
-                        isLoadingTenants ? "Loading locations..." : "Select location"
-                      }
-                    />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {(tenants || [])
-                      .filter((tenant) => tenant.isActive)
-                      .map((tenant) => (
-                        <SelectItem key={tenant.id} value={tenant.id}>
-                          {tenant.province}
-                        </SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
+                  <option value="">
+                    {isLoadingTenants ? "Loading locations..." : "Select location"}
+                  </option>
+                  {(tenants || [])
+                    .filter((tenant) => tenant.isActive && tenant.id)
+                    .map((tenant) => (
+                      <option key={tenant.id} value={tenant.id}>
+                        {tenant.province}
+                      </option>
+                    ))}
+                </select>
               </div>
             )}
             <label className="block">

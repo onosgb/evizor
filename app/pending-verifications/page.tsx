@@ -10,13 +10,6 @@ import { useSearchContext } from "../contexts/SearchContext";
 import { Pagination } from "../components/Pagination";
 import VerificationModal from "./_components/VerificationModal";
 import { formatDate } from "../lib/utils/dateUtils";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/app/components/ui/select";
 
 export default function PendingVerificationsPage() {
   const {
@@ -109,19 +102,18 @@ export default function PendingVerificationsPage() {
 
         {userIsSuperAdmin && (
           <div className="w-48">
-            <Select value={tenantId} onValueChange={setTenantId}>
-              <SelectTrigger className="h-9">
-                <SelectValue placeholder="All Provinces" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">All Provinces</SelectItem>
-                {tenants.map((t) => (
-                  <SelectItem key={t.id} value={t.id}>
-                    {t.province}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <select
+              value={tenantId}
+              onChange={(e) => setTenantId(e.target.value)}
+              className="form-select h-9 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-1.5 text-sm dark:border-navy-450 dark:text-navy-100"
+            >
+              <option value="">All Provinces</option>
+              {tenants.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.province}
+                </option>
+              ))}
+            </select>
           </div>
         )}
       </div>

@@ -129,10 +129,10 @@ export const RightPanel = ({
         ))}
       </div>
 
-      <div className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden is-scrollbar-hidden pb-4">
+      <div className="flex-1 min-w-0 flex flex-col min-h-0 pb-4">
         {/* PATIENT INFO */}
         {activeTab === "Info" && (
-          <div className="space-y-4 animate-fade-in min-w-0">
+          <div className="flex-1 space-y-4 animate-fade-in min-w-0 overflow-y-auto">
             <div className="bg-gray-50 p-4 rounded-xl text-sm space-y-2">
               <p>
                 <strong>Age:</strong>{" "}
@@ -207,7 +207,7 @@ export const RightPanel = ({
 
         {/* NOTES */}
         {activeTab === "Notes" && (
-          <div className="space-y-4 animate-fade-in flex flex-col min-w-0 min-h-[400px]">
+          <div className="flex-1 space-y-4 animate-fade-in flex flex-col min-w-0">
             <h4 className="font-semibold">Consultation Notes</h4>
             <textarea
               value={notes}
@@ -220,7 +220,7 @@ export const RightPanel = ({
 
         {/* PRESCRIPTION */}
         {activeTab === "Prescription" && (
-          <div className="space-y-4 animate-fade-in min-w-0">
+          <div className="flex-1 space-y-4 animate-fade-in min-w-0 overflow-y-auto">
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div className="col-span-2 space-y-1.5">
                 <Label htmlFor="pharmacy">Pharmacy Referal</Label>
@@ -324,7 +324,7 @@ export const RightPanel = ({
         )}
 
         {activeTab === "Lab / Diagnosis" && (
-          <div className="space-y-6 text-sm animate-fade-in min-w-0">
+          <div className="flex-1 space-y-6 text-sm animate-fade-in min-w-0 overflow-y-auto">
             {["Diagnosis", "Lab Test"].map((types) => {
               const currentUpload = uploads.find((u) => u.types === types);
               return (
@@ -389,7 +389,7 @@ export const RightPanel = ({
         )}
 
         {activeTab === "Chat" && (
-          <div className="flex flex-col h-full animate-fade-in min-w-0">
+          <div className="flex-1 flex flex-col animate-fade-in min-w-0 overflow-y-auto">
             <div className="flex-1 overflow-y-auto p-2 space-y-2 border border-gray-200 rounded-xl bg-white">
               {chatMessages.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-10 opacity-40">

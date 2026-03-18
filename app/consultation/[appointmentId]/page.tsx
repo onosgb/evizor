@@ -177,6 +177,16 @@ export default function ConsultationPage({
   const [isSendingPrescription, setIsSendingPrescription] = useState(false);
   const [uploads, setUploads] = useState<Attachment[]>([]);
   const [isUploadingLab, setIsUploadingLab] = useState(false);
+  
+  // Refs to allow cleanup on unmount even if state is stale
+  const callRef = useRef<any>(null);
+  const clientRef = useRef<StreamClient | null>(null);
+
+  // Sync refs with state
+  useEffect(() => {
+    callRef.current = call;
+    clientRef.current = client;
+  }, [call, client]);
 
   // Refetch data on mount if missing (e.g., hard refresh)
   useEffect(() => {
@@ -230,8 +240,20 @@ export default function ConsultationPage({
         const newCall = newClient.call(callType, callId);
         setCall(newCall);
 
-        await newCall.join({ create: true });
-        console.log("[Stream] Joined call successfully");
+        // Initiate the ringing flow by adding members and setting ring: true
+        const patientId = selectedAppointment?.patientId || (selectedPatient as any)?.id;
+        await newCall.getOrCreate({
+          ring: true,
+          data: {
+            members: [
+              { user_id: userId, role: 'admin' },
+              { user_id: patientId, role: 'user' },
+            ].filter(m => m.user_id),
+          },
+        });
+
+        await newCall.join();
+        console.log("[Stream] Joined and rang call successfully");
       } catch (err: any) {
         console.error("[Stream] Initialization failed:", err);
         setError(`Video initialization failed: ${err.message || "Unknown error"}`);
@@ -242,11 +264,26 @@ export default function ConsultationPage({
     initStream();
 
     return () => {
-      // Cleanup is handled by the hooks/client disconnect if needed, 
-      // but we reset ref if we unmount
       hasInitializedRef.current = false;
     };
   }, [streamCredentials, selectedAppointment?.doctorName]);
+
+  // Handle cleanup on unmount to ensure camera/mic are released if user navigates away
+  useEffect(() => {
+    return () => {
+      // If we haven't already explicitly left (via handleEndCall)
+      if (!isLeavingRef.current) {
+        if (callRef.current) {
+          console.log("[Stream] Cleaning up call on unmount");
+          callRef.current.leave().catch((e: any) => console.warn("Error leaving call", e));
+        }
+        if (clientRef.current) {
+          console.log("[Stream] Disconnecting client on unmount");
+          clientRef.current.disconnectUser().catch((e: any) => console.warn("Error disconnecting client", e));
+        }
+      }
+    };
+  }, []);
 
   // Initialization Effect return handles cleanup
 
@@ -327,7 +364,7 @@ export default function ConsultationPage({
         })),
       });
       showToast("Consultation completed successfully", "success");
-      handleEndCall();
+      setTimeout(() => handleEndCall(), 1000);
     } catch (err: unknown) {
       showToast((err as Error).message || "Failed to complete consultation", "error");
     }
@@ -355,7 +392,7 @@ export default function ConsultationPage({
         })),
       });
       showToast("Prescription sent successfully", "success");
-      handleEndCall();
+      setTimeout(() => handleEndCall(), 1000);
     } catch (err: unknown) {
       showToast((err as Error).message || "Failed to send prescription", "error");
     } finally {

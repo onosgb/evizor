@@ -3,9 +3,11 @@
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { User, AppointmentStatus } from "@/app/models";
+import { User, AppointmentStatus, GlobalAnalytics } from "@/app/models";
 import { useQueueMonitorStore } from "@/app/stores/queueMonitorStore";
 import { formatTodayOrDate } from "@/app/lib/utils/dateUtils";
+import { adminService } from "@/app/lib/services/admin.service";
+import { LucideIcon, Users, UserPlus, Clock, HeartPulse } from "lucide-react";
 
 const getGreeting = () => {
   const hour = new Date().getHours();
@@ -22,10 +24,28 @@ export default function AdminDashboard({ user }: { user: User | null }) {
   const { appointments, isLoading, setLimit, fetchAppointments } =
     useQueueMonitorStore();
 
+  const [analytics, setAnalytics] = useState<GlobalAnalytics | null>(null);
+  const [isAnalyticsLoading, setIsAnalyticsLoading] = useState(true);
+
   useEffect(() => {
     setLimit(6);
     fetchAppointments();
+    loadAnalytics();
   }, []);
+
+  const loadAnalytics = async () => {
+    try {
+      setIsAnalyticsLoading(true);
+      const response = await adminService.getGlobalAnalytics();
+      if (response.status) {
+        setAnalytics(response.data.metrics);
+      }
+    } catch (error) {
+      console.error("Failed to fetch analytics:", error);
+    } finally {
+      setIsAnalyticsLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (isSearchActive && searchInputRef.current) {
@@ -74,13 +94,63 @@ export default function AdminDashboard({ user }: { user: User | null }) {
     }
   };
 
+  const StatCard = ({ 
+    title, 
+    value, 
+    change, 
+    changeType, 
+    icon: Icon, 
+    colorClass, 
+    unit 
+  }: { 
+    title: string; 
+    value: string | number; 
+    change?: number; 
+    changeType?: string; 
+    icon: LucideIcon; 
+    colorClass: string;
+    unit?: string;
+  }) => (
+    <div className="card flex-row justify-between p-4 relative overflow-hidden">
+      <div>
+        <p className="text-xs-plus uppercase font-medium text-slate-500 dark:text-navy-300">{title}</p>
+        <div className="mt-8 flex items-baseline space-x-1">
+          {isAnalyticsLoading ? (
+            <div className="h-8 w-16 animate-pulse rounded bg-slate-200 dark:bg-navy-500" />
+          ) : (
+            <>
+              <p className="text-2xl font-semibold text-slate-700 dark:text-navy-100">
+                {value}{unit && <span className="text-sm font-normal ml-1">{unit}</span>}
+              </p>
+              {change !== undefined && (
+                <p className={`text-xs ${
+                  changeType === "increase" ? "text-success" : 
+                  changeType === "decrease" ? "text-error" : 
+                  "text-slate-500"
+                }`}>
+                  {change > 0 ? "+" : ""}{change}%
+                </p>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+      <div className={`mask is-squircle flex size-10 items-center justify-center ${colorClass}/10`}>
+        <Icon className={`size-6 ${colorClass === "primary" ? "text-primary" : `text-${colorClass}`}`} />
+      </div>
+      <div className="absolute bottom-0 right-0 overflow-hidden rounded-lg">
+        <Icon className={`size-20 translate-x-1/4 translate-y-1/4 opacity-15 ${colorClass === "primary" ? "text-primary" : `text-${colorClass}`}`} />
+      </div>
+    </div>
+  );
+
   return (
     <>
       {/* Welcome Card */}
       <div className="mt-4 grid grid-cols-12 gap-4 sm:mt-5 sm:gap-5 lg:mt-6 lg:gap-6">
         <div className="col-span-12 lg:col-span-12 xl:col-span-12">
           <div
-            className="card col-span-12 mt-12 bg-linear-to-r p-5 sm:col-span-8 sm:mt-0 sm:flex-row"
+            className="card col-span-12 mt-12 bg-linear-to-r p-5 sm:col-span-8 sm:mt-0 sm:flex-row shadow-lg shadow-primary/10"
             style={{ background: "#49941c" }}
           >
             <div className="flex justify-center sm:order-last">
@@ -93,20 +163,20 @@ export default function AdminDashboard({ user }: { user: User | null }) {
               />
             </div>
             <div className="mt-2 flex-1 pt-2 text-center text-white sm:mt-0 sm:text-left">
-              <p className="text-white pb-2">System Administrator</p>
-              <hr />
+              <p className="text-white pb-2 opacity-80">System Administrator</p>
+              <hr className="opacity-20" />
               <h3 className="text-xl mt-4">
                 {getGreeting()},{" "}
                 <span className="font-semibold">
                   {user?.firstName || "Admin"}
                 </span>
               </h3>
-              <p className="mt-2 leading-relaxed">
+              <p className="mt-2 leading-relaxed opacity-90">
                 Have a great day at work. Your progress is excellent.
               </p>
               <Link
                 href="/profile"
-                className="btn mt-6 border border-white/10 bg-white/20 text-white hover:bg-white/30 focus:bg-white/30"
+                className="btn mt-6 border border-white/20 bg-white/20 text-white hover:bg-white/30 focus:bg-white/30"
               >
                 View Profile
               </Link>
@@ -117,181 +187,39 @@ export default function AdminDashboard({ user }: { user: User | null }) {
 
       {/* Stats Cards */}
       <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4 lg:gap-6">
-        <div className="card flex-row justify-between p-4 relative">
-          <div>
-            <p className="text-xs-plus uppercase">Active Doctors</p>
-            <div className="mt-8 flex items-baseline space-x-1">
-              <p className="text-2xl font-semibold text-slate-700 dark:text-navy-100">
-                1.3k
-              </p>
-              <p className="text-xs text-success">+21%</p>
-            </div>
-          </div>
-          <div className="mask is-squircle flex size-10 items-center justify-center bg-warning/10">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="size-6 text-warning"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-              />
-            </svg>
-          </div>
-          <div className="absolute bottom-0 right-0 overflow-hidden rounded-lg">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="size-20 translate-x-1/4 translate-y-1/4 opacity-15 text-warning"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-              />
-            </svg>
-          </div>
-        </div>
-
-        <div className="card flex-row justify-between p-4 relative">
-          <div>
-            <p className="text-xs-plus uppercase">Waiting Patients</p>
-            <div className="mt-8 flex items-baseline space-x-1">
-              <p className="text-2xl font-semibold text-slate-700 dark:text-navy-100">
-                30.6m
-              </p>
-              <p className="text-xs text-success">+4%</p>
-            </div>
-          </div>
-          <div className="mask is-squircle flex size-10 items-center justify-center bg-info/10">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="size-6 text-info"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-              />
-            </svg>
-          </div>
-          <div className="absolute bottom-0 right-0 overflow-hidden rounded-lg">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="size-20 translate-x-1/4 translate-y-1/4 opacity-15 text-info"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-              />
-            </svg>
-          </div>
-        </div>
-
-        <div className="card flex-row justify-between p-4 relative">
-          <div>
-            <p className="text-xs-plus uppercase">Avg Waiting Time</p>
-            <div className="mt-8 flex items-baseline space-x-1">
-              <p className="text-2xl font-semibold text-slate-700 dark:text-navy-100">
-                4.3m
-              </p>
-              <p className="text-xs text-success">+8%</p>
-            </div>
-          </div>
-          <div className="mask is-squircle flex size-10 items-center justify-center bg-success/10">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="size-6 text-success"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-          </div>
-          <div className="absolute bottom-0 right-0 overflow-hidden rounded-lg">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="size-20 translate-x-1/4 translate-y-1/4 opacity-15 text-success"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-          </div>
-        </div>
-
-        <div className="card flex-row justify-between p-4 relative">
-          <div>
-            <p className="text-xs-plus uppercase">Consultations Today</p>
-            <div className="mt-8 flex items-baseline space-x-1">
-              <p className="text-2xl font-semibold text-slate-700 dark:text-navy-100">
-                11.6k
-              </p>
-              <p className="text-xs text-error">-2.3%</p>
-            </div>
-          </div>
-          <div className="mask is-squircle flex size-10 items-center justify-center bg-error/10">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="size-6 text-error"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m6 9l-2-2m0 0l-2-2m2 2l2 2m-2-2l-2 2"
-              />
-            </svg>
-          </div>
-          <div className="absolute bottom-0 right-0 overflow-hidden rounded-lg">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="size-20 translate-x-1/4 translate-y-1/4 opacity-15 text-error"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m6 9l-2-2m0 0l-2-2m2 2l2 2m-2-2l-2 2"
-              />
-            </svg>
-          </div>
-        </div>
+        <StatCard
+          title="Active Doctors"
+          value={analytics?.activeDoctors.value || 0}
+          change={analytics?.activeDoctors.change}
+          changeType={analytics?.activeDoctors.changeType}
+          icon={Users}
+          colorClass="warning"
+        />
+        <StatCard
+          title="Waiting Patients"
+          value={analytics?.waitingPatients.value || 0}
+          change={analytics?.waitingPatients.change}
+          changeType={analytics?.waitingPatients.changeType}
+          icon={UserPlus}
+          colorClass="info"
+        />
+        <StatCard
+          title="Avg Waiting Time"
+          value={analytics?.avgWaitingTime.value || 0}
+          unit={analytics?.avgWaitingTime.unit || "min"}
+          change={analytics?.avgWaitingTime.change}
+          changeType={analytics?.avgWaitingTime.changeType}
+          icon={Clock}
+          colorClass="primary"
+        />
+        <StatCard
+          title="Consultations Today"
+          value={analytics?.consultationsToday.value || 0}
+          change={analytics?.consultationsToday.change}
+          changeType={analytics?.consultationsToday.changeType}
+          icon={HeartPulse}
+          colorClass="error"
+        />
       </div>
 
       {/* Queue Monitor Table */}
