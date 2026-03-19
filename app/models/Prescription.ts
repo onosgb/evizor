@@ -6,7 +6,7 @@ export interface MedicationRequest {
 }
 
 export interface CreatePrescriptionRequest {
-  phamacyId: string;
+  pharmacyId: string;
   appointmentId: string;
   medications: MedicationRequest[];
 }

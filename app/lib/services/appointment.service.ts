@@ -117,6 +117,7 @@ class AppointmentService {
     const response = await apiClient.post<ApiResponse<StreamVideoCredentials>>(
       `/appointments/${appointmentId}/start`,
     );
+
     return response.data.data;
   }
 

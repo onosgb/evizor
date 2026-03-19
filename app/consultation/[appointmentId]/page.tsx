@@ -224,7 +224,6 @@ export default function ConsultationPage({
           { id: userId, name: selectedAppointment?.doctorName || "Doctor" },
           userToken
         );
-        console.log("[Stream] User connected successfully");
 
         const newCall = newClient.call(callType, callId);
         setCall(newCall);
@@ -232,9 +231,7 @@ export default function ConsultationPage({
         // Call is already created by the backend.
         // We simply join.
         await newCall.join();
-        console.log("[Stream] Joined call successfully");
       } catch (err: any) {
-        console.error("[Stream] Initialization failed:", err);
         setError(`Video initialization failed: ${err.message || "Unknown error"}`);
         hasInitializedRef.current = false; // Allow retry
       }
@@ -253,7 +250,6 @@ export default function ConsultationPage({
       // If we haven't already explicitly left (via handleEndCall)
       if (!isLeavingRef.current) {
         if (callRef.current) {
-          console.log("[Stream] Cleaning up call on unmount");
           const c = callRef.current;
           // Explicitly stop hardware tracks
           c.camera?.disable().catch((e: any) => console.warn("Error disabling camera", e));
@@ -261,7 +257,6 @@ export default function ConsultationPage({
           c.leave().catch((e: any) => console.warn("Error leaving call", e));
         }
         if (clientRef.current) {
-          console.log("[Stream] Disconnecting client on unmount");
           clientRef.current.disconnectUser().catch((e: any) => console.warn("Error disconnecting client", e));
         }
       }
@@ -279,7 +274,6 @@ export default function ConsultationPage({
     isLeavingRef.current = true;
     if (call) {
       try {
-        console.log("[Stream] Explicitly disabling camera and mic");
         await call.camera.disable();
         await call.microphone.disable();
         await call.leave();
@@ -366,7 +360,7 @@ export default function ConsultationPage({
     setIsSendingPrescription(true);
     try {
       await appointmentService.addPrescription({
-        phamacyId: pharmacyId,
+        pharmacyId: pharmacyId,
         appointmentId,
         medications: medications.map((m: MedicationRequest) => ({
           drug: m.drug,
