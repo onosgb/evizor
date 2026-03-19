@@ -10,6 +10,7 @@ import {
   ParticipantView,
 } from "@stream-io/video-react-sdk";
 import { Video, VideoOff, Mic, MicOff, PhoneOff, AlertTriangle } from "lucide-react";
+import { Button } from "@/app/components/ui/button";
 import "@stream-io/video-react-sdk/dist/css/styles.css";
 
 import { useAppointmentStore } from "@/app/stores/appointmentStore";
@@ -17,6 +18,7 @@ import { usePharmacyStore } from "@/app/stores/pharmacyStore";
 import { useToast } from "@/app/contexts/ToastContext";
 import { appointmentService } from "@/app/lib/services/appointment.service";
 import { RightPanel } from "./components/RightPanel";
+import ConfirmationModal from "@/app/components/ConfirmationModal";
 import {
   Attachment,
   MedicationRequest,
@@ -166,6 +168,8 @@ export default function ConsultationPage({
   const [isSendingPrescription, setIsSendingPrescription] = useState(false);
   const [uploads, setUploads] = useState<Attachment[]>([]);
   const [isUploadingLab, setIsUploadingLab] = useState(false);
+  const [isClinicalModalOpen, setIsClinicalModalOpen] = useState(false);
+  const [isSettingClinical, setIsSettingClinical] = useState(false);
   
   // Refs to allow cleanup on unmount even if state is stale
   const callRef = useRef<any>(null);
@@ -270,19 +274,23 @@ export default function ConsultationPage({
   const isLeavingRef = useRef(false);
 
   const handleEndCall = useCallback(async () => {
+    setIsClinicalModalOpen(true);
+  }, []);
+
+  const actualLeave = useCallback(async () => {
     if (isLeavingRef.current) return;
     isLeavingRef.current = true;
-    if (call) {
+    if (callRef.current) {
       try {
-        await call.camera.disable();
-        await call.microphone.disable();
-        await call.leave();
+        await callRef.current.camera.disable();
+        await callRef.current.microphone.disable();
+        await callRef.current.leave();
       } catch (e) {
         console.warn("Error leaving call", e);
       }
     }
-    if (client) {
-      await client.disconnectUser();
+    if (clientRef.current) {
+      await clientRef.current.disconnectUser();
     }
     endVideoCall();
     showToast("Session ended. Redirecting to dashboard.", "success");
@@ -291,7 +299,22 @@ export default function ConsultationPage({
     setTimeout(() => {
       router.push("/");
     }, 500);
-  }, [call, client, endVideoCall, router, showToast]);
+  }, [endVideoCall, router, showToast]);
+
+  const handleConfirmClinical = async () => {
+    setIsSettingClinical(true);
+    try {
+      await useAppointmentStore.getState().setClinicalAlert(appointmentId);
+      showToast("Clinical Alert set successfully", "success");
+    } catch (e) {
+      console.error("Failed to set clinical alert", e);
+      showToast("Failed to set Clinical Alert, but ending session anyway.", "warning");
+    } finally {
+      setIsSettingClinical(false);
+      setIsClinicalModalOpen(false);
+      actualLeave();
+    }
+  };
 
   const handleRetryJoin = useCallback(async () => {
     setError(null);
@@ -342,7 +365,7 @@ export default function ConsultationPage({
         doctorNotes: notes,
       });
       showToast("Consultation completed successfully", "success");
-      setTimeout(() => handleEndCall(), 1000);
+      setTimeout(() => actualLeave(), 1000);
     } catch (err: unknown) {
       showToast((err as Error).message || "Failed to complete consultation", "error");
     }
@@ -488,6 +511,29 @@ export default function ConsultationPage({
                 </StreamVideo>
               )}
             </div>
+
+            <ConfirmationModal
+              isOpen={isClinicalModalOpen}
+              onClose={() => setIsClinicalModalOpen(false)}
+              onConfirm={() => actualLeave()}
+              title="End Consultation?"
+              message="Do you want to mark this appointment as a 'Clinical Alert' before ending the session?"
+              confirmText="No, Just End"
+              cancelText="Stay in Call"
+              variant="default"
+              isLoading={isSettingClinical}
+            >
+              <Button
+                onClick={handleConfirmClinical}
+                disabled={isSettingClinical}
+                className="min-w-28 rounded-full bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                {isSettingClinical ? (
+                  <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-r-transparent"></div>
+                ) : null}
+                Yes, Mark as Clinical
+              </Button>
+            </ConfirmationModal>
 
             <div className="mt-2 p-3 bg-gray-50 rounded-xl text-sm text-gray-600">
               Doctor: “Can you describe the pain you’re experiencing?”

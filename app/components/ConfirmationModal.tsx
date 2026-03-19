@@ -15,6 +15,7 @@ interface ConfirmationModalProps {
   variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link" | "success" | "warning" | "error";
   isLoading?: boolean;
   loadingText?: string;
+  children?: React.ReactNode;
 }
 
 export default function ConfirmationModal({
@@ -28,6 +29,7 @@ export default function ConfirmationModal({
   variant = "default",
   isLoading = false,
   loadingText = "Processing...",
+  children,
 }: ConfirmationModalProps) {
   const [mounted, setMounted] = useState(false);
 
@@ -74,7 +76,8 @@ export default function ConfirmationModal({
         </div>
         <div className="px-4 py-4 sm:px-5">
           <p className="text-slate-600 dark:text-navy-200">{message}</p>
-          <div className="mt-6 flex justify-end space-x-2">
+          <div className="mt-6 flex flex-wrap items-center justify-end gap-2">
+            {children}
             <Button
               onClick={onClose}
               variant="outline"

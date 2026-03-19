@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useCallback } from "react";
 
-type ToastType = "success" | "error" | "info";
+type ToastType = "success" | "error" | "info" | "warning";
 
 interface Toast {
   id: number;
@@ -46,6 +46,8 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                 ? "bg-green-500 hover:bg-green-600"
                 : toast.type === "error"
                 ? "bg-red-500 hover:bg-red-600"
+                : toast.type === "warning"
+                ? "bg-yellow-500 hover:bg-yellow-600"
                 : "bg-blue-500 hover:bg-blue-600"
             }`}
           >
