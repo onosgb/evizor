@@ -47,7 +47,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
       auth: {
         token: accessToken,
       },
-      transports: ["websocket"],
+      // transports: ["websocket"],
     });
 
     newSocket.on("connect", () => {
@@ -74,7 +74,11 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     });
 
     newSocket.on("error", (err) => {
-      console.error("Signaling Gateway Error:", err);
+      console.error("Signaling Gateway Error (detailed):", JSON.stringify(err, Object.getOwnPropertyNames(err)));
+    });
+
+    newSocket.on("connect_error", (err: any) => {
+      console.error("Signaling Gateway Connect Error:", err.message, err?.data);
     });
 
     setSocket(newSocket);

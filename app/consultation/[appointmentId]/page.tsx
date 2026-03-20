@@ -16,6 +16,7 @@ import "@stream-io/video-react-sdk/dist/css/styles.css";
 import { useAppointmentStore } from "@/app/stores/appointmentStore";
 import { usePharmacyStore } from "@/app/stores/pharmacyStore";
 import { useToast } from "@/app/contexts/ToastContext";
+import { useSocket } from "@/app/contexts/SocketContext";
 import { appointmentService } from "@/app/lib/services/appointment.service";
 import { RightPanel } from "./components/RightPanel";
 import ConfirmationModal from "@/app/components/ConfirmationModal";
@@ -138,6 +139,7 @@ export default function ConsultationPage({
 }) {
   const router = useRouter();
   const { showToast } = useToast();
+  const { socket } = useSocket();
   const unwrappedParams = use(params);
   const appointmentId = unwrappedParams.appointmentId;
 
@@ -337,30 +339,57 @@ export default function ConsultationPage({
     }
   }, [call, appointmentId, fetchVideoToken, showToast]);
 
-  // Handle incoming chat messages via custom events
+  // Handle incoming chat messages via WebSocket
   useEffect(() => {
-    if (!call) return;
+    if (!socket) return;
 
-    const unsubscribe = call.on("custom", (event: any) => {
-      if (event.type === "chat") {
-        setChatMessages((prev) => [
-          ...prev,
-          {
-            id: event.event_id || Date.now().toString(),
-            sender: { name: event.user?.name || "Patient" },
-            text: event.custom.text,
-            timestamp: new Date().toISOString(),
-          },
-        ]);
-      }
+    socket.onAny((event, ...args) => {
+      console.log(`Socket Debug [${event}]:`, args);
     });
 
-    return () => unsubscribe();
-  }, [call]);
+    const handleNewMessage = (data: any) => {
+      console.log("WebSocket: Received consultation:new_message:", data);
+      
+      const msgAppointmentId = String(data.appointmentId || data.id || "");
+      const currentAppointmentId = String(appointmentId).trim();
+
+      // Only process messages for this appointment
+      if (msgAppointmentId !== currentAppointmentId) {
+        console.warn(`WebSocket: Ignoring message for different appointment. Expected ${currentAppointmentId}, got ${msgAppointmentId}`);
+        return;
+      }
+
+      setChatMessages((prev) => {
+        // Deduplicate: If we already have this message (by server ID)
+        if (prev.some(m => m.id === data.id)) return prev;
+
+        return [
+          ...prev,
+          {
+            id: data.id || Date.now().toString(),
+            sender: { name: (data.senderRole || "").toLowerCase() === "patient" ? (selectedPatient?.firstName || "Patient") : "You" },
+            text: data.message,
+            timestamp: data.createdAt || new Date().toISOString(),
+          },
+        ];
+      });
+    };
+
+    socket.on("consultation:new_message", handleNewMessage);
+
+    return () => {
+      socket.off("consultation:new_message", handleNewMessage);
+    };
+  }, [socket, appointmentId, selectedPatient?.firstName]);
 
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [chatMessages]);
+    if (activeTab === "Chat") {
+      const timer = setTimeout(() => {
+        chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [chatMessages, activeTab]);
 
   const handleFinalize = async () => {
     try {
@@ -425,24 +454,14 @@ export default function ConsultationPage({
 
   const handleSendChatMessage = async () => {
     const text = chatInput.trim();
-    if (!text || !call) return;
-
+    if (!text || !socket) return;
+      console.log('message: ', text, socket)
     try {
-      await call.sendCustomEvent({
-        type: "chat",
-        text: text,
+      socket.emit("consultation:send_message", {
+        appointmentId,
+        message: text,
       });
 
-      // Add to local state
-      setChatMessages((prev) => [
-        ...prev,
-        {
-          id: Date.now().toString(),
-          sender: { name: "You" },
-          text: text,
-          timestamp: new Date().toISOString(),
-        },
-      ]);
       setChatInput("");
     } catch (err: unknown) {
       showToast("Failed to send message", "error");
