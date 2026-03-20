@@ -256,12 +256,12 @@ export default function ConsultationPage({
         if (callRef.current) {
           const c = callRef.current;
           // Explicitly stop hardware tracks
-          c.camera?.disable().catch((e: any) => console.warn("Error disabling camera", e));
-          c.microphone?.disable().catch((e: any) => console.warn("Error disabling microphone", e));
-          c.leave().catch((e: any) => console.warn("Error leaving call", e));
+          c.camera?.disable().catch((e: any) => {});
+          c.microphone?.disable().catch((e: any) => {});
+          c.leave().catch((e: any) => {});
         }
         if (clientRef.current) {
-          clientRef.current.disconnectUser().catch((e: any) => console.warn("Error disconnecting client", e));
+          clientRef.current.disconnectUser().catch((e: any) => {});
         }
       }
     };
@@ -280,25 +280,29 @@ export default function ConsultationPage({
   const actualLeave = useCallback(async () => {
     if (isLeavingRef.current) return;
     isLeavingRef.current = true;
+
     if (callRef.current) {
       try {
         await callRef.current.camera.disable();
         await callRef.current.microphone.disable();
-        await callRef.current.leave();
+        // Use endCall() to terminate for everyone (doctor + patient)
+        await callRef.current.endCall();
       } catch (e) {
-        console.warn("Error leaving call", e);
+        console.error("Error ending call:", e);
+        // Fallback to leave if endCall fails
+        await callRef.current.leave().catch(() => {});
       }
     }
+
     if (clientRef.current) {
-      await clientRef.current.disconnectUser();
+      await clientRef.current.disconnectUser().catch(() => {});
     }
+
     endVideoCall();
     showToast("Session ended. Redirecting to dashboard.", "success");
-    
-    // Tiny delay to ensure SDK cleanup processes are not cut off by navigation
-    setTimeout(() => {
-      router.push("/");
-    }, 500);
+
+    // Clear any potential hanging timeouts and navigate
+    router.replace("/");
   }, [endVideoCall, router, showToast]);
 
   const handleConfirmClinical = async () => {
@@ -307,8 +311,7 @@ export default function ConsultationPage({
       await useAppointmentStore.getState().setClinicalAlert(appointmentId);
       showToast("Clinical Alert set successfully", "success");
     } catch (e) {
-      console.error("Failed to set clinical alert", e);
-      showToast("Failed to set Clinical Alert, but ending session anyway.", "warning");
+      showToast("Failed to set Clinical Alert, but ending session anyway.", "error");
     } finally {
       setIsSettingClinical(false);
       setIsClinicalModalOpen(false);
@@ -442,7 +445,6 @@ export default function ConsultationPage({
       ]);
       setChatInput("");
     } catch (err: unknown) {
-      console.error("Failed to send chat message", err);
       showToast("Failed to send message", "error");
     }
   };

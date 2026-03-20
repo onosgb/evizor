@@ -231,8 +231,7 @@ export const useAppointmentStore = create<AppointmentState>((set, get) => ({
         }
       })
       .catch((error: unknown) => {
-        console.error("Failed to fetch patient details:", error);
-        // Don't set global error here to avoid blocking UI, just log
+        // Don't set global error here to avoid blocking UI
       });
 
     const historyPromise = appointmentService
