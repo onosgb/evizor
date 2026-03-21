@@ -211,42 +211,59 @@ export default function ConsultationPage({
     fetchPharmacies();
   }, [fetchPharmacies]);
 
-  const hasInitializedRef = useRef(false);
+  const hasInitializedRef = useRef<string | null>(null);
 
   // Initialize Stream Video client when credentials arrive
   useEffect(() => {
-    if (!streamCredentials || hasInitializedRef.current) return;
+    if (!streamCredentials || hasInitializedRef.current === streamCredentials.userId) return;
 
     const initStream = async () => {
-      hasInitializedRef.current = true;
       const { userId, userToken, callId, callType } = streamCredentials;
+      hasInitializedRef.current = userId;
       const apiKey = process.env.NEXT_PUBLIC_STREAM_API_KEY!;
 
-      const newClient = new StreamClient(apiKey);
-      setClient(newClient);
-
       try {
+        // Create new client if needed
+        const newClient = new StreamClient(apiKey, {
+          logger: (level, msg) => console.debug(`[Stream] ${level}: ${msg}`),
+        });
+
         await newClient.connectUser(
           { id: userId, name: selectedAppointment?.doctorName || "Doctor" },
           userToken
         );
 
         const newCall = newClient.call(callType, callId);
-        setCall(newCall);
+        
+        // Ensure camera and mic are ON by default as requested
+        await newCall.camera.enable();
+        await newCall.microphone.enable();
 
-        // Call is already created by the backend.
-        // We simply join.
-        await newCall.join();
+        // Join immediately 
+        await newCall.join({ 
+          create: true,
+          data: {
+            members: [
+              { user_id: userId, role: 'admin' },
+            ]
+          }
+        });
+
+        // Atomic update to trigger UI with a fully ready call
+        setClient(newClient);
+        setCall(newCall);
       } catch (err: any) {
+        console.error("Stream initialization error:", err);
         setError(`Video initialization failed: ${err.message || "Unknown error"}`);
-        hasInitializedRef.current = false; // Allow retry
+        hasInitializedRef.current = null; // Allow retry
       }
     };
 
     initStream();
 
     return () => {
-      hasInitializedRef.current = false;
+      // NOTE: We don't necessarily want to disconnect on every re-render,
+      // handled by ref check above and refetching cleanup below.
     };
   }, [streamCredentials, selectedAppointment?.doctorName]);
 
